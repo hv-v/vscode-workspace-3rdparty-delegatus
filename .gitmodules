@@ -1,0 +1,12 @@
+# private submodules
+[submodule "mindrally-claude-skills"]
+	path = 3rdparty/mindrally-claude-skills
+	url = https://github.com/Mindrally/skills.git
+	branch = master
+	# branch = 05a71308897983093248d719a2ffa1bca61d0768
+
+[submodule "awesome-claude-code-subagents"]
+	path = 3rdparty/awesome-claude-code-subagents
+	url = https://github.com/VoltAgent/awesome-claude-code-subagents.git
+	branch = master
+	# branch = c9e51ec0b3d43f5dcdd0b558a6cd28ba6ada97c1

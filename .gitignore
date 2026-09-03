@@ -1,0 +1,9 @@
+# untracked dependencies
+
+*.patch
+
+# workspace projects specific
+jen*
+shire*
+k3s-qemu/
+3rdparty/
