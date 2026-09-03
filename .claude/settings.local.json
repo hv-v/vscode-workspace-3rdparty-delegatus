@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(sed -n '260,300p' /tmp/verify6.log)",
+      "Read(//tmp/**)",
+      "Bash(clang-format -i --style=file:.clang-format jen_calibration_manager_node/include/CalibrationData.hpp jen_calibration_manager_node/test/JenCalibrationManagerNodeTest.cpp)"
+    ]
+  }
+}

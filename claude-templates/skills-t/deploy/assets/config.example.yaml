@@ -1,0 +1,10 @@
+# Standalone configuration for {{PROJECT}}, mounted/passed at launch.
+#
+# Purpose: let the process start with NOTHING around it. Every value here exists
+# to replace something its usual environment would provide.
+#
+# Keep it minimal but valid - small enough to read in a diff, complete enough to
+# pass startup validation. Keep it in sync with the deployment values file; those
+# two are the "runs alone" configurations and they drift.
+
+{{key}}: {{value}}    # {{what it replaces}}
