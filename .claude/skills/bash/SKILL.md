@@ -1,6 +1,6 @@
 ---
-name: bash-scripting
-description: Bash scripting guidelines covering security, portability, error handling, and automation best practices for DevOps.
+name: bash
+description: Bash scripting standards - strict mode, getopts input validation, trap-based cleanup, quoting, exit codes and shellcheck. Use when writing, editing or reviewing any shell script or non-trivial shell snippet: .sh files, generators, wrappers, entrypoints, CI steps, or when debugging a failing shell command.
 ---
 
 # Bash Scripting
