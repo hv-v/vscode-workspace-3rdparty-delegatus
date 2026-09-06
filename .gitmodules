@@ -10,3 +10,9 @@
 	url = https://github.com/VoltAgent/awesome-claude-code-subagents.git
 	branch = master
 	# branch = c9e51ec0b3d43f5dcdd0b558a6cd28ba6ada97c1
+
+[submodule "codebase-memory-mcp"]
+	path = 3rdparty/codebase-memory-mcp
+	url = https://github.com/DeusData/codebase-memory-mcp.git
+	branch = main
+	# branch = c9e51ec0b3d43f5dcdd0b558a6cd28ba6ada97c1
