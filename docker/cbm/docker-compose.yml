@@ -39,6 +39,7 @@ services:
 
     environment:
       CBM_UI_PORT: "${CBM_UI_PORT:-9749}"
+      CBM_UI_PASSWORD: "${CBM_UI_PASSWORD:?run cbm.sh to generate the UI password}"
       # Confines index_repository (and the UI's POST /api/index) to the mount.
       CBM_ALLOWED_ROOT: "${CBM_WORKSPACE:?run ./cbm.sh, or set CBM_WORKSPACE to the workspace root}"
       CBM_LOG_LEVEL: "${CBM_LOG_LEVEL:-info}"
@@ -56,6 +57,69 @@ services:
     networks:
       - isolated
 
+  # ── Token monitoring (profile: metrics) ────────────────────────
+  # Off by default; `./cbm.sh metrics up` starts these two.
+  #
+  # Claude Code exports OTLP metrics per session — including
+  # claude_code.token.usage broken down by mcp_server.name / mcp_tool.name,
+  # which is the exact per-tool attribution the transcript report could only
+  # estimate. Sessions push to the collector; Prometheus scrapes the collector.
+
+  otelcol:
+    image: "${CBM_OTELCOL_IMAGE:-otel/opentelemetry-collector-contrib:0.160.0}"
+    container_name: "${CBM_OTELCOL_CONTAINER:-cbm-otelcol}"
+    hostname: cbm-otelcol
+    profiles: [metrics]
+    restart: unless-stopped
+    command: ["--config=/etc/otelcol/config.yaml"]
+
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+
+    volumes:
+      - "./otelcol.yaml:/etc/otelcol/config.yaml:ro"
+
+    # Only the OTLP ingest ports are published; 8889/8888 stay on the bridge
+    # for Prometheus.
+    ports:
+      - "127.0.0.1:${CBM_OTLP_GRPC_PORT:-4317}:4317"
+      - "127.0.0.1:${CBM_OTLP_HTTP_PORT:-4318}:4318"
+
+    networks:
+      - metrics
+
+  prometheus:
+    image: "${CBM_PROMETHEUS_IMAGE:-prom/prometheus:v3.14.0}"
+    container_name: "${CBM_PROMETHEUS_CONTAINER:-cbm-prometheus}"
+    hostname: cbm-prometheus
+    profiles: [metrics]
+    restart: unless-stopped
+
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.path=/prometheus"
+      - "--storage.tsdb.retention.time=${CBM_PROM_RETENTION:-90d}"
+      - "--web.listen-address=0.0.0.0:9090"
+      - "--web.enable-lifecycle"
+
+    volumes:
+      - "./prometheus.yml:/etc/prometheus/prometheus.yml:ro"
+      - "cbm-prometheus-data:/prometheus"
+
+    ports:
+      - "127.0.0.1:${CBM_PROM_PORT:-9090}:9090"
+
+    networks:
+      - metrics
+
+
 networks:
   isolated:
     name: "${CBM_NETWORK:-cbm-isolated}"
@@ -66,6 +130,20 @@ networks:
       config:
         - subnet: "${CBM_SUBNET:-172.31.99.0/24}"
 
+  # Same posture as the isolated network — no NAT, so no route off the host —
+  # but docker's embedded resolver is left alone: Prometheus has to resolve
+  # cbm-otelcol by name.
+  metrics:
+    name: "${CBM_METRICS_NETWORK:-cbm-metrics}"
+    driver: bridge
+    driver_opts:
+      com.docker.network.bridge.enable_ip_masquerade: "false"
+    ipam:
+      config:
+        - subnet: "${CBM_METRICS_SUBNET:-172.31.98.0/24}"
+
 volumes:
   cbm-cache:
     name: "${CBM_VOLUME:-cbm-cache}"
+  cbm-prometheus-data:
+    name: "${CBM_PROM_VOLUME:-cbm-prometheus-data}"

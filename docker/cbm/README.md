@@ -43,9 +43,13 @@ home-vhaponov-Documents-jo-workspace-k3s-qemu                      72 nodes
 home-vhaponov-Documents-jo-workspace-shire-apps                   127 nodes
 ```
 
+`3rdparty/` is not a repo but a directory *of* repos, so `index` descends into
+it and gives each vendored upstream its own graph alongside the first-party
+projects (`CBM_VENDOR_DIR` renames the directory it looks for). They are read
+just as often as our own code — CBM itself is checked out there — so they are
+worth the index.
+
 Pass the project name in queries (`{"project": "…-jen_plate_reader"}`).
-`3rdparty/` is gitignored and therefore skipped; index it explicitly with
-`./cbm.sh index ../../3rdparty/codebase-memory-mcp` if you ever want it.
 
 ## How the pieces fit
 
@@ -54,6 +58,7 @@ Pass the project name in queries (`{"project": "…-jen_plate_reader"}`).
 | Image build | `Dockerfile` (context: the CBM checkout; entrypoint arrives as the named build context `cbmdocker`) |
 | Container shape | `docker-compose.yml` |
 | Everything you type | `cbm.sh` |
+| Token monitoring | `otelcol.yaml`, `prometheus.yml` (compose profile `metrics`) |
 | Index + config storage | docker volume `cbm-cache` → `/cbm/cache` (`CBM_CACHE_DIR`) |
 
 The image is built from source, not downloaded: stage 1 installs gcc and the
@@ -107,6 +112,7 @@ shell                  Shell inside the container
 mcp-config             Write mcp-server/configs/.mcp.json (+ root symlink)
 serve-mcp              Speak MCP on stdio, starting the container if needed
 tokens [--all]         Where this project's context went (see below)
+metrics <sub>          Token monitoring: OTLP collector + Prometheus
 verify                 Egress blocked · DNS blocked · UI up · MCP handshake
 harden                 Print the optional sudo iptables rules
 ```
@@ -124,7 +130,9 @@ including how many tokens the MCP tool *definitions* occupy; `/cost` shows the
 session totals.
 
 **2. This workspace's own report** — `./cbm.sh tokens` reads Claude Code's
-transcripts for this project and prints where the context went:
+transcripts for this project and prints where the context went. Note that
+`token-report.py` was deleted in `c8a8b2c`, so the command currently says so and
+points at the `metrics` profile below; restore the script to use it:
 
 ```
 ./cbm.sh tokens            # the most recent session
@@ -144,23 +152,62 @@ file exploration       597.2k tok   95.7%  1616 calls
 code graph (MCP)            0 tok    0.0%     0 calls
 ```
 
-**3. Exact per-tool attribution** — Claude Code's OpenTelemetry metrics do
-attribute tokens per MCP server and tool. `claude_code.token.usage` carries
-`mcp_server.name` and `mcp_tool.name` alongside `type`
-(input/output/cacheRead/cacheCreation) and `model`:
+**3. Exact per-tool attribution — the `metrics` profile.**
+Claude Code's OpenTelemetry metrics *do* attribute tokens per MCP server and
+tool: `claude_code.token.usage` carries `mcp_server.name` and `mcp_tool.name`
+alongside `type` (input/output/cacheRead/cacheCreation) and `model`. Two extra
+containers turn that into history:
 
 ```bash
-export CLAUDE_CODE_ENABLE_TELEMETRY=1
-export OTEL_METRICS_EXPORTER=otlp
-export OTEL_EXPORTER_OTLP_PROTOCOL=grpc
-export OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4317
-export OTEL_LOG_TOOL_DETAILS=1   # else a user-configured server reads "custom"
+./cbm.sh metrics up                      # OTLP collector + Prometheus
+eval "$(./cbm.sh metrics env --export)"  # then restart Claude Code
+./cbm.sh metrics tokens                  # by kind, model, MCP server, MCP tool
 ```
 
-That needs a collector listening on that endpoint (`prometheus` is also a valid
-`OTEL_METRICS_EXPORTER` if you would rather scrape). Without
-`OTEL_LOG_TOOL_DETAILS=1` this server appears as `custom`, since the name of a
-user-configured MCP server is redacted by default.
+```
+up                     Start the collector and Prometheus
+down [--volumes]       Stop them; --volumes also drops the metric history
+status                 Containers, endpoints, scrape targets, series count
+logs [-f]              Collector + Prometheus logs
+env [--export]         The OTEL_* settings Claude Code needs
+tokens                 Token totals by kind, model, MCP server and MCP tool
+query EXPR             One instant PromQL query
+open                   Print (and open) http://localhost:9090
+```
+
+*Why a collector and not Prometheus alone.* A Claude Code session is a
+short-lived process that **pushes**; Prometheus **pulls**. Scraping sessions
+directly would miss every session that starts and ends between two scrapes, and
+concurrent sessions would fight over one exporter port. So sessions push OTLP to
+the collector on `127.0.0.1:4317`, the collector holds the counters
+(`metric_expiration: 168h` — the default 5m drops a finished session's totals
+before they get interesting), and Prometheus scrapes that one stable target.
+Both containers publish to host loopback only and sit on a masquerade-free
+bridge: the same no-egress posture as `cbm` itself.
+
+*The settings matter.* `OTEL_LOG_TOOL_DETAILS=1` is not optional here — without
+it the name of a *user-configured* MCP server is redacted, this server reads as
+`custom`, and the attribution the stack exists for is lost.
+`OTEL_METRIC_EXPORT_INTERVAL=10000` shortens the 60s default so a session
+shorter than a minute still exports. Put both in `.claude/settings.json` under
+`"env"` to have them apply to every session started in this workspace.
+
+Useful PromQL, once data is flowing:
+
+```promql
+# graph queries vs everything else, in tokens
+sum by (mcp_server_name) (claude_code_token_usage_tokens_total)
+
+# cache reads are the cheap ones — check the split before drawing conclusions
+sum by (type) (claude_code_token_usage_tokens_total)
+
+# dollars
+sum by (model) (claude_code_cost_usage_USD_total)
+```
+
+History lives in the `cbm-prometheus-data` volume, 90 days by default
+(`CBM_PROM_RETENTION`). `./cbm.sh metrics down` keeps it; `down --volumes`
+deletes it.
 
 ## Notes
 
@@ -181,3 +228,12 @@ user-configured MCP server is redacted by default.
   `./cbm.sh tool search_graph '{"project":"…-jen_plate_reader","name_pattern":"Detection","limit":5}'`
 * Upgrading CBM: update the submodule, then `./cbm.sh build && ./cbm.sh restart`.
   All CBM processes must run the same build, so restart rather than mixing.
+
+## UI password
+
+The hardened fork requires HTTP Basic authentication for the UI and its APIs.
+Use username `cbm` and the `CBM_UI_PASSWORD` value in `docker/cbm/.env`.
+The launcher generates a random password once, preserves it on later runs, and
+keeps `.env` owner-readable only. This ignored file must never be committed.
+Rebuild and recreate the container after updating the fork; password changes
+also require recreating the container. Stdio MCP does not use this password.

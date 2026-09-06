@@ -1,0 +1,51 @@
+# OpenTelemetry collector — the sink for Claude Code's telemetry.
+#
+# Claude Code pushes OTLP metrics from every session (a short-lived process);
+# Prometheus scrapes this collector instead of the sessions, so a session that
+# ends between two scrapes still has its counters counted.
+#
+# Reached from the host on 127.0.0.1:4317 (gRPC) / :4318 (HTTP), from
+# Prometheus as cbm-otelcol:8889 on the cbm-metrics bridge.
+
+receivers:
+  otlp:
+    protocols:
+      grpc:
+        endpoint: 0.0.0.0:4317
+      http:
+        endpoint: 0.0.0.0:4318
+
+processors:
+  # Small batches: this is one developer machine, not a fleet.
+  batch:
+    timeout: 10s
+    send_batch_size: 512
+
+exporters:
+  prometheus:
+    endpoint: 0.0.0.0:8889
+    # The default is 5m: a counter whose session ended stops being exported
+    # and the series simply disappears. A week keeps a day's work readable.
+    metric_expiration: 168h
+    # session.id, service.version and friends arrive as *resource* attributes;
+    # without this they collapse into a single target_info series and every
+    # session's counters would be merged.
+    resource_to_telemetry_conversion:
+      enabled: true
+
+service:
+  telemetry:
+    metrics:
+      readers:
+        - pull:
+            exporter:
+              prometheus:
+                # Defaults to localhost, which nothing outside the container
+                # can scrape.
+                host: 0.0.0.0
+                port: 8888
+  pipelines:
+    metrics:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [prometheus]

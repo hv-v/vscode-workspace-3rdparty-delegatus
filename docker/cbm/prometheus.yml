@@ -1,0 +1,27 @@
+# Prometheus — stores what the collector exposes.
+#
+# No alerting and no remote write: this is a local, single-target install whose
+# only job is to keep Claude Code's token counters long enough to compare
+# "code graph (MCP)" against "reading files by hand" over weeks, not sessions.
+
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  external_labels:
+    host: jo-workspace
+
+scrape_configs:
+  # Claude Code's own metrics, forwarded by the collector.
+  - job_name: claude-code
+    honor_labels: true
+    static_configs:
+      - targets: ["cbm-otelcol:8889"]
+
+  # The collector's health (queue sizes, refused/dropped points).
+  - job_name: otelcol
+    static_configs:
+      - targets: ["cbm-otelcol:8888"]
+
+  - job_name: prometheus
+    static_configs:
+      - targets: ["localhost:9090"]
