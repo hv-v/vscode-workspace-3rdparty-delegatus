@@ -58,6 +58,13 @@ drive how they must be written:
 - They **take no arguments**. Values reach them only through the delegation
   prompt, which is why each agent has a matching `a-` skill that accepts the
   arguments and formats them into that prompt.
+- An agent whose `tools:` field pins an allowlist gets **only** what that list
+  names — MCP tools included. The code-graph server is `codebase-memory` (see
+  `docker/cbm/`), and its tools must be spelled in full to be granted:
+  `mcp__codebase-memory__search_graph`, `…__trace_path`,
+  `…__get_code_snippet`, `…__get_file_outline`, `…__search_code`. Grant them to
+  any agent that explores code — one graph query replaces a dozen greps. Omit
+  `tools:` entirely and the agent inherits everything, MCP included.
 
 ## Skill authoring
 

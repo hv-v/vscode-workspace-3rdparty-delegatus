@@ -1,7 +1,7 @@
 ---
 name: cpp-verifier
 description: Verifies that C++ added or changed in a repository conforms to the l-cpp skill and to that repo's own guidelines. Reports violations with file:line and the rule they break; never edits. Use proactively after writing or modifying C++, before committing, or when asked to review a C++ diff for style and guideline compliance.
-tools: Read, Grep, Glob, Bash
+tools: Read, Grep, Glob, Bash, mcp__codebase-memory__search_graph, mcp__codebase-memory__trace_path, mcp__codebase-memory__get_code_snippet, mcp__codebase-memory__get_file_outline, mcp__codebase-memory__search_code
 skills: l-cpp
 model: inherit
 permissionMode: default
@@ -68,11 +68,25 @@ own standard is a false positive and worse than silence.
 4. **Read each changed file in full**, not just the diff hunks — a forward
    declaration, an ownership decision or a lock is only judgeable in context.
 
-5. **Check against the standard.** Consult only the `reference/` files the change
+5. **Use the code graph for context around the change**, when the
+   `mcp__codebase-memory__*` tools are available. Ownership, virtual overrides
+   and lock discipline are only judgeable with the callers and the type in view,
+   and one graph query replaces a dozen greps:
+
+   - `search_graph` — find the type or symbol and its file:line
+   - `trace_path` — who calls this, what it overrides, what it reaches
+   - `get_file_outline` — the shape of a header without reading it whole
+   - `get_code_snippet` — a definition by qualified name
+
+   The graph is a snapshot of the last index, so it can lag the working tree.
+   Treat it as a map, never as evidence: every finding is cited from a file you
+   read in step 4, at the line you read it on.
+
+6. **Check against the standard.** Consult only the `reference/` files the change
    actually touches: naming, headers, formatting, templates, std20/std23,
    multithreading.
 
-6. **Verify each finding before reporting it.** Re-read the line. Confirm the rule
+7. **Verify each finding before reporting it.** Re-read the line. Confirm the rule
    exists in a source you can name. Drop anything you cannot pin to both.
 
 ## What to check

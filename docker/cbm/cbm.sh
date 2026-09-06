@@ -60,7 +60,10 @@ Use
   tool NAME [JSON]       Run one CBM tool, e.g. tool get_architecture '{}'
   ui                     Print the UI URL (and open it if xdg-open exists)
   shell                  Interactive shell inside the container
-  mcp-config             Register the server in the workspace .mcp.json
+  mcp-config             Write mcp-server/configs/.mcp.json (+ root symlink)
+  serve-mcp              Speak MCP on stdio, starting the container if needed
+  tokens [--all]         Where this project's context went: model totals, and
+                         graph queries vs file reading
 
 Checks
   verify                 Prove egress is blocked, UI reachable, MCP responding
@@ -293,28 +296,79 @@ cmd_ui() {
     return 0
 }
 
+# Claude Code only auto-discovers .mcp.json at the PROJECT ROOT. Keep the
+# canonical file with the rest of the MCP wiring and point a root symlink at
+# it, so the file lives where you filed it and discovery still works.
 cmd_mcp_config() {
-    local config="${workspace_dir}/.mcp.json"
-    python3 - "$config" "$mcp_server_name" "$container_name" <<'PY'
+    local canonical="${workspace_dir}/mcp-server/configs/.mcp.json"
+    local root_link="${workspace_dir}/.mcp.json"
+
+    mkdir -p -- "$(dirname -- "$canonical")"
+    python3 - "$canonical" "$mcp_server_name" "${script_dir}/cbm.sh" <<'PYEOF'
 import json, pathlib, sys
 
-path, name, container = pathlib.Path(sys.argv[1]), sys.argv[2], sys.argv[3]
+path, name, launcher = pathlib.Path(sys.argv[1]), sys.argv[2], sys.argv[3]
 config = {}
 if path.exists():
     try:
         config = json.loads(path.read_text() or "{}")
     except json.JSONDecodeError as exc:
-        sys.exit(f"error: {path} is not valid JSON ({exc}) — fix or remove it first")
+        sys.exit(f"error: {path} is not valid JSON ({exc}) - fix or remove it first")
 
 servers = config.setdefault("mcpServers", {})
 servers[name] = {
-    "command": "docker",
-    "args": ["exec", "-i", container, "codebase-memory-mcp"],
+    "command": launcher,
+    "args": ["serve-mcp"],
 }
 path.write_text(json.dumps(config, indent=2) + "\n")
 print(f"registered MCP server '{name}' in {path}")
-PY
+PYEOF
+
+    local relative="${canonical#"${workspace_dir}"/}"
+    if [[ -e "$root_link" && ! -L "$root_link" ]]; then
+        warn "${root_link} is a real file, not a link - leaving it alone; merge it by hand"
+    else
+        ln -sfn -- "$relative" "$root_link"
+        log "linked .mcp.json -> ${relative} (the root is where Claude Code looks)"
+    fi
     log "restart Claude Code (or /mcp reconnect) to pick the server up"
+}
+
+# The .mcp.json entry points here rather than straight at `docker exec`, so an
+# agent session brings the container up by itself if it is not running (after a
+# `./cbm.sh down`, say). stdout is the JSON-RPC channel — every diagnostic here
+# goes to stderr, which the client records in its MCP server log.
+cmd_serve_mcp() {
+    require_docker
+    if ! container_is_running; then
+        log "container '${container_name}' is not running — starting it"
+        compose up --detach >/dev/null \
+            || die "could not start the container; run ./cbm.sh up for the full output" \
+                   "$ex_unavailable"
+    fi
+    exec docker exec -i "$container_name" codebase-memory-mcp
+}
+
+# Where the context went. Model totals come from the transcripts' own usage
+# counters (exact); the per-tool split is estimated from payload size, because
+# the API never attributes tokens to an individual tool call.
+cmd_tokens() {
+    local sessions=1
+    local top=10
+    while [[ $# -gt 0 ]]; do
+        case "$1" in
+            --all)      sessions=0 ;;
+            --sessions) shift; sessions="${1:-}" ;;
+            --top)      shift; top="${1:-}" ;;
+            *) die "tokens: unknown option '$1'" "$ex_usage" ;;
+        esac
+        shift
+    done
+    [[ "$sessions" =~ ^[0-9]+$ ]] || die "tokens: --sessions takes a number" "$ex_usage"
+    [[ "$top" =~ ^[0-9]+$ ]] || die "tokens: --top takes a number" "$ex_usage"
+
+    python3 "${script_dir}/token-report.py" \
+        --workspace "$workspace_dir" --sessions "$sessions" --top "$top"
 }
 
 # Three independent claims, each checked rather than asserted.
@@ -408,6 +462,8 @@ main() {
         tool)        cmd_tool "$@" ;;
         ui)          cmd_ui "$@" ;;
         mcp-config)  cmd_mcp_config "$@" ;;
+        serve-mcp)   cmd_serve_mcp "$@" ;;
+        tokens)      cmd_tokens "$@" ;;
         verify)      cmd_verify "$@" ;;
         harden)      cmd_harden "$@" ;;
         help|-h|--help) usage ;;

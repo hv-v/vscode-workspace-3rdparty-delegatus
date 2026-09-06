@@ -1,0 +1,10 @@
+{
+  "mcpServers": {
+    "codebase-memory": {
+      "command": "/home/vhaponov/Documents/jo-workspace/docker/cbm/cbm.sh",
+      "args": [
+        "serve-mcp"
+      ]
+    }
+  }
+}

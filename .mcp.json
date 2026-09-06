@@ -1,13 +1,1 @@
-{
-  "mcpServers": {
-    "codebase-memory": {
-      "command": "docker",
-      "args": [
-        "exec",
-        "-i",
-        "cbm-server",
-        "codebase-memory-mcp"
-      ]
-    }
-  }
-}
+mcp-server/configs/.mcp.json
