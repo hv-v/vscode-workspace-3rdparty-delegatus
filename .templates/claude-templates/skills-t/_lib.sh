@@ -5,6 +5,22 @@ EXCLUDE_LINE='.claude/**'
 
 die() { echo "error: $*" >&2; exit 1; }
 
+# workspace_root <start-dir>
+# Echoes the nearest ancestor containing .claude/. Walking up beats assuming a
+# fixed depth: this tree has already moved once, and a wrong root silently
+# breaks workspace-relative path resolution instead of erroring.
+workspace_root() {
+    local dir=$1
+    while [ "$dir" != "/" ] && [ -n "$dir" ]; do
+        if [ -d "$dir/.claude" ]; then
+            printf '%s' "$dir"
+            return 0
+        fi
+        dir=$(dirname "$dir")
+    done
+    return 1
+}
+
 # resolve_dir <raw-path> [fallback-base ...]
 # Echoes the absolute path of the first hit: <raw> as given (absolute or
 # relative to cwd), then <base>/<raw> for each base in order. Returns 1 if none.

@@ -15,9 +15,11 @@
 set -euo pipefail
 
 TEMPLATES="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"   # .../claude-templates/skills-t
-WS="$(cd "$TEMPLATES/../.." && pwd)"                        # workspace root
 # shellcheck source=_lib.sh
 . "$TEMPLATES/_lib.sh"
+
+WS="$(workspace_root "$TEMPLATES")" ||
+    die "no workspace root above $TEMPLATES (looked for a .claude/ directory)"
 
 usage() {
   echo "usage: $(basename "$0") <type> <project-path> [skill-name] [--force] [--no-exclude]" >&2

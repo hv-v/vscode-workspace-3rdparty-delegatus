@@ -72,6 +72,27 @@ change), never duplicates the line. Suppress with `--no-exclude`.
 Shared logic (path resolution, the exclude update) lives in `_lib.sh`, which is
 sourced by both and is not run directly.
 
+## Naming: the prefix says what the skill depends on
+
+Every skill here is prefixed by what it depends on — `.claude/CLAUDE.md` is the
+authority:
+
+| prefix | dependency | example |
+|---|---|---|
+| `l-` | language | `l-cpp`, `l-bash` |
+| `p-` | project | `p-build`, `p-tester`, `p-deploy` |
+| `a-` | agent | `a-verify-cpp`, driving `.claude/agents/cpp-verifier.md` |
+
+The six templates here are all project-scoped, so install them under `p-` using
+the third argument, which also rewrites the frontmatter `name` to match:
+
+```bash
+./.templates/claude-templates/skills-t/new-skill.sh build jen_plate_reader p-build
+```
+
+The directory name is the identity — it is the `/command` and the name an
+agent's `skills:` field resolves — so it must always equal `name:`.
+
 ## Naming collisions
 
 Same-named skills from different sources shadow each other, and which one wins

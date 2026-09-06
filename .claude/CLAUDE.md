@@ -6,12 +6,32 @@
 check whether a skill covers it and load it with the Skill tool first.** A
 skill's guidance overrides your defaults; when they conflict, the skill wins.
 
+### Naming: the prefix says what the skill depends on
+
+| prefix | dependency | meaning |
+|---|---|---|
+| `l-` | **language** | rules for a language, true in any repo that uses it |
+| `p-` | **project** | how *this* workspace builds, tests and runs; useless elsewhere |
+| `a-` | **agent** | an entry point that drives a subagent in `.claude/agents/` |
+
+A skill's directory name is its identity — it is the `/command`, the name the
+`skills:` field of an agent resolves, and it must equal the `name:` in its own
+frontmatter. Rename the directory and the frontmatter together, never one alone.
+
+Agent files in `.claude/agents/` take no prefix; their directory already says
+what they are. An `a-` skill and the agent it drives are named for the same job
+(`a-verify-cpp` → `cpp-verifier`).
+
+### The roster
+
 | skill | load it whenever the task involves |
 |---|---|
-| `bash` | writing, editing or reviewing any shell script or non-trivial shell snippet — `.sh` files, generators, wrappers, CI steps |
-| `build` | building, compiling, rebuilding, or diagnosing a build failure in any project here |
-| `tester` | running tests, lint or coverage, or debugging a failing test |
-| `deploy` | running, launching or smoke-testing a node/container, or confirming a change in the real process |
+| `l-bash` | writing, editing or reviewing any shell script or non-trivial shell snippet — `.sh` files, generators, wrappers, CI steps |
+| `l-cpp` | writing, editing or reviewing C++, designing a class or its ownership model, or reviewing a C++ diff |
+| `a-verify-cpp` | checking C++ in a repo against `l-cpp` and that repo's guidelines — delegates to the `cpp-verifier` agent |
+| `p-build` | building, compiling, rebuilding, or diagnosing a build failure in any project here |
+| `p-tester` | running tests, lint or coverage, or debugging a failing test |
+| `p-deploy` | running, launching or smoke-testing a node/container, or confirming a change in the real process |
 
 Rules:
 
@@ -26,6 +46,18 @@ Rules:
 
 Skills are installed machine-wide via symlinks from `~/.claude/skills/`, so they
 apply from any working directory, not only from the workspace root.
+
+## Agents
+
+`.claude/agents/*.md` hold subagent definitions. Two properties of subagents
+drive how they must be written:
+
+- They start with **fresh context** — no conversation history, no skills this
+  session already loaded. Any skill an agent needs must be named in its `skills:`
+  frontmatter field, or it will work from generic knowledge instead of ours.
+- They **take no arguments**. Values reach them only through the delegation
+  prompt, which is why each agent has a matching `a-` skill that accepts the
+  arguments and formats them into that prompt.
 
 ## Skill authoring
 

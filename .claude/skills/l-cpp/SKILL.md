@@ -1,6 +1,6 @@
 ---
-name: cpp
-description: Modern C++17/20 standards - RAII and smart-pointer ownership, move semantics, const/constexpr, type safety, error handling, concurrency and gtest. Use when writing, editing or reviewing C++ code (.cpp/.hpp/.h), designing a class or its ownership model, or reviewing a C++ diff.
+name: l-cpp
+description: Modern C++17/20/23 standards - RAII and smart-pointer ownership, move semantics, const/constexpr, type safety, error handling, concurrency and gtest. Use when writing, editing or reviewing C++ code (.cpp/.hpp/.h), designing a class or its ownership model, or reviewing a C++ diff.
 ---
 
 # C++ Development Guidelines
