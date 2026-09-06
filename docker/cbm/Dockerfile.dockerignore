@@ -1,0 +1,11 @@
+# Build context is the codebase-memory-mcp checkout (1.3 GB, mostly vendored
+# tree-sitter grammars that the build genuinely needs). Drop only what a
+# production build never reads.
+.git
+.github
+build/
+**/node_modules
+**/dist
+docs/
+test-infrastructure/
+tools/

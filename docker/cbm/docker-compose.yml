@@ -1,0 +1,71 @@
+# codebase-memory-mcp — isolated container for jo-workspace.
+#
+# Network shape (verified on this host, see README.md):
+#   * a --internal network blocks egress but ALSO breaks published ports, so
+#     the bridge here keeps port publishing and drops IP masquerade instead:
+#     without NAT the container's packets have no return path off the host.
+#   * DNS is pointed at a black hole, so name resolution fails too.
+#   * the UI is published to host loopback only; MCP needs no network at all
+#     (agents attach over stdio with `docker exec -i`).
+#
+# Prefer ./cbm.sh — it derives CBM_WORKSPACE/CBM_UID/CBM_GID and writes .env.
+
+name: cbm
+
+services:
+  cbm:
+    build:
+      context: ../../3rdparty/codebase-memory-mcp
+      dockerfile: ../../docker/cbm/Dockerfile
+      additional_contexts:
+        cbmdocker: .
+      args:
+        CBM_UID: "${CBM_UID:-1000}"
+        CBM_GID: "${CBM_GID:-1000}"
+    image: "${CBM_IMAGE:-cbm-server:local}"
+    container_name: "${CBM_CONTAINER:-cbm-server}"
+    hostname: cbm
+    restart: unless-stopped
+    stop_grace_period: 20s
+
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+
+    # Black-holed resolver: nothing listens on 127.0.0.1:53 in the container.
+    dns:
+      - 127.0.0.1
+
+    environment:
+      CBM_UI_PORT: "${CBM_UI_PORT:-9749}"
+      # Confines index_repository (and the UI's POST /api/index) to the mount.
+      CBM_ALLOWED_ROOT: "${CBM_WORKSPACE:?run ./cbm.sh, or set CBM_WORKSPACE to the workspace root}"
+      CBM_LOG_LEVEL: "${CBM_LOG_LEVEL:-info}"
+
+    ports:
+      - "127.0.0.1:${CBM_UI_PORT:-9749}:${CBM_UI_PORT:-9749}"
+
+    volumes:
+      # Same path inside as outside: every path CBM reports then resolves
+      # unchanged on the host, so file references stay clickable and editable.
+      # Read-only — the agents that edit these files run on the host, not here.
+      - "${CBM_WORKSPACE:?}:${CBM_WORKSPACE:?}:ro"
+      - "cbm-cache:/cbm/cache"
+
+    networks:
+      - isolated
+
+networks:
+  isolated:
+    name: "${CBM_NETWORK:-cbm-isolated}"
+    driver: bridge
+    driver_opts:
+      com.docker.network.bridge.enable_ip_masquerade: "false"
+    ipam:
+      config:
+        - subnet: "${CBM_SUBNET:-172.31.99.0/24}"
+
+volumes:
+  cbm-cache:
+    name: "${CBM_VOLUME:-cbm-cache}"
