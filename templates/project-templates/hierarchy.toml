@@ -1,0 +1,8 @@
+[project_hierarchy]
+
+[project_hierarchy.root_folder]
+folders = ['.agents', '.claude', '.vscode', '.codex']
+
+
+[project_hierarchy.vscode]
+files = ['settings.json']

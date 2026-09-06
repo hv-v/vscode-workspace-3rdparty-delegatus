@@ -1,0 +1,7 @@
+# Workspace configuration for jo-workspace.
+# Model, reasoning effort, and service tier inherit from ~/.codex/config.toml.
+# Reference: https://learn.chatgpt.com/docs/config-file/config-basic
+
+approval_policy = "on-request"
+sandbox_mode = "workspace-write"
+web_search = "cached"
