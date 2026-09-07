@@ -1,0 +1,14 @@
+repos=(
+  git@as-git-01.jenoptik.corp:shire/interfaces/jen_accelerator_metrics_msgs.git
+  git@as-git-01.jenoptik.corp:shire/interfaces/jen_buffer_node_interface.git
+  git@as-git-01.jenoptik.corp:shire/interfaces/jen_calibration_manager_msgs.git
+  git@as-git-01.jenoptik.corp:shire/interfaces/jen_camera_msgs.git
+  git@as-git-01.jenoptik.corp:shire/interfaces/jen_config_manager_interface.git
+  git@as-git-01.jenoptik.corp:shire/interfaces/jen_detector_msgs.git
+  git@as-git-01.jenoptik.corp:shire/interfaces/jen_hal_msgs.git
+  git@as-git-01.jenoptik.corp:shire/interfaces/jen_lidar_falcon_driver_msgs.git
+  git@as-git-01.jenoptik.corp:shire/interfaces/jen_scene_msgs.git
+  git@as-git-01.jenoptik.corp:shire/interfaces/jen_sr355_alignment_msgs.git
+  git@as-git-01.jenoptik.corp:shire/interfaces/jen_system_msgs.git
+  git@as-git-01.jenoptik.corp:shire/interfaces/jen_vision_msgs.git
+)
