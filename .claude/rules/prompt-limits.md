@@ -2,7 +2,9 @@
 paths:
   - ".claude/limits/**"
   - ".claude/agents/common/prompt-verifier.md"
-  - ".claude/skills/a-verify-prompt/**"
+  - ".claude/skills/common/a-verify-prompt/**"
+  - ".claude/agents/common/prompt-parser.md"
+  - ".claude/skills/common/a-prompt-parser/**"
   - ".claude/settings.json"
 ---
 
@@ -30,6 +32,29 @@ thresholds for the current lines are in `.claude/limits/README.md`.
 A limitation must be a check the verifier can actually run with `Read`, `Glob`,
 `Bash` and the `mcp__codebase-memory__*` tools. A check it cannot execute is
 worse than no check, because it reads as having been done.
+
+## The pipeline this belongs to
+
+Verification is the first stage of three, and the parts live together under
+`common/` in both trees — `.claude/agents/common/` and
+`.claude/skills/common/`:
+
+```
+Initial prompt
+  -> a-verify-prompt / prompt-verifier    references, names, grammar, limitations
+  -> [approved by user]                   the gate; nothing runs before it
+  -> a-prompt-parser / prompt-parser      split into tasks + route each to an agent
+  -> main session dispatches              each routed task via its own a- skill
+```
+
+The gate is the load-bearing part. The parser is deliberately fed the
+**approved** text, not the raw prompt: splitting an unverified prompt only
+distributes its unresolved references across several tasks, and each one then
+looks specific enough to act on.
+
+Neither agent spawns anything. The verifier returns a verdict, the parser
+returns a routing table, and this session does the dispatching — so every
+delegation stays visible in one transcript.
 
 ## What makes it run at all
 

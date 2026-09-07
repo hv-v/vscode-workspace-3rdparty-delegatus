@@ -3,6 +3,7 @@ paths:
   - ".claude/agents/**"
   - ".claude/projects/**/agents/**"
   - ".claude/skills/a-*/**"
+  - ".claude/skills/*/a-*/**"
 ---
 
 # Writing a subagent

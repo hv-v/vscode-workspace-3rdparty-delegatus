@@ -13,7 +13,7 @@ the index and carries the rules that must fire before any file is opened.
 | `rules/skills.md` | always | the two skill homes, the `l-`/`a-` prefixes, the roster, and the rules for loading them |
 | `rules/projects.md` | always | `.claude/projects/<project>/` — the naming rule, the layout, and how to work on a project |
 | `rules/agents.md` | writing an agent | fresh context, no arguments, and the mandatory MCP tool grant |
-| `rules/prompt-limits.md` | authoring a limitation | `.claude/limits/`, the file contract and the 1.5× size budget |
+| `rules/prompt-limits.md` | authoring a limitation, or touching the prompt pipeline | `.claude/limits/`, the file contract, the 1.5× size budget, and the verify → approve → parse → dispatch flow |
 | `rules/skill-authoring.md` | touching skills or templates | `new-skill.sh`, `install-skill.sh`, and what never to hand-create |
 | `rules/generated-files.md` | touching `.gitmodules` | it is generated; regenerate, never hand-edit |
 | `rules/hooks.md` | touching settings or a hook script | which rules the harness enforces, and how to write a hook that fails open |
@@ -26,7 +26,10 @@ the index and carries the rules that must fire before any file is opened.
 2. **Load the skills that cover the task before writing anything.** A skill's
    guidance overrides your defaults; when they conflict, the skill wins. If a
    relevant skill is empty or missing, say so rather than falling back to
-   defaults silently. Roster: `rules/skills.md`.
+   defaults silently. Skills in a grouping folder (`skills/common/`,
+   `skills/utests-coverage/`) are **not** in the session roster — read them by
+   path; `.claude/skills/README.md` maps every name to its file. Roster and the
+   grouping rule: `rules/skills.md`.
 3. **Working on a project?** Resolve its root directory name, then read
    `.claude/projects/<that name>/.claude/skills/*/SKILL.md` **by path** — those
    skills are directory-scoped and never appear in the session roster, so an
