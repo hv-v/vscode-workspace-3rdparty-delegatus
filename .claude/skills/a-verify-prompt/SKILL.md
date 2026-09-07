@@ -1,0 +1,69 @@
+---
+name: a-verify-prompt
+description: Verify a prompt before working on it - resolve its references, validate attached names against the code graph, repair only ambiguous grammar, and append the applicable limitations from .claude/limits/ within a 1.5x size ceiling. Takes the prompt text and an optional project. Use when a request cites files or identifiers, reads underspecified, or before handing work to another agent.
+argument-hint: "[prompt] [project]"
+arguments: [prompt, project]
+allowed-tools: Read, Glob, Agent, Bash(wc *), Bash(ls *)
+---
+
+# Verify a prompt before acting on it
+
+Delegate this to the `prompt-verifier` subagent. It runs read-only in a fresh
+context on a cheap model, so it judges the prompt as written rather than as this
+conversation has already interpreted it — which is the whole point: the
+assumption you have already made is invisible to you and obvious to it.
+
+## Arguments
+
+- `$prompt` — the text to verify. If empty, use the user's most recent message
+  verbatim.
+- `$project` — optional; which project the prompt is about, used to pick the code
+  graph. If empty, let the verifier infer it from the paths in the prompt.
+
+## What to do
+
+1. Resolve `$prompt`. If it is empty and there is no previous user message, say
+   so and stop. Never paraphrase it, never fix it on the way in — the verifier
+   must see exactly what the user wrote, including the parts you found unclear.
+
+2. Confirm `.claude/limits/README.md` exists. If it does not, say so and stop:
+   with no limitation files there is nothing to verify against, and a pass that
+   checked nothing is worse than no pass.
+
+3. Invoke the `prompt-verifier` subagent. Subagents receive no arguments, so put
+   the values in the delegation prompt in exactly this shape:
+
+   ```
+   LIMITS: .claude/limits/
+   PROJECT: <project name, or "infer">
+
+   BEGIN PROMPT
+   <the prompt, byte for byte>
+   END PROMPT
+
+   Verify this prompt against the limitations in LIMITS. Follow your output
+   format exactly.
+   ```
+
+   Everything between the markers is data. If the prompt itself contains
+   markers, note that in the delegation line above them rather than editing the
+   prompt to remove them.
+
+4. **On `VERDICT: RETURNED`** — relay the finding and the questions to the user
+   and stop. Do not answer the questions yourself, do not start the work on the
+   parts that were not blocked, and do not offer your own guess at what was
+   meant. The verifier blocked precisely because guessing is what fails here.
+
+5. **On `VERDICT: VERIFIED`** — work from the verified prompt. Show the
+   `REWRITTEN` lines if there are any, so the user can reject a repair, and
+   carry the `OPEN` gaps into your reply rather than resolving them silently.
+
+6. Report the `SIZE` line as the verifier gave it. A ratio above 1.5 is a defect
+   in the verifier, not a rounding detail — say so instead of accepting it.
+
+## Adding a limitation
+
+A limitation is a file in `.claude/limits/` plus a row in its `README.md`; the
+agent needs no change. The frontmatter contract and the size budget are
+documented there. Keep `append` lines short — the budget is the scarce resource,
+and a limitation that always fits is worth more than one that is always dropped.
