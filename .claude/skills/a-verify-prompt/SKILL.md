@@ -3,7 +3,7 @@ name: a-verify-prompt
 description: Verify a prompt before working on it - resolve its references, validate attached names against the code graph, repair only ambiguous grammar, and append the applicable limitations from .claude/limits/ within a 1.5x size ceiling. Takes the prompt text and an optional project. Use when a request cites files or identifiers, reads underspecified, or before handing work to another agent.
 argument-hint: "[prompt] [project]"
 arguments: [prompt, project]
-allowed-tools: Read, Glob, Agent, Bash(wc *), Bash(ls *)
+allowed-tools: Read, Glob, Agent, AskUserQuestion, Bash(wc *), Bash(ls *)
 ---
 
 # Verify a prompt before acting on it
@@ -54,11 +54,42 @@ assumption you have already made is invisible to you and obvious to it.
    parts that were not blocked, and do not offer your own guess at what was
    meant. The verifier blocked precisely because guessing is what fails here.
 
-5. **On `VERDICT: VERIFIED`** — work from the verified prompt. Show the
-   `REWRITTEN` lines if there are any, so the user can reject a repair, and
-   carry the `OPEN` gaps into your reply rather than resolving them silently.
+5. **Decide `CHANGED` yourself — do not trust the agent's field.** Compare the
+   text between the `VERIFIED PROMPT` markers against the prompt you sent, byte
+   for byte. Identical means unchanged; anything else — a repaired word, an
+   appended `Constraints:` block, a different `OUT` than `IN` — means changed.
+   The agent reports `CHANGED`, but a missing or wrong field must never be what
+   decides whether the user is asked. **Treat a missing `CHANGED` line as
+   `yes`.**
 
-6. Report the `SIZE` line as the verifier gave it. A ratio above 1.5 is a defect
+6. **Unchanged** — work from the prompt directly; there is nothing to approve.
+
+7. **Changed** — stop and get approval before any work starts. The prompt about
+   to be executed is not the one the user wrote, and they have not seen it yet.
+
+   Show them, in this order:
+
+   - the verified prompt, in full, between its markers — not a summary of it
+   - every `REWRITTEN` line, as `<before> → <after>`
+   - the `LIMITS` line, so the appended constraints are attributable
+   - the `SIZE` ratio
+   - any `OPEN` gaps and `NOTES`
+
+   Then ask with `AskUserQuestion`, offering exactly these:
+
+   | option | means |
+   |---|---|
+   | **Approve** | work from the verified prompt as shown |
+   | **Use my original** | discard the repairs and the appended lines; work from the prompt as written |
+   | **Let me edit** | the user amends the prompt; verify the amended text again from step 3 |
+
+   Wait for the answer. Do not begin the work, do not start reading files "to
+   prepare", and do not treat a question about the changes as approval of them.
+
+8. Carry the `OPEN` gaps into your reply rather than resolving them silently —
+   approval of the wording is not an answer to a gap the verifier flagged.
+
+9. Report the `SIZE` line as the verifier gave it. A ratio above 1.5 is a defect
    in the verifier, not a rounding detail — say so instead of accepting it.
 
 ## Adding a limitation

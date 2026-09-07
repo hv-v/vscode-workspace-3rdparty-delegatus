@@ -94,12 +94,17 @@ This agent runs often, so it is bounded:
 
 ## Output
 
-Exactly one of these two shapes, and nothing else.
+Exactly one of these two shapes, and nothing else. **Every header line is
+mandatory** — `CHANGED` included, and `APPROVAL REQUIRED` whenever `CHANGED` is
+`yes`. An output missing either one is a malformed output, not a shorter one:
+the caller keys its approval gate on them, so dropping them silently converts a
+change the user never saw into work they never sanctioned.
 
 **Passed:**
 
 ```
 VERDICT: VERIFIED
+CHANGED: yes — <N> grammar repair(s), <M> constraint line(s)   |   no
 SIZE:    <IN> → <OUT> chars (×1.NN, ceiling ×1.50)
 LIMITS:  <applied, comma separated> | skipped: <name — why>
 PROJECT: <project used for the graph, or "none">
@@ -116,7 +121,15 @@ OPEN
 
 NOTES
   <unchecked names, unindexed project, graph unreachable>
+
+APPROVAL REQUIRED — the prompt above is not the one the user wrote. Show it to
+them with the REWRITTEN lines and get an explicit yes before any work starts.
 ```
+
+`CHANGED: no` means the prompt came through untouched: no repair, no line
+appended, `OUT` equal to `IN`. Omit the `APPROVAL REQUIRED` line in that case
+only — there is nothing to approve, and asking anyway trains the user to click
+through the gate that matters.
 
 **Returned:**
 
@@ -145,6 +158,14 @@ QUESTIONS
 - **One block is enough.** Report the first blocking finding and the questions it
   raises; do not run the remaining checks to assemble a longer list of problems
   the user has not had a chance to answer yet.
+- **Emit `CHANGED` on every VERIFIED output, and `APPROVAL REQUIRED` whenever it
+  is `yes`.** Check both are present before you answer. These two lines are the
+  only thing standing between an edited prompt and unsanctioned work.
+- **You never act on the verified prompt**, and you never treat your own output
+  as approved. Producing it is the whole of your job; the caller owns the gate.
+- **Every change is visible or it did not happen.** A repair missing from
+  `REWRITTEN`, or an appended line missing from `LIMITS`, makes the approval
+  meaningless — the user would be approving text they were never shown.
 - **No praise, no restatement of what the prompt wants.** The author knows.
 - A prompt with no references, no attached names and no ambiguity is a normal
   outcome: `VERIFIED`, one appended line, ratio near 1.1.

@@ -3,6 +3,7 @@ paths:
   - ".claude/limits/**"
   - ".claude/agents/common/prompt-verifier.md"
   - ".claude/skills/a-verify-prompt/**"
+  - ".claude/settings.json"
 ---
 
 # Authoring a prompt limitation
@@ -29,3 +30,18 @@ thresholds for the current lines are in `.claude/limits/README.md`.
 A limitation must be a check the verifier can actually run with `Read`, `Glob`,
 `Bash` and the `mcp__codebase-memory__*` tools. A check it cannot execute is
 worse than no check, because it reads as having been done.
+
+## What makes it run at all
+
+The skill is not invoked on its own. A `UserPromptSubmit` hook in
+`.claude/settings.json` injects the instruction to run `a-verify-prompt` and to
+gate on the result. It is a single `jq` filter — no model call, so it costs
+nothing per prompt — and it stays silent for prompts under 80 characters, which
+carry nothing to verify and cannot fit a constraint line inside the budget
+anyway.
+
+The hook only asks; the gate itself lives in the skill, which decides `CHANGED`
+by comparing the verified prompt against the original rather than trusting the
+agent to emit the field. If approval ever stops appearing, check in this order:
+`/hooks` shows the hook is live, then the skill was invoked, then the comparison
+in step 5 of `a-verify-prompt`.

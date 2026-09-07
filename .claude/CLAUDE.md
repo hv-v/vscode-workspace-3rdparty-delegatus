@@ -16,6 +16,7 @@ the index and carries the rules that must fire before any file is opened.
 | `rules/prompt-limits.md` | authoring a limitation | `.claude/limits/`, the file contract and the 1.5× size budget |
 | `rules/skill-authoring.md` | touching skills or templates | `new-skill.sh`, `install-skill.sh`, and what never to hand-create |
 | `rules/generated-files.md` | touching `.gitmodules` | it is generated; regenerate, never hand-edit |
+| `rules/hooks.md` | touching settings or a hook script | which rules the harness enforces, and how to write a hook that fails open |
 
 ## Before anything else
 
@@ -39,6 +40,10 @@ the index and carries the rules that must fire before any file is opened.
 
 Add a topic by adding a file to `.claude/rules/` and a row above — nothing else
 resolves it, and no code changes.
+
+A rule here is context I can skip; a hook in `.claude/settings.json` is enforced
+by the harness. When a rule must hold every time, give it a hook too —
+`rules/hooks.md` lists which ones have one.
 
 Give a rule `paths:` frontmatter whenever it only matters for part of the tree;
 that is the only thing here that actually reduces context, because every
