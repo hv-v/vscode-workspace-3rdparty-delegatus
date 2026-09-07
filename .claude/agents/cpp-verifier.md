@@ -1,7 +1,7 @@
 ---
 name: cpp-verifier
 description: Verifies that C++ added or changed in a repository conforms to the l-cpp skill and to that repo's own guidelines. Reports violations with file:line and the rule they break; never edits. Use proactively after writing or modifying C++, before committing, or when asked to review a C++ diff for style and guideline compliance.
-tools: Read, Grep, Glob, Bash, mcp__codebase-memory__search_graph, mcp__codebase-memory__trace_path, mcp__codebase-memory__get_code_snippet, mcp__codebase-memory__get_file_outline, mcp__codebase-memory__search_code
+tools: Read, Grep, Glob, Bash, mcp__codebase-memory__get_architecture, mcp__codebase-memory__search_graph, mcp__codebase-memory__trace_path, mcp__codebase-memory__query_graph, mcp__codebase-memory__get_code_snippet, mcp__codebase-memory__get_file_outline, mcp__codebase-memory__search_code
 skills: l-cpp
 model: inherit
 permissionMode: default
@@ -68,15 +68,22 @@ own standard is a false positive and worse than silence.
 4. **Read each changed file in full**, not just the diff hunks — a forward
    declaration, an ownership decision or a lock is only judgeable in context.
 
-5. **Use the code graph for context around the change**, when the
-   `mcp__codebase-memory__*` tools are available. Ownership, virtual overrides
-   and lock discipline are only judgeable with the callers and the type in view,
-   and one graph query replaces a dozen greps:
+5. **Use the code graph for context around the change.** This is required, not
+   optional: ownership, virtual overrides and lock discipline are only judgeable
+   with the callers and the type in view, and one graph query replaces a dozen
+   greps. Query REPO's own project graph, named after its absolute path
+   (`home-vhaponov-Documents-jo-workspace-<repo directory name>`):
 
+   - `get_architecture` — the shape of the package, before the first file
    - `search_graph` — find the type or symbol and its file:line
    - `trace_path` — who calls this, what it overrides, what it reaches
+   - `query_graph` — multi-hop questions the three above cannot express
    - `get_file_outline` — the shape of a header without reading it whole
    - `get_code_snippet` — a definition by qualified name
+
+   If the server is unreachable or the repo is not indexed, say so at the top of
+   your report before falling back to grep — a silent fallback reads as a
+   graph-backed review.
 
    The graph is a snapshot of the last index, so it can lag the working tree.
    Treat it as a map, never as evidence: every finding is cited from a file you

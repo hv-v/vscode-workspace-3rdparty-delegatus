@@ -1,8 +1,6 @@
 #!/usr/bin/env bash
 # Shared helpers for new-skill.sh and install-skill.sh. Sourced, not executed.
 
-EXCLUDE_LINE='.claude/**'
-
 die() { echo "error: $*" >&2; exit 1; }
 
 # workspace_root <start-dir>
@@ -34,29 +32,27 @@ resolve_dir() {
   return 1
 }
 
-# git_exclude <project-dir>
-# Locally ignore .claude/ in that repo. Never creates the file, never touches
-# the tracked .gitignore, never duplicates the line.
-git_exclude() {
-  local proj_dir=$1 dot="$1/.git" gitdir exclude
+# project_skills_dir <workspace-root> <project-dir>
+# Echoes where this project's skills live:
+#   <ws>/.claude/projects/<project root directory name>/.claude/skills
+# The directory name under .claude/projects/ is always the project's own root
+# directory name, spelled identically - that mapping is how a project's
+# configuration is found, so it is derived here and never passed in.
+# Nothing is ever written inside the project repo.
+project_skills_dir() {
+  local ws=$1 proj_dir=$2
+  printf '%s/.claude/projects/%s/.claude/skills' "$ws" "$(basename "$proj_dir")"
+}
 
-  if [ -d "$dot" ]; then
-    gitdir="$dot"
-  elif [ -f "$dot" ]; then                       # submodule / worktree pointer
-    gitdir="$(sed -n 's/^gitdir: //p' "$dot")"
-    case "$gitdir" in /*) ;; *) gitdir="$proj_dir/$gitdir" ;; esac
-  else
-    return 0                                     # not a repo root - nothing to do
-  fi
-
-  exclude="$gitdir/info/exclude"
-  [ -f "$exclude" ] || return 0                  # only if it already exists
-  grep -qxF "$EXCLUDE_LINE" "$exclude" && return 0
-
-  # Keep a trailing newline before appending, in case the file lacks one.
-  if [ -s "$exclude" ] && [ -n "$(tail -c1 "$exclude")" ]; then echo >> "$exclude"; fi
-  printf '%s\n' "$EXCLUDE_LINE" >> "$exclude"
-  echo "excluded: added '$EXCLUDE_LINE' to $exclude"
+# warn_outside_workspace <workspace-root> <project-dir>
+# A repo outside the workspace still gets a .claude/projects/<name> entry here,
+# but the name is then no longer unique by construction - say so once.
+warn_outside_workspace() {
+  local ws=$1 proj_dir=$2
+  case "$proj_dir" in
+    "$ws"/*) return 0 ;;
+  esac
+  echo "note: $proj_dir is outside $ws - its skills still land in .claude/projects/$(basename "$proj_dir")" >&2
 }
 
 # template_types -> space-separated list of template directory names

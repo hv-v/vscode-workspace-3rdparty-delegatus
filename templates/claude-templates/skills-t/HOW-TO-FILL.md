@@ -11,6 +11,11 @@ Read this once before filling any template. It is the whole standard.
 2. **`name` must equal the directory name.** Lowercase, `[a-z0-9-]`.
 3. **Write only what you verified.** Every command must have been run, every log
    line copy-pasted from real output. An invented trap is worse than no trap.
+   Establish the structure through the code graph first — `get_architecture`,
+   `search_graph`, `trace_path` on the project's own CBM graph
+   (`home-vhaponov-Documents-jo-workspace-<project>`) — and only then read the
+   files it points at. A skill written from grep output describes the file
+   names; one written from the graph describes the call path.
 4. **Prefer the non-obvious.** Anything discoverable in ten seconds from the file
    tree does not belong in a skill. Traps, orderings and "looks broken but isn't"
    do.
@@ -22,6 +27,13 @@ Read this once before filling any template. It is the whole standard.
    never add a `main.md`.
 7. **Keep `SKILL.md` under ~500 lines.** Link references with a relative path and
    say *when* to read them.
+8. **The skill lives under `.claude/projects/<project root directory name>/`.**
+   That name is the project's own directory name, spelled identically. Let
+   `new-skill.sh` place it; never hand-create the path, and never put a project
+   skill inside the project repo.
+9. **Say when the graph is the answer.** If a section would send a reader
+   grepping — "find every caller of X", "what includes this header" — write the
+   `mcp__codebase-memory__*` query instead of the `grep` command.
 
 ## What belongs in each type
 

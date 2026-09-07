@@ -1,0 +1,67 @@
+# Standalone parameters for jen_calibration_manager.
+#
+# without_config_manager bypasses the blocking call to
+# /config_manager/get_node_parameters. Without it the node aborts (std::abort
+# via the fatal handler in jen_config_manager_lib_cpp) after a 10s timeout.
+#
+# tf / tf_static / camera_info / camera_info_static are *string* parameters
+# whose value is itself a YAML document, deserialized by
+# jen_parameter_utils::fromYaml against the JenTFMessage / JenCameraInfo
+# message definitions.
+#
+# That reader is strict: every scalar and nested-message field must be present
+# (it throws "Member `x` not found in data." otherwise) and fixed-size arrays
+# (k, r, p) must have their exact declared length. Variable-length arrays like
+# d may be omitted. YAML keys are the message field names, so camera_info is a
+# map with a `pairs:` sequence of `camera_info:` / `service_name:` entries.
+/**:
+  ros__parameters:
+    without_config_manager: true
+    forwarding_enabled: true
+    diagnostics:
+      health: "system/software/jen_calibration_manager"
+    tf: |
+      transforms:
+        - header:
+            stamp: {sec: 0, nanosec: 0}
+            frame_id: "base_link"
+          child_frame_id: "camera_link"
+          transform:
+            translation: {x: 1.0, y: 2.0, z: 3.0}
+            rotation: {x: 0.0, y: 0.0, z: 0.0, w: 1.0}
+    tf_static: |
+      transforms:
+        - header:
+            stamp: {sec: 0, nanosec: 0}
+            frame_id: "base_link"
+          child_frame_id: "lidar_link"
+          transform:
+            translation: {x: 0.5, y: 0.0, z: 1.5}
+            rotation: {x: 0.0, y: 0.0, z: 0.0, w: 1.0}
+    # One entry per camera. service_name is the target driver's SetCameraInfo
+    # service; with no camera driver running these calls fail and show up as
+    # set_camera_info_failures in /diagnostics.
+    camera_info: |
+      pairs: []
+    camera_info_static: |
+      pairs:
+        - service_name: /jen_sc_camera_driver_left/set_camera_info
+          camera_info:
+            header:
+              stamp: {sec: 0, nanosec: 0}
+              frame_id: "camera_link"
+            height: 3040
+            width: 5328
+            distortion_model: plumb_bob
+            d: [-0.047692859, -0.309408765, 0.0, 0.0, 4.951333848]
+            k: [9218.784, 0.0, 2679.771, 0.0, 9218.784, 1551.636, 0.0, 0.0, 1.0]
+            r: [1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0]
+            p: [1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0]
+            binning_x: 0
+            binning_y: 0
+            roi:
+              x_offset: 0
+              y_offset: 0
+              height: 0
+              width: 0
+              do_rectify: false

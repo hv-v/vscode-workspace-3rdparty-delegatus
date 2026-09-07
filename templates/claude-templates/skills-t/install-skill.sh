@@ -1,25 +1,26 @@
 #!/usr/bin/env bash
-# Install an EXISTING (already filled in) skill into a project, or machine-wide.
+# Install an EXISTING (already filled in) skill for a project, or machine-wide.
 #
-#   install-skill.sh <skill> <target> [--link] [--force] [--no-exclude]
+#   install-skill.sh <skill> <target|--global> [--link] [--force]
 #
-#   install-skill.sh jen_calibration_manager/.claude/skills/deploy jen_plate_reader
+#   install-skill.sh .claude/projects/jen_calibration_manager/.claude/skills/deploy jen_plate_reader
 #   install-skill.sh ./deploy /abs/path/to/repo --force
-#   install-skill.sh .claude/skills/build --global --link
+#   install-skill.sh .claude/skills/l-bash --global --link
 #
 # <skill>        a directory containing SKILL.md. Resolved as given, then
 #                relative to the workspace root, then as a template name - and
 #                a template is handed off to new-skill.sh, which fills in the
 #                placeholders instead of refusing them.
-# <target>       a project directory (full or relative), or --global for
-#                ~/.claude/skills (loads in every session, any cwd)
+# <target>       a project directory (absolute, or relative to cwd or to the
+#                workspace root), or --global for ~/.claude/skills (loads in
+#                every session, any cwd)
 # --link         symlink instead of copy, so edits stay in one place
 # --force        replace an existing skill of that name
-# --no-exclude   skip the .git/info/exclude update
 #
-# After installing into a project, '.claude/**' is appended to that repo's
-# .git/info/exclude so the skills are ignored locally without touching the
-# tracked .gitignore. Only ever appends, and only if that file already exists.
+# A project's skills live at
+#   <workspace>/.claude/projects/<project root dir name>/.claude/skills/
+# and never inside the project repo, so nothing here writes to that repo or to
+# its git configuration.
 set -euo pipefail
 
 TEMPLATES="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"   # .../claude-templates/skills-t
@@ -30,20 +31,19 @@ WS="$(workspace_root "$TEMPLATES")" ||
     die "no workspace root above $TEMPLATES (looked for a .claude/ directory)"
 
 usage() {
-  echo "usage: $(basename "$0") <skill> <target|--global> [--link] [--force] [--no-exclude]" >&2
+  echo "usage: $(basename "$0") <skill> <target|--global> [--link] [--force]" >&2
   echo "  skill: a path to a skill directory, or a template name ($(template_types))" >&2
   exit 2
 }
 
-LINK=0; FORCE=0; NO_EXCLUDE=0; POS=()
+LINK=0; FORCE=0; POS=()
 for a in "$@"; do
   case "$a" in
-    --link)       LINK=1 ;;
-    --force)      FORCE=1 ;;
-    --no-exclude) NO_EXCLUDE=1 ;;
-    --global)     POS+=("$a") ;;
-    -*)           usage ;;
-    *)            POS+=("$a") ;;
+    --link)   LINK=1 ;;
+    --force)  FORCE=1 ;;
+    --global) POS+=("$a") ;;
+    -*)       usage ;;
+    *)        POS+=("$a") ;;
   esac
 done
 [ ${#POS[@]} -eq 2 ] || usage
@@ -66,8 +66,7 @@ case "$SRC" in
       die "'$TYPE' is a template - --link would share one unfilled skill across projects"
     echo "note: '$TYPE' is a template - creating a new skill via new-skill.sh"
     ARGS=("$TYPE" "$TARGET_RAW")
-    [ "$FORCE" = 1 ]      && ARGS+=(--force)
-    [ "$NO_EXCLUDE" = 1 ] && ARGS+=(--no-exclude)
+    [ "$FORCE" = 1 ] && ARGS+=(--force)
     exec "$TEMPLATES/new-skill.sh" "${ARGS[@]}"
     ;;
 esac
@@ -83,13 +82,15 @@ if grep -rq '{{' "$SRC"; then
 fi
 
 # Resolve the target skills directory.
-PROJ_DIR=""
+PROJ=""
 if [ "$TARGET_RAW" = "--global" ]; then
   SKILLS_DIR="$HOME/.claude/skills"
 else
   PROJ_DIR="$(resolve_dir "$TARGET_RAW" "$WS")" ||
     die "no such target directory: '$TARGET_RAW'"
-  SKILLS_DIR="$PROJ_DIR/.claude/skills"
+  warn_outside_workspace "$WS" "$PROJ_DIR"
+  PROJ="$(basename "$PROJ_DIR")"
+  SKILLS_DIR="$(project_skills_dir "$WS" "$PROJ_DIR")"
 fi
 
 DST="$SKILLS_DIR/$NAME"
@@ -107,16 +108,12 @@ else
   cp -r "$SRC" "$DST"; echo "copied $SRC -> $DST"
 fi
 
-if [ -n "$PROJ_DIR" ] && [ "$NO_EXCLUDE" = 0 ]; then
-  git_exclude "$PROJ_DIR"
-fi
-
 # A copied skill usually names another project; a link deliberately does not.
-if [ "$LINK" = 0 ] && [ -n "$PROJ_DIR" ]; then
-  echo "note: review the description and any project names in $DST/SKILL.md"
+if [ "$LINK" = 0 ] && [ -n "$PROJ" ]; then
+  echo "note: review the description and any project names in $DST/SKILL.md - it must describe $PROJ"
 fi
 # Same name from two sources shadows; which wins depends on the session cwd.
-if [ -e "$HOME/.claude/skills/$NAME" ] && [ -n "$PROJ_DIR" ]; then
+if [ -e "$HOME/.claude/skills/$NAME" ] && [ -n "$PROJ" ]; then
   echo "note: '$NAME' also exists in ~/.claude/skills - they shadow each other; keep the descriptions distinct"
 fi
 exit 0

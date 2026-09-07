@@ -13,6 +13,18 @@ description: Orientation for {{PROJECT}} - its architecture, main components, co
      produces. Name the ticket/epic if there is one. Then the repo layout in one
      line: the directories that matter and what each holds. -->
 
+## Code graph
+
+Project graph: `home-vhaponov-Documents-jo-workspace-{{PROJECT}}`. Query it
+before reading files or grepping — `get_architecture` for the shape,
+`search_graph` for a symbol, `trace_path` for who calls what, then
+`get_code_snippet` for the source. Re-index with
+`./docker/cbm/cbm.sh index {{PROJECT}}` if `index_status` looks stale.
+
+<!-- If some part of this repo is genuinely outside the index (generated code,
+     vendored blobs, a language the indexer skips), say so here - that is the
+     only place a bare grep is the right first move. -->
+
 ## Runtime flow
 
 ```

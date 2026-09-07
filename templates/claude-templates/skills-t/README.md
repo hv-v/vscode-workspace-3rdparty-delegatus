@@ -7,6 +7,28 @@ in each section. Filling standard: [HOW-TO-FILL.md](HOW-TO-FILL.md).
 Sibling template sets live alongside this one under `claude-templates/`:
 `agents-t/`, `commands-t/`.
 
+## Where a project's skills go
+
+`.claude/CLAUDE.md` is the authority; the short form:
+
+```
+<workspace>/.claude/projects/<project root directory name>/.claude/
+├── skills/          <- what these templates produce
+├── commands/
+└── agents/
+```
+
+**The directory under `.claude/projects/` is always the project's own root
+directory name, spelled identically** — `jen_calibration_manager/` in the
+workspace is served by `.claude/projects/jen_calibration_manager/`. Both
+scripts derive that name with `basename` rather than accepting it as an
+argument, so a skill cannot end up filed under a name that does not match a
+project.
+
+Nothing is ever written inside the project repo: those are submodules with
+their own history, and workspace tooling has no business in their diffs. That
+is also why neither script touches `.git/info/exclude` any more.
+
 ## Why this is not in `.claude/skills/`
 
 Anything at `.claude/skills/<name>/SKILL.md` is auto-discovered: its name and
@@ -42,19 +64,20 @@ minority of runs; link it with a relative path and say when to read it.
 ## Scripts
 
 ```bash
-./claude-templates/skills-t/new-skill.sh <type> <project-path> [skill-name] [--force] [--no-exclude]
+./templates/claude-templates/skills-t/new-skill.sh <type> <project-path> [skill-name] [--force]
 ```
 
 Creates a new skill from a template. `<project-path>` may be absolute, relative
-to your cwd, or relative to the workspace root. Substitutes `{{PROJECT}}`,
-optionally renames the skill (frontmatter `name` follows the directory), and
-prints the done-check.
+to your cwd, or relative to the workspace root, and **must exist** — its
+basename is the key the skill is filed under, so a typo would silently create an
+orphaned project entry. Substitutes `{{PROJECT}}`, optionally renames the skill
+(frontmatter `name` follows the directory), and prints the done-check.
 
 ```bash
-./claude-templates/skills-t/install-skill.sh <skill> <target|--global> [--link] [--force] [--no-exclude]
+./templates/claude-templates/skills-t/install-skill.sh <skill> <target|--global> [--link] [--force]
 ```
 
-Installs an **already-filled** skill into another project, or into
+Installs an **already-filled** skill for another project, or into
 `~/.claude/skills` with `--global` so it loads from any cwd. `--link` symlinks
 instead of copying. It refuses any skill still containing `{{...}}`.
 
@@ -64,39 +87,37 @@ handed off to `new-skill.sh` rather than refused, so
 cannot go `--global` or be `--link`ed; an unfilled skill has no business being
 shared.
 
-Both scripts append `.claude/**` to the target repo's `.git/info/exclude` after
-writing, so skills are ignored locally without touching the tracked
-`.gitignore`. Only ever appends, never creates that file (no exclude file, no
-change), never duplicates the line. Suppress with `--no-exclude`.
+Shared logic (workspace-root walking, path resolution, the
+`.claude/projects/<name>` mapping) lives in `_lib.sh`, which is sourced by both
+and is not run directly.
 
-Shared logic (path resolution, the exclude update) lives in `_lib.sh`, which is
-sourced by both and is not run directly.
+## Naming
 
-## Naming: the prefix says what the skill depends on
+Project skills are **not** prefixed — the directory under `.claude/projects/`
+already says which project they belong to, so they keep the template's own name
+(`build`, `tester`, `deploy`, `project`, `sandbox`, `debug`). The retired `p-`
+prefix dates from when every project shared one roster.
 
-Every skill here is prefixed by what it depends on — `.claude/CLAUDE.md` is the
-authority:
+Only workspace-wide skills in `.claude/skills/` carry a prefix:
 
 | prefix | dependency | example |
 |---|---|---|
 | `l-` | language | `l-cpp`, `l-bash` |
-| `p-` | project | `p-build`, `p-tester`, `p-deploy` |
 | `a-` | agent | `a-verify-cpp`, driving `.claude/agents/cpp-verifier.md` |
 
-The six templates here are all project-scoped, so install them under `p-` using
-the third argument, which also rewrites the frontmatter `name` to match:
+The directory name is the identity — it is the `/command` and the name an
+agent's `skills:` field resolves — so it must always equal `name:`. The third
+argument to `new-skill.sh` rewrites both together:
 
 ```bash
-./.templates/claude-templates/skills-t/new-skill.sh build jen_plate_reader p-build
+./templates/claude-templates/skills-t/new-skill.sh build jen_plate_reader hil-build
 ```
-
-The directory name is the identity — it is the `/command` and the name an
-agent's `skills:` field resolves — so it must always equal `name:`.
 
 ## Naming collisions
 
-Same-named skills from different sources shadow each other, and which one wins
-depends on the session cwd — `build` currently exists both at the workspace root
-and inside `jen_calibration_manager`. Keep the workspace copy generic, the
-project copy specific, and each description explicit about its scope. A
-genuinely different skill gets a distinct name, not a third `build`.
+Two projects both having a `build` skill is the normal case and is not a
+collision: they live under different `.claude/projects/<project>/` directories
+and are read by path. A collision is only possible against
+`~/.claude/skills/<name>` — `install-skill.sh` says so when it sees one. Keep
+the global copy generic, the project copy specific, and every description
+explicit about its scope.
