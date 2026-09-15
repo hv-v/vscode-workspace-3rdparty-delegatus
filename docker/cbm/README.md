@@ -223,6 +223,11 @@ deletes it.
   them.
 * Re-index after large changes with `./cbm.sh index`; the index lives in the
   `cbm-cache` volume and survives restarts and rebuilds.
+* `/tmp` is a tmpfs: daemon sockets and identity/lock metadata are discarded
+  when the container stops. Persisting these across a host reboot can leave
+  startup failing with `CBM daemon could not start within 30000 ms`. To apply
+  this mount to an existing container, run `./cbm.sh restart`; the `cbm-cache`
+  volume and its indexes are retained.
 * `./cbm.sh tool` pipes its JSON over stdin — the supported form; a positional
   JSON blob is deprecated upstream. Example:
   `./cbm.sh tool search_graph '{"project":"…-jen_plate_reader","name_pattern":"Detection","limit":5}'`

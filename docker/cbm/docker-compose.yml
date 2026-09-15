@@ -28,6 +28,11 @@ services:
     restart: unless-stopped
     stop_grace_period: 20s
 
+    # Daemon sockets and identity/lock metadata must not survive a container
+    # stop or host reboot. The persistent graph databases stay in cbm-cache.
+    tmpfs:
+      - /tmp:mode=1777
+
     security_opt:
       - no-new-privileges:true
     cap_drop:
