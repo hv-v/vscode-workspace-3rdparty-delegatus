@@ -18,6 +18,13 @@
   ros__parameters:
     without_config_manager: true
     forwarding_enabled: true
+    # Parent/child frame_id pairs that MUST be present in tf or tf_static; each entry is
+    # "<parent>:<child>". Reported by FrameIdTopologyValidation in /diagnostics. An empty
+    # list (the default when the parameter is absent) disables the check. A malformed entry
+    # aborts the node at startup rather than silently skipping the check.
+    frame_id_pairs:
+      - "base_link:camera_link"
+      - "base_link:lidar_link"
     diagnostics:
       health: "system/software/jen_calibration_manager"
     tf: |

@@ -104,6 +104,32 @@ docker run --rm --network host --ipc host -e ROS_DOMAIN_ID=42 \
   -c 'source /ros2_ws/install/setup.bash; sleep 2; ros2 node list; ros2 topic list; ros2 service list'
 ```
 
+## Left/right camera_info check (with the camera driver)
+
+`lr_camera_info_check.sh` runs two mock `jen_sc_camera_driver` instances named
+as in SR355 (`jen_sc_camera_driver_left/_right`, `camera_id` `camera_left/_right`),
+starts the manager with `params_lr.yaml` (different K, D, P and frame_id per
+side), and runs `lr_check.py`. That script triggers a real image on each camera
+and compares the `camera_info` published with it against `EXPECTED`. `-r`
+also restarts both drivers without the manager to check the restore from
+`~/.ros/camera_info/<camera_id>.yaml`; `-k` keeps the containers for poking.
+Default images are the nexus driver `0.0.1-dev-2-MR-13-9274c24` and manager
+`0.0.1-dev-38-MR-2-71445d6` — **`jen_calibration_manager:latest` has held a
+msgs-only build without the node**; override with `-d` / `-m`.
+
+Verified 2026-09-14:
+
+- driver side PASS for both cameras: diagnostics `Calibration loaded`, image
+  accepted, intrinsics and frame_id match, no cross-over between cameras;
+- restore after restart PASS for intrinsics, WARN `frame_id` comes back `''`
+  (`camera_calibration_parsers` does not persist `header.frame_id`);
+- **manager never pushes a `--params-file` `camera_info_static` at startup**
+  (phase 0 FAIL): the post-set callback fires while the parameter is still
+  being declared, `has_parameter()` is false, `pairs` stay empty, so zero calls
+  are made and `set_camera_info_failures` still reads `0`.
+  `push_camera_info_static.py` re-sets the parameter through `set_parameters`
+  as a workaround (`ros2 param load` asserts on this params file).
+
 ## Gotchas
 
 - **`--ipc host` is mandatory for cross-container discovery.** Without it
