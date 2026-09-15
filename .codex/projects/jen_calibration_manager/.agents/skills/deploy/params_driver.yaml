@@ -1,0 +1,15 @@
+# jen_sc_camera_driver (mock) parameters shared by both instances in
+# lr_camera_info_check.sh. camera_id differs per instance and is passed on the
+# command line, so it is deliberately absent here. Timings are in nanoseconds
+# and kept small so a trigger ~2s ahead is always schedulable.
+/**:
+  ros__parameters:
+    without_config_manager: true
+    camera_device_path: "/dev/null"
+    timing_safety_margin: 5000000
+    cancellation_proximity_threshold: 5000000
+    imager_preparation_time: 5000000
+    flash_ramp_up_time: 50000
+    use_full_color_depth: false
+    camera_publisher_queue_size: 8
+    mock_driver_image_list: ["/images"]

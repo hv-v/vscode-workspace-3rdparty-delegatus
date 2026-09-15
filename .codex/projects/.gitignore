@@ -1,0 +1,3 @@
+# Preserve migrated configuration despite the local jen* project exclusion.
+!/jen_calibration_manager/
+!/jen_calibration_manager/**

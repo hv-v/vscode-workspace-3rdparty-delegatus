@@ -9,8 +9,9 @@ Codex uses both `.codex` and `.agents`; they serve different purposes.
 | Skills and reusable command workflows | `.agents/skills/<skill-name>/SKILL.md` |
 | General project instructions, when needed | `AGENTS.md` in the repository root or relevant subdirectory |
 
-The skills and custom-agent directories are initially empty apart from README
-files. Add definitions when there is a concrete workflow or specialist role.
+Agents and skills have been converted from `.claude`, preserving the groups
+and project hierarchy. See `agents/README.md`, `../.agents/skills/README.md`,
+and `projects/navigation_map.md`. The root `AGENTS.md` routes project guidance.
 A README is documentation and does not register a skill or agent.
 
 ## Current settings
@@ -47,3 +48,18 @@ and appropriate permissions. Built-in agents are available without custom files.
 - [Skills](https://learn.chatgpt.com/docs/build-skills)
 - [Subagents](https://learn.chatgpt.com/docs/agent-configuration/subagents)
 - [Custom prompts deprecation](https://learn.chatgpt.com/docs/custom-prompts)
+
+## Migration details
+
+`migration-map.json` records each source and destination. The migration includes
+5 agent definitions (one unimplemented), 10 workspace skills (four unimplemented),
+7 project skills (including the template and two partial stubs), C++ references,
+project support assets and prompt limitations. Original Claude files are retained.
+Claude argument metadata is expressed as delegation-message inputs, and agent
+skill preloading is replaced with explicit reads. Models inherit the Codex parent.
+Claude hooks, command shortcuts and settings are not activated by this migration.
+
+Nested skills and project skills can always be loaded through the maps above.
+If a custom agent is absent from the roster, the corresponding wrapper skill
+provides a fresh-subagent fallback using the TOML instructions. Start a new
+Codex session to load the root instructions and custom agents.
