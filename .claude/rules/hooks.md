@@ -21,7 +21,7 @@ is a slash command that opens a UI over those files — not a path.
 | event | script | makes real |
 |---|---|---|
 | `SessionStart` | `graph-status.sh` | names project directories with no code graph, so `rules/code-graph.md` cannot be followed silently against an unindexed repo |
-| `UserPromptSubmit` | inline `jq` | asks for `a-verify-prompt` plus the approval gate — see `rules/prompt-limits.md` |
+| `UserPromptSubmit` | inline `jq` | asks for `a-verify-prompt` plus the approval gate — **off unless `JO_VERIFY_PROMPT=1`**; see `rules/prompt-limits.md` |
 | `PreToolUse` / `Bash` | `graph-first.sh` | denies a recursive `grep`/`find` over a project tree — `rules/code-graph.md` |
 | `PreToolUse` / `Write\|Edit` | `guard-generated.sh` | denies a hand-edit of `.gitmodules` — `rules/generated-files.md` |
 | `PostToolUse` / `Write\|Edit` | `clang-format.sh` | applies the owning repo's `.clang-format` — the layout authority in `l-cpp` |

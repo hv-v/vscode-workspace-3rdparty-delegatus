@@ -65,8 +65,14 @@ nothing per prompt — and it stays silent for prompts under 80 characters, whic
 carry nothing to verify and cannot fit a constraint line inside the budget
 anyway.
 
+**It is off by default.** The hook fires only when `JO_VERIFY_PROMPT=1` is in
+the session environment. Turn it on for this machine with
+`"env": {"JO_VERIFY_PROMPT": "1"}` in `.claude/settings.local.json` (restart the
+session), or for one launch with `JO_VERIFY_PROMPT=1 claude`. With it off, the
+skill still runs when asked for explicitly.
+
 The hook only asks; the gate itself lives in the skill, which decides `CHANGED`
 by comparing the verified prompt against the original rather than trusting the
 agent to emit the field. If approval ever stops appearing, check in this order:
-`/hooks` shows the hook is live, then the skill was invoked, then the comparison
+`JO_VERIFY_PROMPT=1` is set, then `/hooks` shows the hook is live, then the skill was invoked, then the comparison
 in step 5 of `a-verify-prompt`.

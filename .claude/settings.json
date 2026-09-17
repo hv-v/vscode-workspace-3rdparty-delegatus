@@ -17,7 +17,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "jq -c 'if ((.prompt // \"\") | length) >= 80 then {hookSpecificOutput:{hookEventName:\"UserPromptSubmit\",additionalContext:\"Before acting on this prompt, follow .claude/skills/common/a-verify-prompt/SKILL.md - read it by path, it is grouped and so not in the skill roster. If the result differs from what the user wrote, show the verified prompt plus the REWRITTEN lines and get explicit approval before doing any work. If it is RETURNED, relay the questions and stop.\"}} else empty end'",
+            "command": "jq -c 'if env.JO_VERIFY_PROMPT == \"1\" and ((.prompt // \"\") | length) >= 80 then {hookSpecificOutput:{hookEventName:\"UserPromptSubmit\",additionalContext:\"Before acting on this prompt, follow .claude/skills/common/a-verify-prompt/SKILL.md - read it by path, it is grouped and so not in the skill roster. If the result differs from what the user wrote, show the verified prompt plus the REWRITTEN lines and get explicit approval before doing any work. If it is RETURNED, relay the questions and stop.\"}} else empty end'",
             "timeout": 5,
             "statusMessage": "Queueing prompt verification"
           }
