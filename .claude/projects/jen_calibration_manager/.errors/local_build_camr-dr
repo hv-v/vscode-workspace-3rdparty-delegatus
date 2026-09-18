@@ -1,0 +1,1942 @@
+#0 building with "default" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile
+#1 transferring dockerfile: 2.73kB done
+#1 DONE 0.0s
+
+#2 [internal] load metadata for nexus-hil.group.jenoptik.corp:8082/ros:jazzy
+#2 DONE 0.0s
+
+#3 [internal] load .dockerignore
+#3 transferring context: 2B done
+#3 DONE 0.0s
+
+#4 [builder  1/18] FROM nexus-hil.group.jenoptik.corp:8082/ros:jazzy@sha256:2589a8fba5257307857890173c069852c2abf913a0be7970f172478baecb09e4
+#4 resolve nexus-hil.group.jenoptik.corp:8082/ros:jazzy@sha256:2589a8fba5257307857890173c069852c2abf913a0be7970f172478baecb09e4 0.0s done
+#4 DONE 0.0s
+
+#5 [internal] load build context
+#5 transferring context: 106.25kB 0.0s done
+#5 DONE 0.0s
+
+#6 [builder  2/18] RUN mkdir /ros2_ws
+#6 CACHED
+
+#7 [builder 10/18] COPY camera_driver/package.xml ./src/camera_driver/package.xml
+#7 CACHED
+
+#8 [builder  3/18] WORKDIR /ros2_ws
+#8 CACHED
+
+#9 [builder 12/18] RUN apt-get update &&     rosdep update &&     rosdep install --from-paths src --ignore-src -r -y &&     apt-get clean && rm -rf /var/cache/apt/archives /var/lib/apt/lists/*
+#9 CACHED
+
+#10 [builder  4/18] COPY jen_logging/jen_logging ./src/jen_logging/
+#10 CACHED
+
+#11 [builder 15/18] COPY scripts/build.sh ./
+#11 CACHED
+
+#12 [builder  7/18] COPY jen_image_scheduler/ ./src/jen_image_scheduler
+#12 CACHED
+
+#13 [builder  9/18] COPY lib_fpga_cmos/ ./src/lib_fpga_cmos/
+#13 CACHED
+
+#14 [builder 14/18] COPY scripts/_common_build.sh ./
+#14 CACHED
+
+#15 [builder 11/18] COPY camera_tester/package.xml ./src/camera_tester/package.xml
+#15 CACHED
+
+#16 [builder  5/18] COPY --exclude=jen_logging jen_config_manager_interface ./src/jen_config_manager_interface/
+#16 CACHED
+
+#17 [builder 13/18] RUN  rosdep keys -t exec --from-path src --ignore-src |      xargs rosdep resolve | grep -v '^#' > exec-rosdeps.txt
+#17 CACHED
+
+#18 [builder  8/18] COPY libimx/ ./src/libimx/
+#18 CACHED
+
+#19 [builder  6/18] COPY jen_camera_msgs/ ./src/jen_camera_msgs/
+#19 CACHED
+
+#20 [builder 16/18] COPY camera_tester/ ./src/camera_tester/
+#20 CACHED
+
+#21 [builder 17/18] COPY camera_driver/ ./src/camera_driver/
+#21 DONE 0.0s
+
+#22 [builder 18/18] RUN ./build.sh
+#22 0.923 Starting >>> jen_config_manager_interface
+#22 0.935 Starting >>> jen_logging
+#22 0.942 Starting >>> jen_parameter_msgs
+#22 0.947 Starting >>> imx
+#22 0.951 Starting >>> jen_camera_msgs
+#22 0.955 Starting >>> jen_image_scheduler
+#22 3.532 --- stderr: imx
+#22 3.532 /ros2_ws/src/libimx/linux-drivers/imx/lib/libimx.c: In function ‘LIBIMX_registerCallback’:
+#22 3.532 /ros2_ws/src/libimx/linux-drivers/imx/lib/libimx.c:1683:35: warning: ISO C forbids conversion of object pointer to function pointer type [-Wpedantic]
+#22 3.532  1683 |             sensorDevice->logCb = (IMX_LogCb_t)cb;
+#22 3.532       |                                   ^
+#22 3.532 ---
+#22 3.533 Finished <<< imx [2.59s]
+#22 3.534 Starting >>> fpga_cmos
+#22 5.400 --- stderr: fpga_cmos
+#22 5.400 /ros2_ws/src/lib_fpga_cmos/linux-drivers/fpga-cmos-imager/lib/cmosImager_internal.c: In function ‘getShadowRegMapPos’:
+#22 5.400 /ros2_ws/src/lib_fpga_cmos/linux-drivers/fpga-cmos-imager/lib/cmosImager_internal.c:68:16: warning: comparison of unsigned expression in ‘< 0’ is always false [-Wtype-limits]
+#22 5.400    68 |     if ((start < 0) || (end > (getImagerRegCount(imager)-1)) || (start > end))
+#22 5.400       |                ^
+#22 5.400 /ros2_ws/src/lib_fpga_cmos/linux-drivers/fpga-cmos-imager/lib/cmosImager_internal.c:68:29: warning: comparison of integer expressions of different signedness: ‘unsigned int’ and ‘int’ [-Wsign-compare]
+#22 5.400    68 |     if ((start < 0) || (end > (getImagerRegCount(imager)-1)) || (start > end))
+#22 5.400       |                             ^
+#22 5.400 /ros2_ws/src/lib_fpga_cmos/linux-drivers/fpga-cmos-imager/lib/cmosImager_internal.c: In function ‘doReadFpgaReg’:
+#22 5.400 /ros2_ws/src/lib_fpga_cmos/linux-drivers/fpga-cmos-imager/lib/cmosImager_internal.c:241:41: warning: overflow in conversion from ‘long unsigned int’ to ‘int’ changes value from ‘3225478149’ to ‘-1069489147’ [-Woverflow]
+#22 5.400   241 |         status = runImagerIoctl(imager, RO_CMOS_IOC_GET_FPGA_REGISTER, (void*)&reg_access);
+#22 5.400       |                                         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#22 5.400 /ros2_ws/src/lib_fpga_cmos/linux-drivers/fpga-cmos-imager/lib/imx_frontend.c: In function ‘IMXFrontend_triggerImage’:
+#22 5.400 /ros2_ws/src/lib_fpga_cmos/linux-drivers/fpga-cmos-imager/lib/imx_frontend.c:937:18: warning: unused parameter ‘triggerID’ [-Wunused-parameter]
+#22 5.400   937 |         uint32_t triggerID, uint32_t triggerTimestamp1us,
+#22 5.400       |         ~~~~~~~~~^~~~~~~~~
+#22 5.400 /ros2_ws/src/lib_fpga_cmos/linux-drivers/fpga-cmos-imager/lib/imx_frontend.c:937:38: warning: unused parameter ‘triggerTimestamp1us’ [-Wunused-parameter]
+#22 5.400   937 |         uint32_t triggerID, uint32_t triggerTimestamp1us,
+#22 5.400       |                             ~~~~~~~~~^~~~~~~~~~~~~~~~~~~
+#22 5.400 /ros2_ws/src/lib_fpga_cmos/linux-drivers/fpga-cmos-imager/lib/cmosImager_internal.c: In function ‘setupStreamBuffer’:
+#22 5.400 /ros2_ws/src/lib_fpga_cmos/linux-drivers/fpga-cmos-imager/lib/cmosImager_internal.c:1160:37: warning: overflow in conversion from ‘long unsigned int’ to ‘int’ changes value from ‘3238061072’ to ‘-1056906224’ [-Woverflow]
+#22 5.400  1160 |     status = runImagerIoctl(imager, RO_CMOS_IOC_GET_STREAM_BUFFER_INFO, (void*)&streamBufferInfo);
+#22 5.400       |                                     ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#22 5.400 /ros2_ws/src/lib_fpga_cmos/linux-drivers/fpga-cmos-imager/lib/imx_frontend.c:938:18: warning: unused parameter ‘triggerDelay10us’ [-Wunused-parameter]
+#22 5.400   938 |         uint32_t triggerDelay10us)
+#22 5.400       |         ~~~~~~~~~^~~~~~~~~~~~~~~~
+#22 5.400 /ros2_ws/src/lib_fpga_cmos/linux-drivers/fpga-cmos-imager/lib/cmosImager_internal.c: In function ‘initStreamBufferListFromDevice’:
+#22 5.400 /ros2_ws/src/lib_fpga_cmos/linux-drivers/fpga-cmos-imager/lib/cmosImager_internal.c:1265:37: warning: overflow in conversion from ‘long unsigned int’ to ‘int’ changes value from ‘2147804170’ to ‘-2147163126’ [-Woverflow]
+#22 5.400  1265 |     status = runImagerIoctl(imager, RO_CMOS_IOC_GET_STREAM_BUFFER_COUNT, (void*)&streamBufferDeviceCount);
+#22 5.400       |                                     ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#22 5.400 /ros2_ws/src/lib_fpga_cmos/linux-drivers/fpga-cmos-imager/lib/cmosImager_internal.c:1290:37: warning: overflow in conversion from ‘long unsigned int’ to ‘int’ changes value from ‘3225478155’ to ‘-1069489141’ [-Woverflow]
+#22 5.400  1290 |     status = runImagerIoctl(imager, RO_CMOS_IOC_GET_STREAM_BUFFER_LIST, (void*)&streamBufferDeviceList);
+#22 5.400       |                                     ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#22 5.400 /ros2_ws/src/lib_fpga_cmos/linux-drivers/fpga-cmos-imager/lib/cmosImager.c: In function ‘initFrontend’:
+#22 5.400 /ros2_ws/src/lib_fpga_cmos/linux-drivers/fpga-cmos-imager/lib/cmosImager.c:51:95: warning: unused parameter ‘dac_deviceName’ [-Wunused-parameter]
+#22 5.400    51 | static int initFrontend(struct CmosImager* imager, const char* sensor_deviceName, const char* dac_deviceName)
+#22 5.400       |                                                                                   ~~~~~~~~~~~~^~~~~~~~~~~~~~
+#22 5.400 /ros2_ws/src/lib_fpga_cmos/linux-drivers/fpga-cmos-imager/lib/cmosImager.c: In function ‘CmosImager_initDevice’:
+#22 5.400 /ros2_ws/src/lib_fpga_cmos/linux-drivers/fpga-cmos-imager/lib/cmosImager.c:145:37: warning: overflow in conversion from ‘long unsigned int’ to ‘int’ changes value from ‘2151736332’ to ‘-2143230964’ [-Woverflow]
+#22 5.400   145 |     status = runImagerIoctl(imager, RO_CMOS_IOC_GET_FPGA_IP_VERSION,(void*)&ipInfo);
+#22 5.400       |                                     ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#22 5.400 In file included from /ros2_ws/src/lib_fpga_cmos/linux-drivers/fpga-cmos-imager/lib/cmosImager.c:14:
+#22 5.400 /ros2_ws/src/lib_fpga_cmos/linux-drivers/fpga-cmos-imager/lib/cmosImager.c: In function ‘CmosImager_setInputDelay’:
+#22 5.400 /ros2_ws/src/lib_fpga_cmos/linux-drivers/fpga-cmos-imager/lib/cmosImager.c:459:59: warning: ISO C does not support ‘__FUNCTION__’ predefined identifier [-Wpedantic]
+#22 5.400   459 |     emmitDebug(imager, "%s: bank=%d, delayValue=0x%02x",  __FUNCTION__, bank, delayValue);
+#22 5.400       |                                                           ^~~~~~~~~~~~
+#22 5.400 /ros2_ws/src/lib_fpga_cmos/linux-drivers/fpga-cmos-imager/lib/cmosImager_internal.h:174:114: note: in definition of macro ‘emmitDebug’
+#22 5.400   174 | #define emmitDebug(imager, format, ...)         CmosImager_emmitLog(imager, CMOSIMAGER_LOGLEVEL_DEBUG, format, ##__VA_ARGS__)
+#22 5.400       |                                                                                                                  ^~~~~~~~~~~
+#22 5.400 /ros2_ws/src/lib_fpga_cmos/linux-drivers/fpga-cmos-imager/lib/cmosImager.c: In function ‘CmosImager_setMultiROI’:
+#22 5.400 /ros2_ws/src/lib_fpga_cmos/linux-drivers/fpga-cmos-imager/lib/cmosImager.c:933:62: warning: unused parameter ‘imager’ [-Wunused-parameter]
+#22 5.400   933 | CmosImagerStatus_t CmosImager_setMultiROI(struct CmosImager* imager, const struct CmosImagerMultiROI* multiROI)
+#22 5.400       |                                           ~~~~~~~~~~~~~~~~~~~^~~~~~
+#22 5.400 /ros2_ws/src/lib_fpga_cmos/linux-drivers/fpga-cmos-imager/lib/cmosImager.c:933:103: warning: unused parameter ‘multiROI’ [-Wunused-parameter]
+#22 5.400   933 | CmosImagerStatus_t CmosImager_setMultiROI(struct CmosImager* imager, const struct CmosImagerMultiROI* multiROI)
+#22 5.400       |                                                                      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^~~~~~~~
+#22 5.400 /ros2_ws/src/lib_fpga_cmos/linux-drivers/fpga-cmos-imager/lib/cmosImager.c: In function ‘CmosImager_startVDMATransfer’:
+#22 5.400 /ros2_ws/src/lib_fpga_cmos/linux-drivers/fpga-cmos-imager/lib/cmosImager.c:2343:37: warning: overflow in conversion from ‘long unsigned int’ to ‘int’ changes value from ‘3225478157’ to ‘-1069489139’ [-Woverflow]
+#22 5.400  2343 |     status = runImagerIoctl(imager, RO_CMOS_IOC_START_VDMA_TRANSFER, (void*)&transfer);
+#22 5.400       |                                     ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#22 5.400 /ros2_ws/src/lib_fpga_cmos/linux-drivers/fpga-cmos-imager/lib/cmosImager.c:2321:112: warning: unused parameter ‘mappingID’ [-Wunused-parameter]
+#22 5.400  2321 | CmosImagerStatus_t CmosImager_startVDMATransfer(struct CmosImager* imager, unsigned int streamID, unsigned int mappingID,
+#22 5.400       |                                                                                                   ~~~~~~~~~~~~~^~~~~~~~~
+#22 5.400 /ros2_ws/src/lib_fpga_cmos/linux-drivers/fpga-cmos-imager/lib/cmosImager.c: In function ‘CmosImager_setupDMATransfer’:
+#22 5.400 /ros2_ws/src/lib_fpga_cmos/linux-drivers/fpga-cmos-imager/lib/cmosImager.c:2404:57: warning: overflow in conversion from ‘long unsigned int’ to ‘int’ changes value from ‘3225478168’ to ‘-1069489128’ [-Woverflow]
+#22 5.400  2404 |     status = runStreamBufferIoctl(imager, streamBuffer, RO_CMOS_IOC_SETUP_DMA_TRANSFER, (void*)&transfer);
+#22 5.400       |                                                         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#22 5.400 /ros2_ws/src/lib_fpga_cmos/linux-drivers/fpga-cmos-imager/lib/imx_frontend.c: In function ‘IMXFrontend_LoggingCallback’:
+#22 5.400 /ros2_ws/src/lib_fpga_cmos/linux-drivers/fpga-cmos-imager/lib/imx_frontend.c:1469:5: warning: ‘logType’ may be used uninitialized [-Wmaybe-uninitialized]
+#22 5.400  1469 |     imager->loggingCallback(log_msg, logType);
+#22 5.400       |     ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#22 5.400 /ros2_ws/src/lib_fpga_cmos/linux-drivers/fpga-cmos-imager/lib/imx_frontend.c:1448:26: note: ‘logType’ was declared here
+#22 5.400  1448 |     CmosImagerLogLevel_t logType;
+#22 5.400       |                          ^~~~~~~
+#22 5.400 /ros2_ws/src/lib_fpga_cmos/linux-drivers/fpga-cmos-imager/lib/cmosImager_internal.c:1313:9: warning: ‘__builtin_strncpy’ output may be truncated copying 63 bytes from a string of length 63 [-Wstringop-truncation]
+#22 5.400  1313 |         strncpy(newStreamBuffer->name, streamBufferInfo->name,
+#22 5.400       |         ^
+#22 5.400 /ros2_ws/src/lib_fpga_cmos/linux-drivers/fpga-cmos-imager/lib/cmosImager_internal.c:1316:9: warning: ‘__builtin_strncpy’ output may be truncated copying 127 bytes from a string of length 127 [-Wstringop-truncation]
+#22 5.400  1316 |         strncpy(newStreamBuffer->device_name, streamBufferInfo->device_name,
+#22 5.400       |         ^
+#22 5.400 ---
+#22 5.401 Finished <<< fpga_cmos [1.87s]
+#22 16.17 Finished <<< jen_parameter_msgs [15.2s]
+#22 16.18 Finished <<< jen_logging [15.2s]
+#22 16.18 Starting >>> jen_parameter_utils
+#22 16.30 Finished <<< jen_config_manager_interface [15.4s]
+#22 16.30 Starting >>> jen_config_manager_lib_cpp
+#22 16.30 Starting >>> jen_config_manager_lib_py
+#22 17.18 Finished <<< jen_config_manager_lib_py [0.88s]
+#22 17.24 Finished <<< jen_camera_msgs [16.3s]
+#22 17.24 Starting >>> jen_sc_camera_driver_tester
+#22 17.34 Finished <<< jen_parameter_utils [1.16s]
+#22 17.39 Finished <<< jen_config_manager_lib_cpp [1.09s]
+#22 17.39 --- stderr: jen_config_manager_lib_cpp
+#22 17.39 fatal: not a git repository: /ros2_ws/src/jen_config_manager_interface/../.git/modules/jen_config_manager_interface
+#22 17.39 CMake Warning at CMakeLists.txt:112 (message):
+#22 17.39   Failed to set up Git hooks
+#22 17.39 
+#22 17.39 
+#22 17.39 ---
+#22 24.98 Finished <<< jen_sc_camera_driver_tester [7.74s]
+#22 29.95 --- stderr: jen_image_scheduler
+#22 29.95 CMake Warning (dev) at /usr/share/cmake-3.28/Modules/FetchContent.cmake:1331 (message):
+#22 29.95   The DOWNLOAD_EXTRACT_TIMESTAMP option was not given and policy CMP0135 is
+#22 29.95   not set.  The policy's OLD behavior will be used.  When using a URL
+#22 29.95   download, the timestamps of extracted files should preferably be that of
+#22 29.95   the time of extraction, otherwise code that depends on the extracted
+#22 29.95   contents might not be rebuilt if the URL changes.  The OLD behavior
+#22 29.95   preserves the timestamps from the archive instead, but this is usually not
+#22 29.95   what you want.  Update your project to the NEW behavior or specify the
+#22 29.95   DOWNLOAD_EXTRACT_TIMESTAMP option with a value of true to avoid this
+#22 29.95   robustness issue.
+#22 29.95 Call Stack (most recent call first):
+#22 29.95   test/CMakeLists.txt:3 (FetchContent_Declare)
+#22 29.95 This warning is for project developers.  Use -Wno-dev to suppress it.
+#22 29.95 
+#22 29.95 CMake Warning:
+#22 29.95   Manually-specified variables were not used by the project:
+#22 29.95 
+#22 29.95     BUILD_TESTING
+#22 29.95 
+#22 29.95 
+#22 29.95 ---
+#22 29.95 Finished <<< jen_image_scheduler [29.0s]
+#22 29.95 Starting >>> jen_sc_camera_driver
+#22 61.74 [Processing: jen_sc_camera_driver]
+#22 61.74 Finished <<< jen_sc_camera_driver [31.8s]
+#22 61.75 
+#22 61.75 Summary: 12 packages finished [1min 1s]
+#22 61.75   4 packages had stderr output: fpga_cmos imx jen_config_manager_lib_cpp jen_image_scheduler
+#22 DONE 61.8s
+
+#23 [tester 1/3] COPY .clang-format ./src/
+#23 DONE 0.0s
+
+#24 [tester 2/3] COPY scripts/build_and_run_test.sh ./
+#24 DONE 0.0s
+
+#25 [tester 3/3] RUN ./build_and_run_test.sh
+#25 0.380 Starting >>> jen_config_manager_interface
+#25 0.386 Starting >>> jen_logging
+#25 0.388 Starting >>> jen_parameter_msgs
+#25 0.390 Starting >>> imx
+#25 0.392 Starting >>> jen_camera_msgs
+#25 0.394 Starting >>> jen_image_scheduler
+#25 0.784 Finished <<< imx [0.39s]
+#25 0.785 Starting >>> fpga_cmos
+#25 0.843 Finished <<< jen_image_scheduler [0.45s]
+#25 0.843 --- stderr: jen_image_scheduler
+#25 0.843 CMake Warning (dev) at /usr/share/cmake-3.28/Modules/FetchContent.cmake:1331 (message):
+#25 0.843   The DOWNLOAD_EXTRACT_TIMESTAMP option was not given and policy CMP0135 is
+#25 0.843   not set.  The policy's OLD behavior will be used.  When using a URL
+#25 0.843   download, the timestamps of extracted files should preferably be that of
+#25 0.843   the time of extraction, otherwise code that depends on the extracted
+#25 0.843   contents might not be rebuilt if the URL changes.  The OLD behavior
+#25 0.843   preserves the timestamps from the archive instead, but this is usually not
+#25 0.843   what you want.  Update your project to the NEW behavior or specify the
+#25 0.843   DOWNLOAD_EXTRACT_TIMESTAMP option with a value of true to avoid this
+#25 0.843   robustness issue.
+#25 0.843 Call Stack (most recent call first):
+#25 0.843   test/CMakeLists.txt:3 (FetchContent_Declare)
+#25 0.843 This warning is for project developers.  Use -Wno-dev to suppress it.
+#25 0.843 
+#25 0.843 CMake Warning:
+#25 0.843   Manually-specified variables were not used by the project:
+#25 0.843 
+#25 0.843     BUILD_TESTING
+#25 0.843 
+#25 0.843 
+#25 0.843 ---
+#25 1.226 Finished <<< fpga_cmos [0.44s]
+#25 2.084 Finished <<< jen_config_manager_interface [1.70s]
+#25 2.319 Finished <<< jen_camera_msgs [1.93s]
+#25 2.319 Starting >>> jen_sc_camera_driver_tester
+#25 2.438 Finished <<< jen_parameter_msgs [2.05s]
+#25 2.438 Starting >>> jen_config_manager_lib_py
+#25 3.070 Finished <<< jen_sc_camera_driver_tester [0.75s]
+#25 3.349 Finished <<< jen_config_manager_lib_py [0.91s]
+#25 14.87 Finished <<< jen_logging [14.5s]
+#25 14.87 Starting >>> jen_config_manager_lib_cpp
+#25 14.87 Starting >>> jen_parameter_utils
+#25 32.70 Finished <<< jen_parameter_utils [17.8s]
+#25 34.72 Finished <<< jen_config_manager_lib_cpp [19.8s]
+#25 34.72 --- stderr: jen_config_manager_lib_cpp
+#25 34.72 fatal: not a git repository: /ros2_ws/src/jen_config_manager_interface/../.git/modules/jen_config_manager_interface
+#25 34.72 CMake Warning at CMakeLists.txt:112 (message):
+#25 34.72   Failed to set up Git hooks
+#25 34.72 
+#25 34.72 
+#25 34.72 ---
+#25 34.72 Starting >>> jen_sc_camera_driver
+#25 100.3 --- stderr: jen_sc_camera_driver
+#25 100.3 /ros2_ws/src/camera_driver/test/test_CmosDriver.cpp: In member function ‘virtual void CmosDriverTest_TestWaitForImageTransferSuccess_Test::TestBody()’:
+#25 100.3 /ros2_ws/src/camera_driver/test/test_CmosDriver.cpp:632:90: warning: missing initializer for member ‘CmosImagerEvent::systemTimestamp’ [-Wmissing-field-initializers]
+#25 100.3   632 |     constexpr CmosImagerEvent imagerEventExposureEnd{.eventType = CMOSIMAGER_EXPOSURE_END};
+#25 100.3       |                                                                                          ^
+#25 100.3 /ros2_ws/src/camera_driver/test/test_CmosDriver.cpp:632:90: warning: missing initializer for member ‘CmosImagerEvent::fpgaTimestamp’ [-Wmissing-field-initializers]
+#25 100.3 /ros2_ws/src/camera_driver/test/test_CmosDriver.cpp:638:90: warning: missing initializer for member ‘CmosImagerEvent::systemTimestamp’ [-Wmissing-field-initializers]
+#25 100.3   638 |     constexpr CmosImagerEvent imagerEventDmaComplete{.eventType = CMOSIMAGER_DMA_COMPLETE};
+#25 100.3       |                                                                                          ^
+#25 100.3 /ros2_ws/src/camera_driver/test/test_CmosDriver.cpp:638:90: warning: missing initializer for member ‘CmosImagerEvent::fpgaTimestamp’ [-Wmissing-field-initializers]
+#25 100.3 /ros2_ws/src/camera_driver/test/test_CmosDriver.cpp: In member function ‘virtual void CmosDriverTest_TestWaitForImageTransferMissingFrameBuffer_Test::TestBody()’:
+#25 100.3 /ros2_ws/src/camera_driver/test/test_CmosDriver.cpp:675:79: warning: missing initializer for member ‘CmosImagerEvent::systemTimestamp’ [-Wmissing-field-initializers]
+#25 100.3   675 |     constexpr CmosImagerEvent imagerEvent{.eventType = CMOSIMAGER_DMA_COMPLETE};
+#25 100.3       |                                                                               ^
+#25 100.3 /ros2_ws/src/camera_driver/test/test_CmosDriver.cpp:675:79: warning: missing initializer for member ‘CmosImagerEvent::fpgaTimestamp’ [-Wmissing-field-initializers]
+#25 100.3 ---
+#25 100.3 [Processing: jen_sc_camera_driver]
+#25 100.3 [Processing: jen_sc_camera_driver]
+#25 100.3 Finished <<< jen_sc_camera_driver [1min 6s]
+#25 100.3 
+#25 100.3 Summary: 12 packages finished [1min 40s]
+#25 100.3   3 packages had stderr output: jen_config_manager_lib_cpp jen_image_scheduler jen_sc_camera_driver
+#25 100.6 Starting >>> jen_sc_camera_driver
+#25 100.7 UpdateCTestConfiguration  from :/ros2_ws/build/jen_sc_camera_driver/CTestConfiguration.ini
+#25 100.7 Parse Config file:/ros2_ws/build/jen_sc_camera_driver/CTestConfiguration.ini
+#25 100.7    Site: buildkitsandbox
+#25 100.7    Build name: (empty)
+#25 100.7  Add coverage exclude regular expressions.
+#25 100.7 Create new tag: 20260909-1323 - Experimental
+#25 100.7 UpdateCTestConfiguration  from :/ros2_ws/build/jen_sc_camera_driver/CTestConfiguration.ini
+#25 100.7 Parse Config file:/ros2_ws/build/jen_sc_camera_driver/CTestConfiguration.ini
+#25 100.7 Test project /ros2_ws/build/jen_sc_camera_driver
+#25 100.7 Constructing a list of tests
+#25 100.7 Done constructing a list of tests
+#25 100.7 Updating test list for fixtures
+#25 100.7 Added 0 tests to meet fixture requirements
+#25 100.7 Checking test dependency graph...
+#25 100.7 Checking test dependency graph end
+#25 100.7 test 1
+#25 100.7     Start 1: clang_format
+#25 100.7 
+#25 100.7 1: Test command: /usr/bin/python3 "-u" "/opt/ros/jazzy/share/ament_cmake_test/cmake/run_test.py" "/ros2_ws/build/jen_sc_camera_driver/test_results/jen_sc_camera_driver/clang_format.xunit.xml" "--package-name" "jen_sc_camera_driver" "--output-file" "/ros2_ws/build/jen_sc_camera_driver/ament_clang_format/clang_format.txt" "--command" "/opt/ros/jazzy/bin/ament_clang_format" "--xunit-file" "/ros2_ws/build/jen_sc_camera_driver/test_results/jen_sc_camera_driver/clang_format.xunit.xml" "--config" "/ros2_ws/src/camera_driver/.clang-format"
+#25 100.7 1: Working Directory: /ros2_ws/src/camera_driver
+#25 100.7 1: Test timeout computed to be: 60
+#25 100.7 1: -- run_test.py: invoking following command in '/ros2_ws/src/camera_driver':
+#25 100.7 1:  - /opt/ros/jazzy/bin/ament_clang_format --xunit-file /ros2_ws/build/jen_sc_camera_driver/test_results/jen_sc_camera_driver/clang_format.xunit.xml --config /ros2_ws/src/camera_driver/.clang-format
+#25 100.9 1: No code style divergence in file 'include/Camera.hpp'
+#25 100.9 1: 
+#25 100.9 1: No code style divergence in file 'include/CameraDriverNode.hpp'
+#25 100.9 1: 
+#25 100.9 1: No code style divergence in file 'include/CameraInterface.hpp'
+#25 100.9 1: 
+#25 100.9 1: No code style divergence in file 'include/CameraTypes.hpp'
+#25 100.9 1: 
+#25 100.9 1: No code style divergence in file 'include/Config.hpp'
+#25 100.9 1: 
+#25 100.9 1: No code style divergence in file 'include/DriverInterface.hpp'
+#25 100.9 1: 
+#25 100.9 1: No code style divergence in file 'include/DurationFormatter.hpp'
+#25 100.9 1: 
+#25 100.9 1: No code style divergence in file 'include/FrameReadyWaitable.hpp'
+#25 100.9 1: 
+#25 100.9 1: No code style divergence in file 'include/Scheduler.hpp'
+#25 100.9 1: 
+#25 100.9 1: No code style divergence in file 'include/mock_imager/Config.hpp'
+#25 100.9 1: 
+#25 100.9 1: No code style divergence in file 'include/mock_imager/ImageLoader.hpp'
+#25 100.9 1: 
+#25 100.9 1: No code style divergence in file 'include/mock_imager/MockDriver.hpp'
+#25 100.9 1: 
+#25 100.9 1: No code style divergence in file 'include/robot_cmos_imager/CameraInformationProvider.hpp'
+#25 100.9 1: 
+#25 100.9 1: No code style divergence in file 'include/robot_cmos_imager/CmosDriver.hpp'
+#25 100.9 1: 
+#25 100.9 1: No code style divergence in file 'include/robot_cmos_imager/CmosLowLevelDriver.hpp'
+#25 100.9 1: 
+#25 100.9 1: No code style divergence in file 'include/robot_cmos_imager/CmosLowLevelDriverIface.hpp'
+#25 100.9 1: 
+#25 100.9 1: No code style divergence in file 'include/robot_cmos_imager/DriverFactory.hpp'
+#25 100.9 1: 
+#25 100.9 1: No code style divergence in file 'include/robot_cmos_imager/ImagerDevicePathProvider.hpp'
+#25 100.9 1: 
+#25 100.9 1: No code style divergence in file 'include/robot_cmos_imager/XDmaController.hpp'
+#25 100.9 1: 
+#25 100.9 1: No code style divergence in file 'include/robot_cmos_imager/XDmaControllerInterface.hpp'
+#25 100.9 1: 
+#25 100.9 1: No code style divergence in file 'src/Camera.cpp'
+#25 100.9 1: 
+#25 100.9 1: No code style divergence in file 'src/CameraDriverNode.cpp'
+#25 100.9 1: 
+#25 100.9 1: No code style divergence in file 'src/CameraTypes.cpp'
+#25 100.9 1: 
+#25 100.9 1: No code style divergence in file 'src/Config.cpp'
+#25 100.9 1: 
+#25 100.9 1: No code style divergence in file 'src/FrameReadyWaitable.cpp'
+#25 100.9 1: 
+#25 100.9 1: No code style divergence in file 'src/Scheduler.cpp'
+#25 100.9 1: 
+#25 100.9 1: No code style divergence in file 'src/main.cpp'
+#25 100.9 1: 
+#25 101.0 1: No code style divergence in file 'src/main_mock.cpp'
+#25 101.0 1: 
+#25 101.0 1: No code style divergence in file 'src/mock_imager/ImageLoader.cpp'
+#25 101.0 1: 
+#25 101.0 1: No code style divergence in file 'src/mock_imager/MockDriver.cpp'
+#25 101.0 1: 
+#25 101.0 1: No code style divergence in file 'src/robot_cmos_imager/CameraInformationProvider.cpp'
+#25 101.0 1: 
+#25 101.0 1: No code style divergence in file 'src/robot_cmos_imager/CmosDriver.cpp'
+#25 101.0 1: 
+#25 101.0 1: No code style divergence in file 'src/robot_cmos_imager/CmosLowLevelDriver.cpp'
+#25 101.0 1: 
+#25 101.0 1: No code style divergence in file 'src/robot_cmos_imager/DriverFactory.cpp'
+#25 101.0 1: 
+#25 101.0 1: No code style divergence in file 'src/robot_cmos_imager/ImagerDevicePathProvider.cpp'
+#25 101.0 1: 
+#25 101.0 1: No code style divergence in file 'src/robot_cmos_imager/XDmaController.cpp'
+#25 101.0 1: 
+#25 101.0 1: No code style divergence in file 'test/gtest_main.cpp'
+#25 101.0 1: 
+#25 101.0 1: No code style divergence in file 'test/mock_Camera.hpp'
+#25 101.0 1: 
+#25 101.0 1: No code style divergence in file 'test/mock_DriverInterface.hpp'
+#25 101.0 1: 
+#25 101.0 1: No code style divergence in file 'test/mock_RobotCmosDriver.hpp'
+#25 101.0 1: 
+#25 101.0 1: No code style divergence in file 'test/mock_XDmaController.hpp'
+#25 101.0 1: 
+#25 101.0 1: No code style divergence in file 'test/test_Camera.cpp'
+#25 101.0 1: 
+#25 101.0 1: No code style divergence in file 'test/test_CameraDriverNode.cpp'
+#25 101.0 1: 
+#25 101.0 1: No code style divergence in file 'test/test_CameraInformationProvider.cpp'
+#25 101.0 1: 
+#25 101.0 1: No code style divergence in file 'test/test_CameraTypes.cpp'
+#25 101.0 1: 
+#25 101.0 1: No code style divergence in file 'test/test_CmosDriver.cpp'
+#25 101.0 1: 
+#25 101.0 1: No code style divergence in file 'test/test_Config.cpp'
+#25 101.0 1: 
+#25 101.0 1: No code style divergence in file 'test/test_ImagerDevicePathProvider.cpp'
+#25 101.0 1: 
+#25 101.0 1: No code style divergence in file 'test/test_MockDriver.cpp'
+#25 101.0 1: 
+#25 101.0 1: No code style divergence in file 'test/test_Util.hpp'
+#25 101.0 1: 
+#25 101.0 1: No code style divergence in file 'test/util_CmosDriver.hpp'
+#25 101.0 1: 
+#25 101.0 1: No problems found
+#25 101.0 1: -- run_test.py: return code 0
+#25 101.0 1: -- run_test.py: verify result file '/ros2_ws/build/jen_sc_camera_driver/test_results/jen_sc_camera_driver/clang_format.xunit.xml'
+#25 101.0 1/2 Test #1: clang_format .....................   Passed    0.30 sec
+#25 101.0 test 2
+#25 101.0     Start 2: jen_sc_camera_driver_test
+#25 101.0 
+#25 101.0 2: Test command: /usr/bin/python3 "-u" "/opt/ros/jazzy/share/ament_cmake_test/cmake/run_test.py" "/ros2_ws/build/jen_sc_camera_driver/test_results/jen_sc_camera_driver/jen_sc_camera_driver_test.gtest.xml" "--package-name" "jen_sc_camera_driver" "--output-file" "/ros2_ws/build/jen_sc_camera_driver/ament_cmake_gmock/jen_sc_camera_driver_test.txt" "--command" "/ros2_ws/build/jen_sc_camera_driver/jen_sc_camera_driver_test" "--gtest_output=xml:/ros2_ws/build/jen_sc_camera_driver/test_results/jen_sc_camera_driver/jen_sc_camera_driver_test.gtest.xml"
+#25 101.0 2: Working Directory: /ros2_ws/build/jen_sc_camera_driver
+#25 101.0 2: Test timeout computed to be: 60
+#25 101.0 2: -- run_test.py: invoking following command in '/ros2_ws/build/jen_sc_camera_driver':
+#25 101.0 2:  - /ros2_ws/build/jen_sc_camera_driver/jen_sc_camera_driver_test --gtest_output=xml:/ros2_ws/build/jen_sc_camera_driver/test_results/jen_sc_camera_driver/jen_sc_camera_driver_test.gtest.xml
+#25 101.1 2: [==========] Running 80 tests from 8 test suites.
+#25 101.1 2: [----------] Global test environment set-up.
+#25 101.1 2: [----------] 11 tests from CameraDriverTest
+#25 101.1 2: [ RUN      ] CameraDriverTest.TestInitialisationSuccess
+#25 101.1 2: [       OK ] CameraDriverTest.TestInitialisationSuccess (28 ms)
+#25 101.1 2: [ RUN      ] CameraDriverTest.TestInitialisationFailure
+#25 101.1 2: [       OK ] CameraDriverTest.TestInitialisationFailure (4 ms)
+#25 101.1 2: [ RUN      ] CameraDriverTest.TestMakingTaskFromGoal
+#25 101.1 2: [       OK ] CameraDriverTest.TestMakingTaskFromGoal (3 ms)
+#25 101.1 2: [ RUN      ] CameraDriverTest.TestSchedulingNonSaneTask
+#25 101.1 2: [       OK ] CameraDriverTest.TestSchedulingNonSaneTask (3 ms)
+#25 101.1 2: [ RUN      ] CameraDriverTest.TestScheduling
+#25 101.1 2: [       OK ] CameraDriverTest.TestScheduling (3 ms)
+#25 101.1 2: [ RUN      ] CameraDriverTest.TestCancelNonExistent
+#25 101.1 2: [WARN] [1788960208.833335583] [camera_driver_test_node]: [trace=372ea377-e135-40ec-bbf3-8bf85c223d89] Cancellation requested even though the image was not queued
+#25 101.1 2: [       OK ] CameraDriverTest.TestCancelNonExistent (3 ms)
+#25 101.1 2: [ RUN      ] CameraDriverTest.TestCancelSuccess
+#25 101.2 2: [       OK ] CameraDriverTest.TestCancelSuccess (3 ms)
+#25 101.2 2: [ RUN      ] CameraDriverTest.TestCancelToCloseToExecution
+#25 101.3 2: [WARN] [1788960208.942293848] [camera_driver_test_node]: [trace=8b7c59e3-323f-45fd-9ea9-667b7d1f38d6] Cancellation denied because the time until execution 448.79145 is smaller than the allowed 500
+#25 101.3 2: [       OK ] CameraDriverTest.TestCancelToCloseToExecution (106 ms)
+#25 101.3 2: [ RUN      ] CameraDriverTest.TestRequestImageNonExistent
+#25 101.3 2: [       OK ] CameraDriverTest.TestRequestImageNonExistent (4 ms)
+#25 101.3 2: [ RUN      ] CameraDriverTest.TestRequestDriverException
+#25 101.3 2: [       OK ] CameraDriverTest.TestRequestDriverException (3 ms)
+#25 101.3 2: [ RUN      ] CameraDriverTest.TestRequestImageSuccess
+#25 101.3 2: [       OK ] CameraDriverTest.TestRequestImageSuccess (3 ms)
+#25 101.3 2: [----------] 11 tests from CameraDriverTest (170 ms total)
+#25 101.3 2: 
+#25 101.3 2: [----------] 6 tests from CameraDriverNodeTest
+#25 101.3 2: [ RUN      ] CameraDriverNodeTest.TestHandleGoal
+#25 101.3 2: [INFO] [1788960208.971424976] [camera_driver_test_node]: Successfully initialized camera driver
+#25 101.3 2: [INFO] [1788960208.971468897] [camera_driver_test_node]: [trace=acd5f3cf-00ad-488a-85f2-d43886a0cdc4] Successfully scheduled image request
+#25 101.3 2: [       OK ] CameraDriverNodeTest.TestHandleGoal (16 ms)
+#25 101.3 2: [ RUN      ] CameraDriverNodeTest.TestHandleGoalScheduleFailure
+#25 101.3 2: [INFO] [1788960208.977368001] [camera_driver_test_node]: Successfully initialized camera driver
+#25 101.3 2: [WARN] [1788960208.977420968] [camera_driver_test_node]: [trace=4dd6ffb0-4549-4339-9808-f9a35663af29] Schedule image request failed with error:"test exception"
+#25 101.3 2: [       OK ] CameraDriverNodeTest.TestHandleGoalScheduleFailure (5 ms)
+#25 101.3 2: [ RUN      ] CameraDriverNodeTest.TestHandleGoalRejectedWithInvalidCalibration
+#25 101.3 2: [INFO] [1788960208.982692338] [camera_driver_test_node]: Successfully initialized camera driver
+#25 101.3 2: [WARN] [1788960208.982716051] [camera_driver_test_node]: [trace=f27657b6-8d99-4153-a13d-9e8078f93b7f] Rejecting image request, calibration is invalid
+#25 101.3 2: [       OK ] CameraDriverNodeTest.TestHandleGoalRejectedWithInvalidCalibration (5 ms)
+#25 101.3 2: [ RUN      ] CameraDriverNodeTest.TestImageTrigger
+#25 101.3 2: [INFO] [1788960208.987831685] [camera_driver_test_node]: Successfully initialized camera driver
+#25 101.3 2: [INFO] [1788960208.991372223] [camera_driver_test_node]: [trace=fbe46da3-82c7-e8e0-1915-8e5590a630e2] Successfully scheduled image request
+#25 101.4 2: [       OK ] CameraDriverNodeTest.TestImageTrigger (57 ms)
+#25 101.4 2: [ RUN      ] CameraDriverNodeTest.TestImageTriggerFailure
+#25 101.4 2: [INFO] [1788960209.046568213] [camera_driver_test_node]: Successfully initialized camera driver
+#25 101.4 2: [INFO] [1788960209.048547732] [camera_driver_test_node]: [trace=ee550b10-b1e8-5bd1-b3d2-dc9074669883] Successfully scheduled image request
+#25 101.4 2: [ERROR] [1788960209.096897678] [camera_driver_test_node]: [logid=camera_driver:image_acquisition] [trace=ee550b10-b1e8-5bd1-b3d2-dc9074669883] Taking image failed with exception: Taking image failed
+#25 101.4 2: [       OK ] CameraDriverNodeTest.TestImageTriggerFailure (58 ms)
+#25 101.4 2: [ RUN      ] CameraDriverNodeTest.TestImageTriggerDriverFailure
+#25 101.4 2: [INFO] [1788960209.105829105] [camera_driver_test_node]: Successfully initialized camera driver
+#25 101.4 2: [INFO] [1788960209.107680979] [camera_driver_test_node]: [trace=3ae82c38-5324-bd57-b60e-b03d5e69c00b] Successfully scheduled image request
+#25 101.5 2: [       OK ] CameraDriverNodeTest.TestImageTriggerDriverFailure (59 ms)
+#25 101.5 2: [----------] 6 tests from CameraDriverNodeTest (203 ms total)
+#25 101.5 2: 
+#25 101.5 2: [----------] 6 tests from CmosCameraInformationProviderTest
+#25 101.5 2: [ RUN      ] CmosCameraInformationProviderTest.TestConvertColorFormat
+#25 101.5 2: [       OK ] CmosCameraInformationProviderTest.TestConvertColorFormat (0 ms)
+#25 101.5 2: [ RUN      ] CmosCameraInformationProviderTest.TestConvertWhiteBalance
+#25 101.5 2: [       OK ] CmosCameraInformationProviderTest.TestConvertWhiteBalance (0 ms)
+#25 101.5 2: [ RUN      ] CmosCameraInformationProviderTest.TestConvertColorMatrix
+#25 101.5 2: [       OK ] CmosCameraInformationProviderTest.TestConvertColorMatrix (0 ms)
+#25 101.5 2: [ RUN      ] CmosCameraInformationProviderTest.TestBuildFirmwareVersionString
+#25 101.5 2: [       OK ] CmosCameraInformationProviderTest.TestBuildFirmwareVersionString (0 ms)
+#25 101.5 2: [ RUN      ] CmosCameraInformationProviderTest.TestPopulateFrameParameterValues
+#25 101.5 2: [       OK ] CmosCameraInformationProviderTest.TestPopulateFrameParameterValues (0 ms)
+#25 101.5 2: [ RUN      ] CmosCameraInformationProviderTest.TestGetCameraInformation
+#25 101.5 2: [       OK ] CmosCameraInformationProviderTest.TestGetCameraInformation (0 ms)
+#25 101.5 2: [----------] 6 tests from CmosCameraInformationProviderTest (0 ms total)
+#25 101.5 2: 
+#25 101.5 2: [----------] 3 tests from FrameTests
+#25 101.5 2: [ RUN      ] FrameTests.TestConvertSensorToFrameColorFormat
+#25 101.5 2: [       OK ] FrameTests.TestConvertSensorToFrameColorFormat (0 ms)
+#25 101.5 2: [ RUN      ] FrameTests.TestConvertFrameColorFormatToOpenCVImageFormat
+#25 101.5 2: [       OK ] FrameTests.TestConvertFrameColorFormatToOpenCVImageFormat (0 ms)
+#25 101.5 2: [ RUN      ] FrameTests.TestConvertFrameColorFormatToSensorMessageString
+#25 101.5 2: [       OK ] FrameTests.TestConvertFrameColorFormatToSensorMessageString (0 ms)
+#25 101.5 2: [----------] 3 tests from FrameTests (0 ms total)
+#25 101.5 2: 
+#25 101.5 2: [----------] 42 tests from CmosDriverTest
+#25 101.5 2: [ RUN      ] CmosDriverTest.TestConstructionInvariants
+#25 101.5 2: [       OK ] CmosDriverTest.TestConstructionInvariants (4 ms)
+#25 101.5 2: [ RUN      ] CmosDriverTest.TestConfigureImagerSuccess
+#25 101.5 2: [       OK ] CmosDriverTest.TestConfigureImagerSuccess (3 ms)
+#25 101.5 2: [ RUN      ] CmosDriverTest.TestConfigureImagerAdcFailure
+#25 101.5 2: [       OK ] CmosDriverTest.TestConfigureImagerAdcFailure (3 ms)
+#25 101.5 2: [ RUN      ] CmosDriverTest.TestConfigureImagerTpgFailure
+#25 101.5 2: [       OK ] CmosDriverTest.TestConfigureImagerTpgFailure (3 ms)
+#25 101.5 2: [ RUN      ] CmosDriverTest.TestConfigureImagerDefaultBlackLevelFailure
+#25 101.5 2: [       OK ] CmosDriverTest.TestConfigureImagerDefaultBlackLevelFailure (3 ms)
+#25 101.5 2: [ RUN      ] CmosDriverTest.TestConfigureImagerBlackLevelFailure
+#25 101.5 2: [       OK ] CmosDriverTest.TestConfigureImagerBlackLevelFailure (3 ms)
+#25 101.5 2: [ RUN      ] CmosDriverTest.TestGetOutputLines
+#25 101.5 2: [       OK ] CmosDriverTest.TestGetOutputLines (3 ms)
+#25 101.5 2: [ RUN      ] CmosDriverTest.TestGetPreparationTime
+#25 101.5 2: [       OK ] CmosDriverTest.TestGetPreparationTime (4 ms)
+#25 101.5 2: [ RUN      ] CmosDriverTest.TestGetPostProcessTime
+#25 101.5 2: [       OK ] CmosDriverTest.TestGetPostProcessTime (4 ms)
+#25 101.5 2: [ RUN      ] CmosDriverTest.TestGetTimestampUs
+#25 101.5 2: [       OK ] CmosDriverTest.TestGetTimestampUs (3 ms)
+#25 101.5 2: [ RUN      ] CmosDriverTest.TestGetTimestampUsFailure
+#25 101.5 2: [       OK ] CmosDriverTest.TestGetTimestampUsFailure (4 ms)
+#25 101.5 2: [ RUN      ] CmosDriverTest.TestGetNextAvailableBufferCustomAlloc
+#25 101.5 2: [       OK ] CmosDriverTest.TestGetNextAvailableBufferCustomAlloc (3 ms)
+#25 101.5 2: [ RUN      ] CmosDriverTest.TestGetNextAvailableBufferCustomAllocFailure
+#25 101.5 2: [       OK ] CmosDriverTest.TestGetNextAvailableBufferCustomAllocFailure (3 ms)
+#25 101.5 2: [ RUN      ] CmosDriverTest.TestGetNextAvailableBuffer
+#25 101.5 2: [       OK ] CmosDriverTest.TestGetNextAvailableBuffer (3 ms)
+#25 101.5 2: [ RUN      ] CmosDriverTest.TestCmosImagerEventString
+#25 101.5 2: [       OK ] CmosDriverTest.TestCmosImagerEventString (3 ms)
+#25 101.5 2: [ RUN      ] CmosDriverTest.TestCmosImagerEventDetectingInvalidPaylod
+#25 101.5 2: [       OK ] CmosDriverTest.TestCmosImagerEventDetectingInvalidPaylod (3 ms)
+#25 101.5 2: [ RUN      ] CmosDriverTest.TestCmosImagerEventHandling
+#25 101.5 2: [       OK ] CmosDriverTest.TestCmosImagerEventHandling (3 ms)
+#25 101.5 2: [ RUN      ] CmosDriverTest.TestConvertRequestedFrameColorFormat
+#25 101.5 2: [       OK ] CmosDriverTest.TestConvertRequestedFrameColorFormat (3 ms)
+#25 101.5 2: [ RUN      ] CmosDriverTest.TestConfigureImagerTriggerParameters
+#25 101.5 2: [       OK ] CmosDriverTest.TestConfigureImagerTriggerParameters (3 ms)
+#25 101.5 2: [ RUN      ] CmosDriverTest.TestConfigureImagerTriggerParametersInvalidOffset
+#25 101.5 2: [       OK ] CmosDriverTest.TestConfigureImagerTriggerParametersInvalidOffset (3 ms)
+#25 101.5 2: [ RUN      ] CmosDriverTest.TestPrepareImagerForImageRetrieval
+#25 101.6 2: [INFO] [1788960209.239344601] [camera_driver_test_node]: frameId_: 41
+#25 101.6 2: [       OK ] CmosDriverTest.TestPrepareImagerForImageRetrieval (3 ms)
+#25 101.6 2: [ RUN      ] CmosDriverTest.TestPrepareImagerForImageRetrievalFailure
+#25 101.6 2: [INFO] [1788960209.242915535] [camera_driver_test_node]: frameId_: 41
+#25 101.6 2: [       OK ] CmosDriverTest.TestPrepareImagerForImageRetrievalFailure (3 ms)
+#25 101.6 2: [ RUN      ] CmosDriverTest.TestConfigureFlashOutputWrongFlashType
+#25 101.6 2: [       OK ] CmosDriverTest.TestConfigureFlashOutputWrongFlashType (3 ms)
+#25 101.6 2: [ RUN      ] CmosDriverTest.TestConfigureFlashOutput
+#25 101.6 2: [       OK ] CmosDriverTest.TestConfigureFlashOutput (3 ms)
+#25 101.6 2: [ RUN      ] CmosDriverTest.TestConfigureFlashOutputImagerFailure
+#25 101.6 2: [       OK ] CmosDriverTest.TestConfigureFlashOutputImagerFailure (3 ms)
+#25 101.6 2: [ RUN      ] CmosDriverTest.TestConfigureFlashOutputLines
+#25 101.6 2: [       OK ] CmosDriverTest.TestConfigureFlashOutputLines (3 ms)
+#25 101.6 2: [ RUN      ] CmosDriverTest.TestWaitForImageTransferSuccess
+#25 101.6 2: [       OK ] CmosDriverTest.TestWaitForImageTransferSuccess (3 ms)
+#25 101.6 2: [ RUN      ] CmosDriverTest.TestWaitForImageTransferMissingFrameBuffer
+#25 101.6 2: [       OK ] CmosDriverTest.TestWaitForImageTransferMissingFrameBuffer (3 ms)
+#25 101.6 2: [ RUN      ] CmosDriverTest.TestWaitForImageTransferImagerError
+#25 101.6 2: [       OK ] CmosDriverTest.TestWaitForImageTransferImagerError (3 ms)
+#25 101.6 2: [ RUN      ] CmosDriverTest.TestCalculateImageRetrivalTimeout
+#25 101.6 2: [       OK ] CmosDriverTest.TestCalculateImageRetrivalTimeout (6 ms)
+#25 101.6 2: [ RUN      ] CmosDriverTest.TestCaptureAndRetrieveImageDataTakingImageNowFailure
+#25 101.6 2: [       OK ] CmosDriverTest.TestCaptureAndRetrieveImageDataTakingImageNowFailure (5 ms)
+#25 101.6 2: [ RUN      ] CmosDriverTest.TestCaptureAndRetrieveImageDataTakingImageTimestampFailure
+#25 101.6 2: [       OK ] CmosDriverTest.TestCaptureAndRetrieveImageDataTakingImageTimestampFailure (3 ms)
+#25 101.6 2: [ RUN      ] CmosDriverTest.TestInitiateVDmaTransfer
+#25 101.6 2: [       OK ] CmosDriverTest.TestInitiateVDmaTransfer (4 ms)
+#25 101.6 2: [ RUN      ] CmosDriverTest.TestInitiateVDmaTransferFailure
+#25 101.6 2: [       OK ] CmosDriverTest.TestInitiateVDmaTransferFailure (3 ms)
+#25 101.6 2: [ RUN      ] CmosDriverTest.TestGetNextReady
+#25 101.6 2: [       OK ] CmosDriverTest.TestGetNextReady (3 ms)
+#25 101.6 2: [ RUN      ] CmosDriverTest.TestGetNextReadyFrameNoFrame
+#25 101.6 2: [       OK ] CmosDriverTest.TestGetNextReadyFrameNoFrame (3 ms)
+#25 101.6 2: [ RUN      ] CmosDriverTest.TestPopulateFrameBuffer
+#25 101.6 2: [       OK ] CmosDriverTest.TestPopulateFrameBuffer (3 ms)
+#25 101.6 2: [ RUN      ] CmosDriverTest.TestPerformXDmaCopy
+#25 101.6 2: [       OK ] CmosDriverTest.TestPerformXDmaCopy (4 ms)
+#25 101.6 2: [ RUN      ] CmosDriverTest.TestPerformXDmaCopyMissingBuffer
+#25 101.6 2: [       OK ] CmosDriverTest.TestPerformXDmaCopyMissingBuffer (3 ms)
+#25 101.6 2: [ RUN      ] CmosDriverTest.TestProcessFrame
+#25 101.6 2: [       OK ] CmosDriverTest.TestProcessFrame (3 ms)
+#25 101.6 2: [ RUN      ] CmosDriverTest.TestEventHandler
+#25 101.7 2: [       OK ] CmosDriverTest.TestEventHandler (55 ms)
+#25 101.7 2: [ RUN      ] CmosDriverTest.TestEventHandlerImageProcessingFailure
+#25 101.7 2: [ERROR] [1788960209.373536430] [camera_driver_test_node]: [logid=cmos_driver/frame_processing/after_acquisition] [trace=testRequestId] Failed to process image frame after acquisition: "Test exception"
+#25 101.7 2: [       OK ] CmosDriverTest.TestEventHandlerImageProcessingFailure (56 ms)
+#25 101.7 2: [----------] 42 tests from CmosDriverTest (265 ms total)
+#25 101.7 2: 
+#25 101.7 2: [----------] 4 tests from CameraDriverConfigTest
+#25 101.7 2: [ RUN      ] CameraDriverConfigTest.ThrowOnMissingParams
+#25 101.7 2: [       OK ] CameraDriverConfigTest.ThrowOnMissingParams (6 ms)
+#25 101.7 2: [ RUN      ] CameraDriverConfigTest.ThrowOnNotInitialized
+#25 101.8 2: [       OK ] CameraDriverConfigTest.ThrowOnNotInitialized (4 ms)
+#25 101.8 2: [ RUN      ] CameraDriverConfigTest.TestValueRetrieval
+#25 101.8 2: [       OK ] CameraDriverConfigTest.TestValueRetrieval (3 ms)
+#25 101.8 2: [ RUN      ] CameraDriverConfigTest.BuildTopicNames
+#25 101.8 2: [       OK ] CameraDriverConfigTest.BuildTopicNames (4 ms)
+#25 101.8 2: [----------] 4 tests from CameraDriverConfigTest (19 ms total)
+#25 101.8 2: 
+#25 101.8 2: [----------] 1 test from ImagerDevicePathProvider
+#25 101.8 2: [ RUN      ] ImagerDevicePathProvider.TestBuildingDevicePaths
+#25 101.8 2: [       OK ] ImagerDevicePathProvider.TestBuildingDevicePaths (0 ms)
+#25 101.8 2: [----------] 1 test from ImagerDevicePathProvider (0 ms total)
+#25 101.8 2: 
+#25 101.8 2: [----------] 7 tests from MockDriverTest
+#25 101.8 2: [ RUN      ] MockDriverTest.SingleFileIsServedForEveryRequest
+#25 101.8 2: [       OK ] MockDriverTest.SingleFileIsServedForEveryRequest (9 ms)
+#25 101.8 2: [ RUN      ] MockDriverTest.FolderIsServedInNameOrderAndWrapsAround
+#25 101.8 2: [       OK ] MockDriverTest.FolderIsServedInNameOrderAndWrapsAround (9 ms)
+#25 101.8 2: [ RUN      ] MockDriverTest.ColorImageIsMosaicedToBayer
+#25 101.8 2: [       OK ] MockDriverTest.ColorImageIsMosaicedToBayer (5 ms)
+#25 101.8 2: [ RUN      ] MockDriverTest.JpgIsSupported
+#25 101.8 2: [       OK ] MockDriverTest.JpgIsSupported (5 ms)
+#25 101.8 2: [ RUN      ] MockDriverTest.AcceptsParameterDeclaredByConfigManager
+#25 101.8 2: [       OK ] MockDriverTest.AcceptsParameterDeclaredByConfigManager (5 ms)
+#25 101.8 2: [ RUN      ] MockDriverTest.EmptyImageListThrows
+#25 101.8 2: [       OK ] MockDriverTest.EmptyImageListThrows (3 ms)
+#25 101.8 2: [ RUN      ] MockDriverTest.UnreadableImageReportsAnError
+#25 101.8 2: [       OK ] MockDriverTest.UnreadableImageReportsAnError (5 ms)
+#25 101.8 2: [----------] 7 tests from MockDriverTest (44 ms total)
+#25 101.8 2: 
+#25 101.8 2: [----------] Global test environment tear-down
+#25 101.8 2: [==========] 80 tests from 8 test suites ran. (704 ms total)
+#25 101.8 2: [  PASSED  ] 80 tests.
+#25 101.9 2: -- run_test.py: return code 0
+#25 101.9 2: -- run_test.py: inject classname prefix into gtest result file '/ros2_ws/build/jen_sc_camera_driver/test_results/jen_sc_camera_driver/jen_sc_camera_driver_test.gtest.xml'
+#25 101.9 2: -- run_test.py: verify result file '/ros2_ws/build/jen_sc_camera_driver/test_results/jen_sc_camera_driver/jen_sc_camera_driver_test.gtest.xml'
+#25 102.0 2/2 Test #2: jen_sc_camera_driver_test ........   Passed    0.98 sec
+#25 102.0 
+#25 102.0 100% tests passed, 0 tests failed out of 2
+#25 102.0 
+#25 102.0 Label Time Summary:
+#25 102.0 clang_format    =   0.30 sec*proc (1 test)
+#25 102.0 gmock           =   0.98 sec*proc (1 test)
+#25 102.0 linter          =   0.30 sec*proc (1 test)
+#25 102.0 
+#25 102.0 Total Test time (real) =   1.29 sec
+#25 102.0 Finished <<< jen_sc_camera_driver [1.35s]
+#25 102.0 
+#25 102.0 Summary: 1 package finished [1.48s]
+#25 102.1 ../build/jen_sc_camera_driver/CMakeFiles/jen_sc_camera_driver_lib.dir/src/robot_cmos_imager/DriverFactory.cpp.gcda:cannot open data file, assuming not executed
+#25 102.1 ../build/jen_sc_camera_driver/CMakeFiles/jen_sc_camera_driver_lib.dir/src/robot_cmos_imager/CmosLowLevelDriver.cpp.gcda:cannot open data file, assuming not executed
+#25 102.1 ../build/jen_sc_camera_driver/CMakeFiles/jen_sc_camera_driver_lib.dir/src/robot_cmos_imager/XDmaController.cpp.gcda:cannot open data file, assuming not executed
+#25 102.3 ../build/jen_sc_camera_driver/CMakeFiles/jen_sc_camera_driver.dir/src/main.cpp.gcda:cannot open data file, assuming not executed
+#25 102.3 ../build/jen_sc_camera_driver/CMakeFiles/jen_sc_camera_driver_mock.dir/src/main_mock.cpp.gcda:cannot open data file, assuming not executed
+#25 102.9 File '/ros2_ws/src/camera_driver/src/mock_imager/MockDriver.cpp'
+#25 102.9 Lines executed:100.00% of 2
+#25 102.9 Creating 'MockDriver.cpp.gcov'
+#25 102.9 
+#25 102.9 File '/usr/include/c++/13/span'
+#25 102.9 Lines executed:27.91% of 86
+#25 102.9 Creating 'span.gcov'
+#25 102.9 
+#25 102.9 File '/usr/include/c++/13/format'
+#25 102.9 Lines executed:4.04% of 11208
+#25 102.9 Creating 'format.gcov'
+#25 102.9 
+#25 102.9 File '/usr/include/c++/13/bits/stl_iterator.h'
+#25 102.9 Lines executed:51.43% of 35
+#25 102.9 Creating 'stl_iterator.h.gcov'
+#25 102.9 
+#25 102.9 File '/usr/include/c++/13/bits/range_access.h'
+#25 102.9 Lines executed:0.00% of 1
+#25 102.9 Creating 'range_access.h.gcov'
+#25 102.9 
+#25 102.9 File '/usr/include/c++/13/bits/basic_string.h'
+#25 102.9 Lines executed:36.01% of 1169
+#25 102.9 Creating 'basic_string.h.gcov'
+#25 102.9 
+#25 102.9 File '/usr/include/c++/13/bits/locale_facets.tcc'
+#25 102.9 Lines executed:0.00% of 170
+#25 102.9 Creating 'locale_facets.tcc.gcov'
+#25 102.9 
+#25 102.9 File '/usr/include/c++/13/string_view'
+#25 102.9 Lines executed:20.93% of 86
+#25 102.9 Creating 'string_view.gcov'
+#25 102.9 
+#25 102.9 File '/usr/include/c++/13/bits/stl_algobase.h'
+#25 102.9 Lines executed:9.92% of 615
+#25 102.9 Creating 'stl_algobase.h.gcov'
+#25 102.9 
+#25 102.9 File '/usr/include/c++/13/bits/char_traits.h'
+#25 102.9 Lines executed:71.43% of 14
+#25 102.9 Creating 'char_traits.h.gcov'
+#25 102.9 
+#25 102.9 File '/usr/include/c++/13/bits/invoke.h'
+#25 102.9 Lines executed:75.61% of 41
+#25 102.9 Creating 'invoke.h.gcov'
+#25 102.9 
+#25 102.9 File '/usr/include/c++/13/stop_token'
+#25 102.9 Lines executed:27.86% of 280
+#25 102.9 Creating 'stop_token.gcov'
+#25 102.9 
+#25 102.9 File '/usr/include/c++/13/bits/new_allocator.h'
+#25 102.9 Lines executed:25.46% of 3130
+#25 102.9 Creating 'new_allocator.h.gcov'
+#25 102.9 
+#25 102.9 File '/usr/include/c++/13/bits/locale_facets.h'
+#25 102.9 Lines executed:4.62% of 130
+#25 102.9 Creating 'locale_facets.h.gcov'
+#25 102.9 
+#25 102.9 File '/usr/include/c++/13/bits/stl_construct.h'
+#25 102.9 Lines executed:40.15% of 777
+#25 102.9 Creating 'stl_construct.h.gcov'
+#25 102.9 
+#25 102.9 File '/usr/include/c++/13/bits/string_view.tcc'
+#25 102.9 Lines executed:29.17% of 72
+#25 102.9 Creating 'string_view.tcc.gcov'
+#25 102.9 
+#25 102.9 File '/usr/include/c++/13/charconv'
+#25 102.9 Lines executed:1.14% of 2899
+#25 102.9 Creating 'charconv.gcov'
+#25 102.9 
+#25 102.9 File '/usr/include/boost/signals2/detail/signal_template.hpp'
+#25 102.9 Lines executed:38.00% of 579
+#25 102.9 Creating 'signal_template.hpp.gcov'
+#25 102.9 
+#25 102.9 File '/usr/include/boost/smart_ptr/shared_ptr.hpp'
+#25 102.9 Lines executed:48.99% of 198
+#25 102.9 Creating 'shared_ptr.hpp.gcov'
+#25 102.9 
+#25 102.9 File '/usr/include/boost/smart_ptr/detail/shared_count.hpp'
+#25 102.9 Lines executed:24.66% of 296
+#25 102.9 Creating 'shared_count.hpp.gcov'
+#25 102.9 
+#25 102.9 File '/usr/include/boost/smart_ptr/detail/sp_counted_base_gcc_atomic.hpp'
+#25 102.9 Lines executed:44.04% of 109
+#25 102.9 Creating 'sp_counted_base_gcc_atomic.hpp.gcov'
+#25 102.9 
+#25 102.9 File '/usr/include/c++/13/bits/ranges_algobase.h'
+#25 102.9 Lines executed:0.00% of 18
+#25 102.9 Creating 'ranges_algobase.h.gcov'
+#25 102.9 
+#25 102.9 File '/usr/include/boost/smart_ptr/detail/sp_counted_impl.hpp'
+#25 102.9 Lines executed:10.63% of 461
+#25 102.9 Creating 'sp_counted_impl.hpp.gcov'
+#25 102.9 
+#25 102.9 File '/usr/include/boost/core/checked_delete.hpp'
+#25 102.9 Lines executed:32.00% of 75
+#25 102.9 Creating 'checked_delete.hpp.gcov'
+#25 102.9 
+#25 102.9 File '/usr/include/c++/13/bits/shared_ptr_base.h'
+#25 102.9 Lines executed:35.82% of 4149
+#25 102.9 Creating 'shared_ptr_base.h.gcov'
+#25 102.9 
+#25 102.9 File '/usr/include/c++/13/bits/allocator.h'
+#25 102.9 Lines executed:100.00% of 2
+#25 102.9 Creating 'allocator.h.gcov'
+#25 102.9 
+#25 102.9 File '/usr/include/c++/13/ext/aligned_buffer.h'
+#25 102.9 Lines executed:10.00% of 30
+#25 102.9 Creating 'aligned_buffer.h.gcov'
+#25 102.9 
+#25 102.9 File '/usr/include/c++/13/bits/alloc_traits.h'
+#25 102.9 Lines executed:100.00% of 8
+#25 102.9 Creating 'alloc_traits.h.gcov'
+#25 102.9 
+#25 102.9 File '/usr/include/c++/13/bits/stl_set.h'
+#25 102.9 Lines executed:83.33% of 6
+#25 102.9 Creating 'stl_set.h.gcov'
+#25 102.9 
+#25 102.9 File '/usr/include/c++/13/bits/stl_tree.h'
+#25 102.9 Lines executed:21.86% of 2338
+#25 102.9 Creating 'stl_tree.h.gcov'
+#25 102.9 
+#25 102.9 File '/usr/include/yaml-cpp/node/detail/memory.h'
+#25 102.9 Lines executed:0.00% of 2
+#25 102.9 Creating 'memory.h.gcov'
+#25 102.9 
+#25 102.9 File '/usr/include/yaml-cpp/node/detail/node_ref.h'
+#25 102.9 Lines executed:0.00% of 1
+#25 102.9 Creating 'node_ref.h.gcov'
+#25 102.9 
+#25 102.9 File '/usr/include/c++/13/bits/std_thread.h'
+#25 102.9 Lines executed:34.62% of 52
+#25 102.9 Creating 'std_thread.h.gcov'
+#25 102.9 
+#25 102.9 File '/usr/include/c++/13/tuple'
+#25 102.9 Lines executed:83.33% of 36
+#25 102.9 Creating 'tuple.gcov'
+#25 102.9 
+#25 102.9 File '/usr/include/boost/smart_ptr/make_shared_object.hpp'
+#25 102.9 Lines executed:31.43% of 70
+#25 102.9 Creating 'make_shared_object.hpp.gcov'
+#25 102.9 
+#25 102.9 File '/usr/include/c++/13/bits/unique_ptr.h'
+#25 102.9 Lines executed:52.33% of 86
+#25 102.9 Creating 'unique_ptr.h.gcov'
+#25 102.9 
+#25 102.9 File '/usr/include/boost/throw_exception.hpp'
+#25 102.9 Lines executed:0.00% of 48
+#25 102.9 Creating 'throw_exception.hpp.gcov'
+#25 102.9 
+#25 102.9 File '/usr/include/boost/exception/exception.hpp'
+#25 102.9 Lines executed:0.00% of 86
+#25 102.9 Creating 'exception.hpp.gcov'
+#25 102.9 
+#25 102.9 File '/usr/include/boost/function/function_base.hpp'
+#25 102.9 Lines executed:13.86% of 166
+#25 102.9 Creating 'function_base.hpp.gcov'
+#25 102.9 
+#25 102.9 File '/ros2_ws/src/camera_driver/include/mock_imager/MockDriver.hpp'
+#25 102.9 Lines executed:40.18% of 341
+#25 102.9 Creating 'MockDriver.hpp.gcov'
+#25 102.9 
+#25 102.9 File '/usr/include/c++/13/future'
+#25 102.9 Lines executed:49.85% of 339
+#25 102.9 Creating 'future.gcov'
+#25 102.9 
+#25 102.9 File '/usr/include/c++/13/bits/stl_uninitialized.h'
+#25 102.9 Lines executed:20.54% of 331
+#25 102.9 Creating 'stl_uninitialized.h.gcov'
+#25 102.9 
+#25 102.9 File '/usr/include/boost/variant/variant.hpp'
+#25 102.9 Lines executed:0.00% of 73
+#25 102.9 Creating 'variant.hpp.gcov'
+#25 102.9 
+#25 102.9 File '/usr/include/c++/13/variant'
+#25 102.9 Lines executed:34.57% of 188
+#25 102.9 Creating 'variant.gcov'
+#25 102.9 
+#25 102.9 File '/ros2_ws/src/camera_driver/include/CameraTypes.hpp'
+#25 102.9 Lines executed:87.50% of 8
+#25 102.9 Creating 'CameraTypes.hpp.gcov'
+#25 102.9 
+#25 102.9 File '/usr/include/boost/signals2/detail/scope_guard.hpp'
+#25 102.9 Lines executed:0.00% of 29
+#25 102.9 Creating 'scope_guard.hpp.gcov'
+#25 102.9 
+#25 102.9 File '/usr/include/c++/13/bits/stl_list.h'
+#25 102.9 Lines executed:20.47% of 127
+#25 102.9 Creating 'stl_list.h.gcov'
+#25 102.9 
+#25 102.9 File '/usr/include/boost/variant/detail/visitation_impl.hpp'
+#25 102.9 Lines executed:0.00% of 213
+#25 102.9 Creating 'visitation_impl.hpp.gcov'
+#25 102.9 
+#25 102.9 File '/usr/include/boost/variant/detail/forced_return.hpp'
+#25 102.9 Lines executed:0.00% of 1
+#25 102.9 Creating 'forced_return.hpp.gcov'
+#25 102.9 
+#25 102.9 File '/usr/include/boost/signals2/detail/foreign_ptr.hpp'
+#25 102.9 Lines executed:0.00% of 9
+#25 102.9 Creating 'foreign_ptr.hpp.gcov'
+#25 102.9 
+#25 102.9 File '/usr/include/boost/function/function_template.hpp'
+#25 102.9 Lines executed:61.04% of 249
+#25 102.9 Creating 'function_template.hpp.gcov'
+#25 102.9 
+#25 102.9 File '/usr/include/boost/signals2/detail/variadic_slot_invoker.hpp'
+#25 102.9 Lines executed:40.00% of 30
+#25 102.9 Creating 'variadic_slot_invoker.hpp.gcov'
+#25 102.9 
+#25 102.9 File '/usr/include/boost/signals2/detail/auto_buffer.hpp'
+#25 102.9 Lines executed:8.60% of 349
+#25 102.9 Creating 'auto_buffer.hpp.gcov'
+#25 102.9 
+#25 102.9 File '/usr/include/boost/type_traits/aligned_storage.hpp'
+#25 102.9 Lines executed:66.67% of 3
+#25 102.9 Creating 'aligned_storage.hpp.gcov'
+#25 102.9 
+#25 102.9 File '/usr/include/boost/signals2/detail/slot_groups.hpp'
+#25 102.9 Lines executed:22.43% of 263
+#25 102.9 Creating 'slot_groups.hpp.gcov'
+#25 102.9 
+#25 102.9 File '/usr/include/c++/13/bits/stl_function.h'
+#25 102.9 Lines executed:83.33% of 6
+#25 102.9 Creating 'stl_function.h.gcov'
+#25 102.9 
+#25 102.9 File '/usr/include/boost/signals2/slot_base.hpp'
+#25 102.9 Lines executed:0.00% of 17
+#25 102.9 Creating 'slot_base.hpp.gcov'
+#25 102.9 
+#25 102.9 File '/usr/include/boost/smart_ptr/scoped_ptr.hpp'
+#25 102.9 Lines executed:0.00% of 3
+#25 102.9 Creating 'scoped_ptr.hpp.gcov'
+#25 102.9 
+#25 102.9 File '/usr/include/c++/13/bits/stl_map.h'
+#25 102.9 Lines executed:30.65% of 186
+#25 102.9 Creating 'stl_map.h.gcov'
+#25 102.9 
+#25 102.9 File '/usr/include/boost/signals2/detail/slot_call_iterator.hpp'
+#25 102.9 Lines executed:30.34% of 323
+#25 102.9 Creating 'slot_call_iterator.hpp.gcov'
+#25 102.9 
+#25 102.9 File '/usr/include/boost/optional/optional.hpp'
+#25 102.9 Lines executed:100.00% of 8
+#25 102.9 Creating 'optional.hpp.gcov'
+#25 102.9 
+#25 102.9 File '/usr/include/boost/signals2/detail/slot_template.hpp'
+#25 102.9 Lines executed:100.00% of 22
+#25 102.9 Creating 'slot_template.hpp.gcov'
+#25 102.9 
+#25 102.9 File '/usr/include/boost/optional/detail/optional_aligned_storage.hpp'
+#25 102.9 Lines executed:100.00% of 1
+#25 102.9 Creating 'optional_aligned_storage.hpp.gcov'
+#25 102.9 
+#25 102.9 File '/usr/include/boost/signals2/connection.hpp'
+#25 102.9 Lines executed:18.03% of 305
+#25 102.9 Creating 'connection.hpp.gcov'
+#25 102.9 
+#25 102.9 File '/usr/include/boost/signals2/detail/lwm_pthreads.hpp'
+#25 102.9 Lines executed:100.00% of 6
+#25 102.9 Creating 'lwm_pthreads.hpp.gcov'
+#25 102.9 
+#25 102.9 File '/usr/include/boost/smart_ptr/weak_ptr.hpp'
+#25 102.9 Lines executed:50.00% of 4
+#25 102.9 Creating 'weak_ptr.hpp.gcov'
+#25 102.9 
+#25 102.9 File '/usr/include/boost/type_traits/integral_constant.hpp'
+#25 102.9 Lines executed:0.00% of 14
+#25 102.9 Creating 'integral_constant.hpp.gcov'
+#25 102.9 
+#25 102.9 File '/usr/include/c++/13/bits/fs_path.h'
+#25 102.9 Lines executed:79.09% of 110
+#25 102.9 Creating 'fs_path.h.gcov'
+#25 102.9 
+#25 102.9 File '/usr/include/c++/13/bits/basic_string.tcc'
+#25 102.9 Lines executed:28.08% of 1873
+#25 102.9 Creating 'basic_string.tcc.gcov'
+#25 102.9 
+#25 102.9 File '/usr/include/boost/smart_ptr/detail/operator_bool.hpp'
+#25 102.9 Lines executed:100.00% of 1
+#25 102.9 Creating 'operator_bool.hpp.gcov'
+#25 102.9 
+#25 102.9 File '/usr/include/boost/variant/detail/apply_visitor_unary.hpp'
+#25 102.9 Lines executed:0.00% of 1
+#25 102.9 Creating 'apply_visitor_unary.hpp.gcov'
+#25 102.9 
+#25 102.9 File '/usr/include/c++/13/bits/list.tcc'
+#25 102.9 Lines executed:29.27% of 82
+#25 102.9 Creating 'list.tcc.gcov'
+#25 102.9 
+#25 102.9 File '/usr/include/c++/13/bits/stl_deque.h'
+#25 102.9 Lines executed:21.21% of 995
+#25 102.9 Creating 'stl_deque.h.gcov'
+#25 102.9 
+#25 102.9 File '/usr/include/boost/signals2/optional_last_value.hpp'
+#25 102.9 Lines executed:25.00% of 36
+#25 102.9 Creating 'optional_last_value.hpp.gcov'
+#25 102.9 
+#25 102.9 File '/usr/include/boost/iterator/iterator_facade.hpp'
+#25 102.9 Lines executed:100.00% of 2
+#25 102.9 Creating 'iterator_facade.hpp.gcov'
+#25 102.9 
+#25 102.9 File '/usr/include/boost/signals2/detail/unique_lock.hpp'
+#25 102.9 Lines executed:100.00% of 3
+#25 102.9 Creating 'unique_lock.hpp.gcov'
+#25 102.9 
+#25 102.9 File '/usr/include/c++/13/bits/move.h'
+#25 102.9 Lines executed:21.21% of 66
+#25 102.9 Creating 'move.h.gcov'
+#25 102.9 
+#25 102.9 File '/usr/include/c++/13/bits/deque.tcc'
+#25 102.9 Lines executed:6.89% of 1146
+#25 102.9 Creating 'deque.tcc.gcov'
+#25 102.9 
+#25 102.9 File '/usr/include/yaml-cpp/node/detail/node_data.h'
+#25 102.9 No executable lines
+#25 102.9 Removing 'node_data.h.gcov'
+#25 102.9 
+#25 102.9 File '/usr/include/c++/13/bits/stl_vector.h'
+#25 102.9 Lines executed:20.74% of 1866
+#25 102.9 Creating 'stl_vector.h.gcov'
+#25 102.9 
+#25 102.9 File '/usr/include/c++/13/thread'
+#25 102.9 Lines executed:50.00% of 76
+#25 102.9 Creating 'thread.gcov'
+#25 102.9 
+#25 102.9 File '/usr/include/c++/13/bits/atomic_base.h'
+#25 102.9 Lines executed:81.82% of 11
+#25 102.9 Creating 'atomic_base.h.gcov'
+#25 102.9 
+#25 102.9 File '/usr/include/c++/13/bit'
+#25 102.9 Lines executed:22.22% of 9
+#25 102.9 Creating 'bit.gcov'
+#25 102.9 
+#25 102.9 File '/opt/ros/jazzy/include/rclcpp/rclcpp/parameter_value.hpp'
+#25 102.9 Lines executed:40.00% of 75
+#25 102.9 Creating 'parameter_value.hpp.gcov'
+#25 102.9 
+#25 102.9 File '/opt/ros/jazzy/include/rclcpp/rclcpp/parameter.hpp'
+#25 102.9 Lines executed:95.35% of 43
+#25 102.9 Creating 'parameter.hpp.gcov'
+#25 102.9 
+#25 102.9 File '/usr/include/c++/13/bits/charconv.h'
+#25 102.9 Lines executed:3.50% of 429
+#25 102.9 Creating 'charconv.h.gcov'
+#25 102.9 
+#25 102.9 File '/usr/include/c++/13/optional'
+#25 102.9 Lines executed:40.00% of 100
+#25 102.9 Creating 'optional.gcov'
+#25 102.9 
+#25 102.9 File '/usr/include/boost/signals2/detail/result_type_wrapper.hpp'
+#25 102.9 Lines executed:100.00% of 2
+#25 102.9 Creating 'result_type_wrapper.hpp.gcov'
+#25 102.9 
+#25 102.9 File '/usr/include/c++/13/bits/shared_ptr.h'
+#25 102.9 Lines executed:72.22% of 36
+#25 102.9 Creating 'shared_ptr.h.gcov'
+#25 102.9 
+#25 102.9 File '/usr/include/c++/13/bits/stl_pair.h'
+#25 102.9 Lines executed:57.69% of 26
+#25 102.9 Creating 'stl_pair.h.gcov'
+#25 102.9 
+#25 102.9 File '/usr/include/c++/13/bits/vector.tcc'
+#25 102.9 Lines executed:26.06% of 2061
+#25 102.9 Creating 'vector.tcc.gcov'
+#25 102.9 
+#25 102.9 File '/ros2_ws/install/jen_parameter_utils/include/jen_parameter_utils/config_parameter_helper/parameter.hpp'
+#25 102.9 Lines executed:88.24% of 34
+#25 102.9 Creating 'parameter.hpp.gcov'
+#25 102.9 
+#25 102.9 File '/usr/include/c++/13/bits/stl_bvector.h'
+#25 102.9 Lines executed:28.74% of 167
+#25 102.9 Creating 'stl_bvector.h.gcov'
+#25 102.9 
+#25 102.9 File '/usr/include/c++/13/bits/unique_lock.h'
+#25 102.9 Lines executed:58.93% of 112
+#25 102.9 Creating 'unique_lock.h.gcov'
+#25 102.9 
+#25 102.9 File '/usr/include/c++/13/bits/std_mutex.h'
+#25 102.9 Lines executed:63.04% of 46
+#25 102.9 Creating 'std_mutex.h.gcov'
+#25 102.9 
+#25 102.9 File '/usr/include/x86_64-linux-gnu/c++/13/bits/gthr-default.h'
+#25 102.9 Lines executed:75.00% of 4
+#25 102.9 Creating 'gthr-default.h.gcov'
+#25 102.9 
+#25 102.9 File '/usr/include/c++/13/ext/atomicity.h'
+#25 102.9 Lines executed:50.00% of 10
+#25 102.9 Creating 'atomicity.h.gcov'
+#25 102.9 
+#25 102.9 File '/ros2_ws/install/jen_parameter_utils/include/jen_parameter_utils/config_parameter_helper/config_descriptor.hpp'
+#25 102.9 Lines executed:61.54% of 26
+#25 102.9 Creating 'config_descriptor.hpp.gcov'
+#25 102.9 
+#25 102.9 File '/ros2_ws/src/camera_driver/include/mock_imager/Config.hpp'
+#25 102.9 Lines executed:24.44% of 45
+#25 102.9 Creating 'Config.hpp.gcov'
+#25 102.9 
+#25 102.9 File '/opt/ros/jazzy/include/rcl_interfaces/rcl_interfaces/msg/detail/parameter_descriptor__struct.hpp'
+#25 102.9 Lines executed:63.16% of 95
+#25 102.9 Creating 'parameter_descriptor__struct.hpp.gcov'
+#25 102.9 
+#25 102.9 File '/opt/ros/jazzy/include/rosidl_runtime_cpp/rosidl_runtime_cpp/bounded_vector.hpp'
+#25 102.9 Lines executed:0.00% of 1
+#25 102.9 Creating 'bounded_vector.hpp.gcov'
+#25 102.9 
+#25 102.9 File '/usr/include/c++/13/semaphore'
+#25 102.9 Lines executed:0.00% of 14
+#25 102.9 Creating 'semaphore.gcov'
+#25 102.9 
+#25 102.9 File '/usr/include/c++/13/bits/semaphore_base.h'
+#25 102.9 Lines executed:0.00% of 2
+#25 102.9 Creating 'semaphore_base.h.gcov'
+#25 102.9 
+#25 102.9 File '/usr/include/c++/13/bits/atomic_wait.h'
+#25 102.9 Lines executed:0.00% of 2
+#25 102.9 Creating 'atomic_wait.h.gcov'
+#25 102.9 
+#25 102.9 File '/ros2_ws/src/camera_driver/include/DriverInterface.hpp'
+#25 102.9 Lines executed:100.00% of 1
+#25 102.9 Creating 'DriverInterface.hpp.gcov'
+#25 102.9 
+#25 102.9 File '/usr/include/c++/13/bits/stl_queue.h'
+#25 102.9 Lines executed:100.00% of 4
+#25 102.9 Creating 'stl_queue.h.gcov'
+#25 102.9 
+#25 102.9 File '/ros2_ws/install/jen_logging/include/jen_logging/logging_base.hpp'
+#25 102.9 Lines executed:6.67% of 15
+#25 102.9 Creating 'logging_base.hpp.gcov'
+#25 102.9 
+#25 102.9 File '/usr/include/opencv4/opencv2/core/mat.inl.hpp'
+#25 102.9 Lines executed:88.89% of 9
+#25 102.9 Creating 'mat.inl.hpp.gcov'
+#25 102.9 
+#25 102.9 File '/ros2_ws/src/camera_driver/include/mock_imager/ImageLoader.hpp'
+#25 102.9 Lines executed:100.00% of 1
+#25 102.9 Creating 'ImageLoader.hpp.gcov'
+#25 102.9 
+#25 102.9 File '/usr/include/c++/13/mutex'
+#25 102.9 Lines executed:60.00% of 60
+#25 102.9 Creating 'mutex.gcov'
+#25 102.9 
+#25 102.9 File '/usr/include/c++/13/condition_variable'
+#25 102.9 Lines executed:93.33% of 15
+#25 102.9 Creating 'condition_variable.gcov'
+#25 102.9 
+#25 102.9 File '/usr/include/c++/13/bits/chrono.h'
+#25 102.9 Lines executed:100.00% of 14
+#25 102.9 Creating 'chrono.h.gcov'
+#25 102.9 
+#25 102.9 File '/opt/ros/jazzy/include/rclcpp/rclcpp/duration.hpp'
+#25 102.9 Lines executed:26.09% of 23
+#25 102.9 Creating 'duration.hpp.gcov'
+#25 102.9 
+#25 102.9 File '/usr/include/c++/13/bits/stl_iterator_base_funcs.h'
+#25 102.9 Lines executed:1.96% of 51
+#25 102.9 Creating 'stl_iterator_base_funcs.h.gcov'
+#25 102.9 
+#25 102.9 File '/usr/include/c++/13/initializer_list'
+#25 102.9 Lines executed:100.00% of 2
+#25 102.9 Creating 'initializer_list.gcov'
+#25 102.9 
+#25 102.9 File '/opt/ros/jazzy/include/rclcpp/rclcpp/parameter_client.hpp'
+#25 102.9 No executable lines
+#25 102.9 Removing 'parameter_client.hpp.gcov'
+#25 102.9 
+#25 102.9 File '/usr/include/boost/signals2/expired_slot.hpp'
+#25 102.9 Lines executed:0.00% of 20
+#25 102.9 Creating 'expired_slot.hpp.gcov'
+#25 102.9 
+#25 102.9 File '/usr/include/boost/smart_ptr/bad_weak_ptr.hpp'
+#25 102.9 Lines executed:0.00% of 20
+#25 102.9 Creating 'bad_weak_ptr.hpp.gcov'
+#25 102.9 
+#25 102.9 File '/opt/ros/jazzy/include/statistics_msgs/statistics_msgs/msg/detail/metrics_message__struct.hpp'
+#25 102.9 No executable lines
+#25 102.9 Removing 'metrics_message__struct.hpp.gcov'
+#25 102.9 
+#25 102.9 File '/opt/ros/jazzy/include/rclcpp/rclcpp/logger.hpp'
+#25 102.9 Lines executed:100.00% of 2
+#25 102.9 Creating 'logger.hpp.gcov'
+#25 102.9 
+#25 102.9 File '/opt/ros/jazzy/include/rcl_interfaces/rcl_interfaces/msg/detail/parameter_value__struct.hpp'
+#25 102.9 No executable lines
+#25 102.9 Removing 'parameter_value__struct.hpp.gcov'
+#25 102.9 
+#25 102.9 File '/usr/include/x86_64-linux-gnu/c++/13/bits/c++config.h'
+#25 102.9 Lines executed:0.00% of 1
+#25 102.9 Creating 'c++config.h.gcov'
+#25 102.9 
+#25 102.9 File '/usr/include/c++/13/ext/concurrence.h'
+#25 102.9 Lines executed:0.00% of 88
+#25 102.9 Creating 'concurrence.h.gcov'
+#25 102.9 
+#25 102.9 File '/usr/include/c++/13/typeinfo'
+#25 102.9 Lines executed:0.00% of 55
+#25 102.9 Creating 'typeinfo.gcov'
+#25 102.9 
+#25 102.9 File '/usr/include/c++/13/bits/stl_heap.h'
+#25 102.9 Lines executed:0.00% of 232
+#25 102.9 Creating 'stl_heap.h.gcov'
+#25 102.9 
+#25 102.9 File '/usr/include/c++/13/bits/predefined_ops.h'
+#25 102.9 Lines executed:0.00% of 7
+#25 102.9 Creating 'predefined_ops.h.gcov'
+#25 102.9 
+#25 102.9 File '/usr/include/c++/13/bits/stl_algo.h'
+#25 102.9 Lines executed:10.48% of 601
+#25 102.9 Creating 'stl_algo.h.gcov'
+#25 102.9 
+#25 102.9 File '/usr/include/c++/13/compare'
+#25 102.9 Lines executed:0.00% of 2
+#25 102.9 Creating 'compare.gcov'
+#25 102.9 
+#25 102.9 File '/ros2_ws/src/camera_driver/src/mock_imager/ImageLoader.cpp'
+#25 102.9 Lines executed:94.12% of 34
+#25 102.9 Creating 'ImageLoader.cpp.gcov'
+#25 102.9 
+#25 102.9 File '/usr/include/c++/13/bits/fs_ops.h'
+#25 102.9 Lines executed:100.00% of 1
+#25 102.9 Creating 'fs_ops.h.gcov'
+#25 102.9 
+#25 102.9 File '/usr/include/c++/13/bits/fs_dir.h'
+#25 102.9 Lines executed:87.50% of 8
+#25 102.9 Creating 'fs_dir.h.gcov'
+#25 102.9 
+#25 102.9 File '/usr/include/c++/13/bits/ranges_algo.h'
+#25 102.9 Lines executed:100.00% of 5
+#25 102.9 Creating 'ranges_algo.h.gcov'
+#25 102.9 
+#25 102.9 File '/usr/include/opencv4/opencv2/core/types.hpp'
+#25 102.9 Lines executed:100.00% of 8
+#25 102.9 Creating 'types.hpp.gcov'
+#25 102.9 
+#25 102.9 File '/usr/include/opencv4/opencv2/core/mat.hpp'
+#25 102.9 Lines executed:100.00% of 1
+#25 102.9 Creating 'mat.hpp.gcov'
+#25 102.9 
+#25 102.9 File '/ros2_ws/src/camera_driver/src/robot_cmos_imager/ImagerDevicePathProvider.cpp'
+#25 102.9 Lines executed:100.00% of 7
+#25 102.9 Creating 'ImagerDevicePathProvider.cpp.gcov'
+#25 102.9 
+#25 102.9 File '/ros2_ws/src/camera_driver/src/robot_cmos_imager/DriverFactory.cpp'
+#25 102.9 Lines executed:0.00% of 6
+#25 102.9 Creating 'DriverFactory.cpp.gcov'
+#25 102.9 
+#25 102.9 File '/ros2_ws/src/camera_driver/include/robot_cmos_imager/CmosLowLevelDriver.hpp'
+#25 102.9 Lines executed:0.00% of 9
+#25 102.9 Creating 'CmosLowLevelDriver.hpp.gcov'
+#25 102.9 
+#25 102.9 File '/ros2_ws/src/camera_driver/include/robot_cmos_imager/CmosDriver.hpp'
+#25 102.9 Lines executed:40.00% of 5
+#25 102.9 Creating 'CmosDriver.hpp.gcov'
+#25 102.9 
+#25 102.9 File '/ros2_ws/src/camera_driver/include/robot_cmos_imager/XDmaController.hpp'
+#25 102.9 Lines executed:0.00% of 2
+#25 102.9 Creating 'XDmaController.hpp.gcov'
+#25 102.9 
+#25 102.9 File '/ros2_ws/src/camera_driver/src/robot_cmos_imager/CmosLowLevelDriver.cpp'
+#25 102.9 Lines executed:0.00% of 51
+#25 102.9 Creating 'CmosLowLevelDriver.cpp.gcov'
+#25 102.9 
+#25 102.9 File '/ros2_ws/src/camera_driver/src/robot_cmos_imager/CameraInformationProvider.cpp'
+#25 102.9 Lines executed:87.72% of 57
+#25 102.9 Creating 'CameraInformationProvider.cpp.gcov'
+#25 102.9 
+#25 102.9 File '/ros2_ws/src/camera_driver/src/robot_cmos_imager/XDmaController.cpp'
+#25 102.9 Lines executed:0.00% of 41
+#25 102.9 Creating 'XDmaController.cpp.gcov'
+#25 102.9 
+#25 102.9 File '/usr/include/x86_64-linux-gnu/bits/unistd.h'
+#25 102.9 Lines executed:0.00% of 1
+#25 102.9 Creating 'unistd.h.gcov'
+#25 102.9 
+#25 102.9 File '/usr/include/c++/13/bits/exception.h'
+#25 102.9 Lines executed:0.00% of 1
+#25 102.9 Creating 'exception.h.gcov'
+#25 103.0 
+#25 103.0 File '/usr/include/c++/13/new'
+#25 103.0 Lines executed:0.00% of 1
+#25 103.0 Creating 'new.gcov'
+#25 103.0 
+#25 103.0 File '/usr/include/x86_64-linux-gnu/bits/fcntl2.h'
+#25 103.0 Lines executed:0.00% of 1
+#25 103.0 Creating 'fcntl2.h.gcov'
+#25 103.0 
+#25 103.0 File '/usr/include/c++/13/ostream'
+#25 103.0 Lines executed:40.00% of 10
+#25 103.0 Creating 'ostream.gcov'
+#25 103.0 
+#25 103.0 File '/usr/include/c++/13/sstream'
+#25 103.0 Lines executed:33.33% of 3
+#25 103.0 Creating 'sstream.gcov'
+#25 103.0 
+#25 103.0 File '/ros2_ws/src/camera_driver/src/robot_cmos_imager/CmosDriver.cpp'
+#25 103.0 Lines executed:71.51% of 358
+#25 103.0 Creating 'CmosDriver.cpp.gcov'
+#25 103.0 
+#25 103.0 File '/usr/include/c++/13/bits/std_function.h'
+#25 103.0 Lines executed:40.56% of 5718
+#25 103.0 Creating 'std_function.h.gcov'
+#25 103.0 
+#25 103.0 File '/usr/include/c++/13/bits/quoted_string.h'
+#25 103.0 Lines executed:60.00% of 30
+#25 103.0 Creating 'quoted_string.h.gcov'
+#25 103.0 
+#25 103.0 File '/usr/include/c++/13/bits/this_thread_sleep.h'
+#25 103.0 Lines executed:60.00% of 20
+#25 103.0 Creating 'this_thread_sleep.h.gcov'
+#25 103.0 
+#25 103.0 File '/usr/include/c++/13/array'
+#25 103.0 Lines executed:100.00% of 9
+#25 103.0 Creating 'array.gcov'
+#25 103.0 
+#25 103.0 File '/ros2_ws/src/camera_driver/include/robot_cmos_imager/ImagerDevicePathProvider.hpp'
+#25 103.0 Lines executed:100.00% of 1
+#25 103.0 Creating 'ImagerDevicePathProvider.hpp.gcov'
+#25 103.0 
+#25 103.0 File '/ros2_ws/src/camera_driver/src/CameraDriverNode.cpp'
+#25 103.0 Lines executed:77.48% of 151
+#25 103.0 Creating 'CameraDriverNode.cpp.gcov'
+#25 103.0 
+#25 103.0 File '/ros2_ws/install/jen_config_manager_interface/include/jen_config_manager_interface/jen_config_manager_interface/msg/detail/error__struct.hpp'
+#25 103.0 Lines executed:0.00% of 7
+#25 103.0 Creating 'error__struct.hpp.gcov'
+#25 103.0 
+#25 103.0 File '/ros2_ws/install/jen_config_manager_interface/include/jen_config_manager_interface/jen_config_manager_interface/srv/detail/get_node_parameters__struct.hpp'
+#25 103.0 Lines executed:0.00% of 7
+#25 103.0 Creating 'get_node_parameters__struct.hpp.gcov'
+#25 103.0 
+#25 103.0 File '/ros2_ws/install/jen_camera_msgs/include/jen_camera_msgs/jen_camera_msgs/msg/detail/camera_parameters__struct.hpp'
+#25 103.0 Lines executed:100.00% of 8
+#25 103.0 Creating 'camera_parameters__struct.hpp.gcov'
+#25 103.0 
+#25 103.0 File '/ros2_ws/install/jen_camera_msgs/include/jen_camera_msgs/jen_camera_msgs/msg/detail/camera_image_goal__struct.hpp'
+#25 103.0 Lines executed:100.00% of 20
+#25 103.0 Creating 'camera_image_goal__struct.hpp.gcov'
+#25 103.0 
+#25 103.0 File '/ros2_ws/install/jen_camera_msgs/include/jen_camera_msgs/jen_camera_msgs/action/detail/camera_image__struct.hpp'
+#25 103.0 Lines executed:93.33% of 15
+#25 103.0 Creating 'camera_image__struct.hpp.gcov'
+#25 103.0 
+#25 103.0 File '/usr/include/c++/13/bits/hashtable_policy.h'
+#25 103.0 Lines executed:31.73% of 104
+#25 103.0 Creating 'hashtable_policy.h.gcov'
+#25 103.0 
+#25 103.0 File '/usr/include/c++/13/bits/hashtable.h'
+#25 103.0 Lines executed:28.43% of 496
+#25 103.0 Creating 'hashtable.h.gcov'
+#25 103.0 
+#25 103.0 File '/opt/ros/jazzy/include/rclcpp_action/rclcpp_action/types.hpp'
+#25 103.0 Lines executed:100.00% of 4
+#25 103.0 Creating 'types.hpp.gcov'
+#25 103.0 
+#25 103.0 File '/opt/ros/jazzy/include/rclcpp_action/rclcpp_action/server_goal_handle.hpp'
+#25 103.0 Lines executed:85.71% of 28
+#25 103.0 Creating 'server_goal_handle.hpp.gcov'
+#25 103.0 
+#25 103.0 File '/usr/include/c++/13/bits/functional_hash.h'
+#25 103.0 Lines executed:0.00% of 2
+#25 103.0 Creating 'functional_hash.h.gcov'
+#25 103.0 
+#25 103.0 File '/opt/ros/jazzy/include/rclcpp_action/rclcpp_action/server.hpp'
+#25 103.0 Lines executed:69.49% of 59
+#25 103.0 Creating 'server.hpp.gcov'
+#25 103.0 
+#25 103.0 File '/opt/ros/jazzy/include/builtin_interfaces/builtin_interfaces/msg/detail/time__struct.hpp'
+#25 103.0 Lines executed:100.00% of 7
+#25 103.0 Creating 'time__struct.hpp.gcov'
+#25 103.0 
+#25 103.0 File '/opt/ros/jazzy/include/camera_info_manager/camera_info_manager/camera_info_manager.hpp'
+#25 103.0 No executable lines
+#25 103.0 Removing 'camera_info_manager.hpp.gcov'
+#25 103.0 
+#25 103.0 File '/ros2_ws/src/camera_driver/include/FrameReadyWaitable.hpp'
+#25 103.0 No executable lines
+#25 103.0 Removing 'FrameReadyWaitable.hpp.gcov'
+#25 103.0 
+#25 103.0 File '/usr/include/c++/13/bits/regex_automaton.h'
+#25 103.0 Lines executed:17.44% of 453
+#25 103.0 Creating 'regex_automaton.h.gcov'
+#25 103.0 
+#25 103.0 File '/usr/include/c++/13/bits/regex.h'
+#25 103.0 Lines executed:14.51% of 255
+#25 103.0 Creating 'regex.h.gcov'
+#25 103.0 
+#25 103.0 File '/ros2_ws/install/jen_camera_msgs/include/jen_camera_msgs/jen_camera_msgs/msg/detail/camera_image_result__struct.hpp'
+#25 103.0 Lines executed:100.00% of 19
+#25 103.0 Creating 'camera_image_result__struct.hpp.gcov'
+#25 103.0 
+#25 103.0 File '/opt/ros/jazzy/include/rclcpp/rclcpp/client.hpp'
+#25 103.0 Lines executed:20.34% of 59
+#25 103.0 Creating 'client.hpp.gcov'
+#25 103.0 
+#25 103.0 File '/usr/include/c++/13/bits/unordered_map.h'
+#25 103.0 Lines executed:50.00% of 6
+#25 103.0 Creating 'unordered_map.h.gcov'
+#25 103.0 
+#25 103.0 File '/opt/ros/jazzy/include/rclcpp/rclcpp/experimental/buffers/intra_process_buffer.hpp'
+#25 103.0 Lines executed:0.00% of 135
+#25 103.0 Creating 'intra_process_buffer.hpp.gcov'
+#25 103.0 
+#25 103.0 File '/opt/ros/jazzy/include/rclcpp/rclcpp/experimental/buffers/ring_buffer_implementation.hpp'
+#25 103.0 Lines executed:0.00% of 138
+#25 103.0 Creating 'ring_buffer_implementation.hpp.gcov'
+#25 103.0 
+#25 103.0 File '/opt/ros/jazzy/include/unique_identifier_msgs/unique_identifier_msgs/msg/detail/uuid__struct.hpp'
+#25 103.0 Lines executed:100.00% of 1
+#25 103.0 Creating 'uuid__struct.hpp.gcov'
+#25 103.0 
+#25 103.0 File '/opt/ros/jazzy/include/rclcpp/rclcpp/publisher.hpp'
+#25 103.0 Lines executed:34.72% of 72
+#25 103.0 Creating 'publisher.hpp.gcov'
+#25 103.0 
+#25 103.0 File '/opt/ros/jazzy/include/rclcpp/rclcpp/timer.hpp'
+#25 103.0 Lines executed:76.67% of 30
+#25 103.0 Creating 'timer.hpp.gcov'
+#25 103.0 
+#25 103.0 File '/opt/ros/jazzy/include/rclcpp/rclcpp/context.hpp'
+#25 103.0 Lines executed:0.00% of 9
+#25 103.0 Creating 'context.hpp.gcov'
+#25 103.0 
+#25 103.0 File '/opt/ros/jazzy/include/sensor_msgs/sensor_msgs/image_encodings.hpp'
+#25 103.0 No executable lines
+#25 103.0 Removing 'image_encodings.hpp.gcov'
+#25 103.0 
+#25 103.0 File '/ros2_ws/src/camera_driver/include/Config.hpp'
+#25 103.0 Lines executed:100.00% of 1
+#25 103.0 Creating 'Config.hpp.gcov'
+#25 103.0 
+#25 103.0 File '/usr/include/c++/13/bits/regex_compiler.h'
+#25 103.0 Lines executed:2.62% of 1791
+#25 103.0 Creating 'regex_compiler.h.gcov'
+#25 103.0 
+#25 103.0 File '/opt/ros/jazzy/include/rclcpp/rclcpp/publisher_options.hpp'
+#25 103.0 Lines executed:93.33% of 15
+#25 103.0 Creating 'publisher_options.hpp.gcov'
+#25 103.0 
+#25 103.0 File '/usr/include/c++/13/bits/locale_classes.h'
+#25 103.0 Lines executed:100.00% of 1
+#25 103.0 Creating 'locale_classes.h.gcov'
+#25 103.0 
+#25 103.0 File '/opt/ros/jazzy/include/tracetools/tracetools/utils.hpp'
+#25 103.0 Lines executed:0.00% of 1
+#25 103.0 Creating 'utils.hpp.gcov'
+#25 103.0 
+#25 103.0 File '/opt/ros/jazzy/include/rclcpp/rclcpp/get_message_type_support_handle.hpp'
+#25 103.0 Lines executed:80.00% of 5
+#25 103.0 Creating 'get_message_type_support_handle.hpp.gcov'
+#25 103.0 
+#25 103.0 File '/usr/include/c++/13/bits/regex.tcc'
+#25 103.0 Lines executed:2.76% of 290
+#25 103.0 Creating 'regex.tcc.gcov'
+#25 103.0 
+#25 103.0 File '/usr/include/c++/13/typeindex'
+#25 103.0 Lines executed:0.00% of 3
+#25 103.0 Creating 'typeindex.gcov'
+#25 103.0 
+#25 103.0 File '/usr/include/c++/13/bits/atomic_futex.h'
+#25 103.0 Lines executed:9.09% of 44
+#25 103.0 Creating 'atomic_futex.h.gcov'
+#25 103.0 
+#25 103.0 File '/usr/include/x86_64-linux-gnu/c++/13/bits/ctype_inline.h'
+#25 103.0 Lines executed:100.00% of 1
+#25 103.0 Creating 'ctype_inline.h.gcov'
+#25 103.0 
+#25 103.0 File '/usr/include/c++/13/bits/regex_compiler.tcc'
+#25 103.0 Lines executed:4.95% of 3437
+#25 103.0 Creating 'regex_compiler.tcc.gcov'
+#25 103.0 
+#25 103.0 File '/usr/include/c++/13/bits/regex_scanner.h'
+#25 103.0 Lines executed:14.00% of 150
+#25 103.0 Creating 'regex_scanner.h.gcov'
+#25 103.0 
+#25 103.0 File '/usr/include/c++/13/bits/regex_constants.h'
+#25 103.0 Lines executed:50.00% of 2
+#25 103.0 Creating 'regex_constants.h.gcov'
+#25 103.0 
+#25 103.0 File '/usr/include/c++/13/bitset'
+#25 103.0 Lines executed:72.73% of 11
+#25 103.0 Creating 'bitset.gcov'
+#25 103.0 
+#25 103.0 File '/opt/ros/jazzy/include/rclcpp/rclcpp/publisher_factory.hpp'
+#25 103.0 Lines executed:100.00% of 8
+#25 103.0 Creating 'publisher_factory.hpp.gcov'
+#25 103.0 
+#25 103.0 File '/ros2_ws/install/jen_config_manager_interface/include/jen_config_manager_interface/jen_config_manager_interface/msg/detail/node_parameter_names__struct.hpp'
+#25 103.0 Lines executed:0.00% of 6
+#25 103.0 Creating 'node_parameter_names__struct.hpp.gcov'
+#25 103.0 
+#25 103.0 File '/usr/include/c++/13/bits/stl_stack.h'
+#25 103.0 Lines executed:80.00% of 5
+#25 103.0 Creating 'stl_stack.h.gcov'
+#25 103.0 
+#25 103.0 File '/usr/include/c++/13/istream'
+#25 103.0 Lines executed:0.00% of 3
+#25 103.0 Creating 'istream.gcov'
+#25 103.0 
+#25 103.0 File '/usr/include/c++/13/bits/basic_ios.h'
+#25 103.0 Lines executed:0.00% of 2
+#25 103.0 Creating 'basic_ios.h.gcov'
+#25 103.0 
+#25 103.0 File '/usr/include/c++/13/bits/ios_base.h'
+#25 103.0 Lines executed:0.00% of 50
+#25 103.0 Creating 'ios_base.h.gcov'
+#25 103.0 
+#25 103.0 File '/opt/ros/jazzy/include/diagnostic_updater/diagnostic_updater.hpp'
+#25 103.0 Lines executed:78.95% of 19
+#25 103.0 Creating 'diagnostic_updater.hpp.gcov'
+#25 103.0 
+#25 103.0 File '/usr/include/c++/13/bits/regex_automaton.tcc'
+#25 103.0 Lines executed:3.59% of 390
+#25 103.0 Creating 'regex_automaton.tcc.gcov'
+#25 103.0 
+#25 103.0 File '/opt/ros/jazzy/include/rclcpp/rclcpp/experimental/subscription_intra_process_buffer.hpp'
+#25 103.0 Lines executed:0.00% of 13
+#25 103.0 Creating 'subscription_intra_process_buffer.hpp.gcov'
+#25 103.0 
+#25 103.0 File '/opt/ros/jazzy/include/rclcpp_action/rclcpp_action/create_server.hpp'
+#25 103.0 Lines executed:83.33% of 18
+#25 103.0 Creating 'create_server.hpp.gcov'
+#25 103.0 
+#25 103.0 File '/usr/include/c++/13/bits/regex_scanner.tcc'
+#25 103.0 Lines executed:5.49% of 2040
+#25 103.0 Creating 'regex_scanner.tcc.gcov'
+#25 103.0 
+#25 103.0 File '/ros2_ws/install/jen_camera_msgs/include/jen_camera_msgs/jen_camera_msgs/msg/detail/flash_request__struct.hpp'
+#25 103.0 Lines executed:62.50% of 8
+#25 103.0 Creating 'flash_request__struct.hpp.gcov'
+#25 103.0 
+#25 103.0 File '/opt/ros/jazzy/include/rclcpp/rclcpp/experimental/create_intra_process_buffer.hpp'
+#25 103.0 Lines executed:0.00% of 13
+#25 103.0 Creating 'create_intra_process_buffer.hpp.gcov'
+#25 103.0 
+#25 103.0 File '/opt/ros/jazzy/include/rclcpp/rclcpp/detail/resolve_use_intra_process.hpp'
+#25 103.0 Lines executed:60.00% of 10
+#25 103.0 Creating 'resolve_use_intra_process.hpp.gcov'
+#25 103.0 
+#25 103.0 File '/opt/ros/jazzy/include/rclcpp/rclcpp/node_interfaces/get_node_parameters_interface.hpp'
+#25 103.0 Lines executed:0.00% of 5
+#25 103.0 Creating 'get_node_parameters_interface.hpp.gcov'
+#25 103.0 
+#25 103.0 File '/opt/ros/jazzy/include/rclcpp/rclcpp/executor.hpp'
+#25 103.0 Lines executed:76.92% of 13
+#25 103.0 Creating 'executor.hpp.gcov'
+#25 103.0 
+#25 103.0 File '/usr/include/c++/13/bits/locale_classes.tcc'
+#25 103.0 Lines executed:21.15% of 52
+#25 103.0 Creating 'locale_classes.tcc.gcov'
+#25 103.0 
+#25 103.0 File '/opt/ros/jazzy/include/rclcpp/rclcpp/experimental/intra_process_manager.hpp'
+#25 103.0 Lines executed:0.00% of 65
+#25 103.0 Creating 'intra_process_manager.hpp.gcov'
+#25 103.0 
+#25 103.0 File '/opt/ros/jazzy/include/rclcpp/rclcpp/node_interfaces/get_node_topics_interface.hpp'
+#25 103.0 Lines executed:80.00% of 5
+#25 103.0 Creating 'get_node_topics_interface.hpp.gcov'
+#25 103.0 
+#25 103.0 File '/usr/include/c++/13/shared_mutex'
+#25 103.0 Lines executed:0.00% of 10
+#25 103.0 Creating 'shared_mutex.gcov'
+#25 103.0 
+#25 103.0 File '/opt/ros/jazzy/include/rclcpp/rclcpp/event_handler.hpp'
+#25 103.0 No executable lines
+#25 103.0 Removing 'event_handler.hpp.gcov'
+#25 103.0 
+#25 103.0 File '/opt/ros/jazzy/include/rclcpp/rclcpp/detail/qos_parameters.hpp'
+#25 103.0 Lines executed:0.00% of 95
+#25 103.0 Creating 'qos_parameters.hpp.gcov'
+#25 103.0 
+#25 103.0 File '/opt/ros/jazzy/include/rclcpp/rclcpp/exceptions/exceptions.hpp'
+#25 103.0 Lines executed:0.00% of 10
+#25 103.0 Creating 'exceptions.hpp.gcov'
+#25 103.0 
+#25 103.0 File '/opt/ros/jazzy/include/rcl_interfaces/rcl_interfaces/msg/detail/set_parameters_result__struct.hpp'
+#25 103.0 Lines executed:0.00% of 1
+#25 103.0 Creating 'set_parameters_result__struct.hpp.gcov'
+#25 103.0 
+#25 103.0 File '/usr/include/c++/13/bits/node_handle.h'
+#25 103.0 Lines executed:80.00% of 30
+#25 103.0 Creating 'node_handle.h.gcov'
+#25 103.0 
+#25 103.0 File '/opt/ros/jazzy/include/rclcpp/rclcpp/create_timer.hpp'
+#25 103.0 Lines executed:73.68% of 19
+#25 103.0 Creating 'create_timer.hpp.gcov'
+#25 103.0 
+#25 103.0 File '/ros2_ws/src/camera_driver/include/DurationFormatter.hpp'
+#25 103.0 Lines executed:66.67% of 6
+#25 103.0 Creating 'DurationFormatter.hpp.gcov'
+#25 103.0 
+#25 103.0 File '/opt/ros/jazzy/include/rclcpp/rclcpp/create_publisher.hpp'
+#25 103.0 Lines executed:87.50% of 8
+#25 103.0 Creating 'create_publisher.hpp.gcov'
+#25 103.0 
+#25 103.0 File '/usr/include/c++/13/bits/exception_ptr.h'
+#25 103.0 Lines executed:58.82% of 51
+#25 103.0 Creating 'exception_ptr.h.gcov'
+#25 103.0 
+#25 103.0 File '/opt/ros/jazzy/include/rclcpp/rclcpp/executors.hpp'
+#25 103.0 Lines executed:0.00% of 11
+#25 103.0 Creating 'executors.hpp.gcov'
+#25 103.0 
+#25 103.0 File '/opt/ros/jazzy/include/rclcpp/rclcpp/create_client.hpp'
+#25 103.0 Lines executed:100.00% of 8
+#25 103.0 Creating 'create_client.hpp.gcov'
+#25 103.0 
+#25 103.0 File '/ros2_ws/install/jen_config_manager_interface/include/jen_config_manager_interface/jen_config_manager_interface/msg/detail/node_parameters__struct.hpp'
+#25 103.0 Lines executed:0.00% of 1
+#25 103.0 Creating 'node_parameters__struct.hpp.gcov'
+#25 103.0 
+#25 103.0 File '/opt/ros/jazzy/include/rcl_interfaces/rcl_interfaces/msg/detail/parameter__struct.hpp'
+#25 103.0 Lines executed:0.00% of 1
+#25 103.0 Creating 'parameter__struct.hpp.gcov'
+#25 103.0 
+#25 103.0 File '/opt/ros/jazzy/include/rclcpp/rclcpp/node_impl.hpp'
+#25 103.0 Lines executed:75.00% of 28
+#25 103.0 Creating 'node_impl.hpp.gcov'
+#25 103.0 
+#25 103.0 File '/ros2_ws/install/jen_config_manager_lib_cpp/include/jen_config_manager_lib_cpp/config_manager.hpp'
+#25 103.0 Lines executed:18.18% of 44
+#25 103.0 Creating 'config_manager.hpp.gcov'
+#25 103.0 
+#25 103.0 File '/opt/ros/jazzy/include/std_msgs/std_msgs/msg/detail/header__struct.hpp'
+#25 103.0 Lines executed:100.00% of 17
+#25 103.0 Creating 'header__struct.hpp.gcov'
+#25 103.0 
+#25 103.0 File '/ros2_ws/install/jen_camera_msgs/include/jen_camera_msgs/jen_camera_msgs/msg/detail/image_metadata__struct.hpp'
+#25 103.0 Lines executed:100.00% of 8
+#25 103.0 Creating 'image_metadata__struct.hpp.gcov'
+#25 103.0 
+#25 103.0 File '/opt/ros/jazzy/include/builtin_interfaces/builtin_interfaces/msg/detail/duration__struct.hpp'
+#25 103.0 Lines executed:100.00% of 6
+#25 103.0 Creating 'duration__struct.hpp.gcov'
+#25 103.0 
+#25 103.0 File '/ros2_ws/install/jen_image_scheduler/include/jen_image_scheduler/task.hpp'
+#25 103.0 Lines executed:33.33% of 6
+#25 103.0 Creating 'task.hpp.gcov'
+#25 103.0 
+#25 103.0 File '/opt/ros/jazzy/include/diagnostic_updater/diagnostic_status_wrapper.hpp'
+#25 103.0 Lines executed:0.00% of 3
+#25 103.0 Creating 'diagnostic_status_wrapper.hpp.gcov'
+#25 103.0 
+#25 103.0 File '/opt/ros/jazzy/include/image_transport/image_transport/camera_publisher.hpp'
+#25 103.0 Lines executed:100.00% of 1
+#25 103.0 Creating 'camera_publisher.hpp.gcov'
+#25 103.0 
+#25 103.0 File '/opt/ros/jazzy/include/rclcpp/rclcpp/qos.hpp'
+#25 103.0 Lines executed:100.00% of 1
+#25 103.0 Creating 'qos.hpp.gcov'
+#25 103.0 
+#25 103.0 File '/ros2_ws/install/jen_parameter_utils/include/jen_parameter_utils/config_managed_node.hpp'
+#25 103.0 Lines executed:0.00% of 1
+#25 103.0 Creating 'config_managed_node.hpp.gcov'
+#25 103.0 
+#25 103.0 File '/ros2_ws/src/camera_driver/include/CameraDriverNode.hpp'
+#25 103.0 No executable lines
+#25 103.0 Removing 'CameraDriverNode.hpp.gcov'
+#25 103.0 
+#25 103.0 File '/opt/ros/jazzy/include/rclcpp/rclcpp/qos_overriding_options.hpp'
+#25 103.0 No executable lines
+#25 103.0 Removing 'qos_overriding_options.hpp.gcov'
+#25 103.0 
+#25 103.0 File '/usr/include/c++/13/bits/regex_error.h'
+#25 103.0 Lines executed:0.00% of 21
+#25 103.0 Creating 'regex_error.h.gcov'
+#25 103.0 
+#25 103.0 File '/opt/ros/jazzy/include/sensor_msgs/sensor_msgs/msg/detail/image__struct.hpp'
+#25 103.0 Lines executed:100.00% of 10
+#25 103.0 Creating 'image__struct.hpp.gcov'
+#25 103.0 
+#25 103.0 File '/opt/ros/jazzy/include/sensor_msgs/sensor_msgs/msg/detail/camera_info__struct.hpp'
+#25 103.0 Lines executed:100.00% of 9
+#25 103.0 Creating 'camera_info__struct.hpp.gcov'
+#25 103.0 
+#25 103.0 File '/opt/ros/jazzy/include/rclcpp/rclcpp/experimental/subscription_intra_process_base.hpp'
+#25 103.0 Lines executed:0.00% of 6
+#25 103.0 Creating 'subscription_intra_process_base.hpp.gcov'
+#25 103.0 
+#25 103.0 File '/usr/include/c++/13/system_error'
+#25 103.0 Lines executed:0.00% of 3
+#25 103.0 Creating 'system_error.gcov'
+#25 103.0 
+#25 103.0 File '/ros2_ws/src/camera_driver/src/Scheduler.cpp'
+#25 103.0 Lines executed:87.50% of 16
+#25 103.0 Creating 'Scheduler.cpp.gcov'
+#25 103.0 
+#25 103.0 File '/ros2_ws/src/camera_driver/include/Scheduler.hpp'
+#25 103.0 Lines executed:69.23% of 13
+#25 103.0 Creating 'Scheduler.hpp.gcov'
+#25 103.0 
+#25 103.0 File '/ros2_ws/src/camera_driver/src/CameraTypes.cpp'
+#25 103.0 Lines executed:100.00% of 50
+#25 103.0 Creating 'CameraTypes.cpp.gcov'
+#25 103.0 
+#25 103.0 File '/opt/ros/jazzy/include/cv_bridge/cv_bridge/cv_bridge.hpp'
+#25 103.0 Lines executed:100.00% of 3
+#25 103.0 Creating 'cv_bridge.hpp.gcov'
+#25 103.0 
+#25 103.0 File '/ros2_ws/src/camera_driver/src/Config.cpp'
+#25 103.0 Lines executed:95.83% of 24
+#25 103.0 Creating 'Config.cpp.gcov'
+#25 103.0 
+#25 103.0 File '/ros2_ws/install/jen_parameter_utils/include/jen_parameter_utils/config_parameter_helper/parameter_utils.hpp'
+#25 103.0 Lines executed:100.00% of 1
+#25 103.0 Creating 'parameter_utils.hpp.gcov'
+#25 103.0 
+#25 103.0 File '/ros2_ws/install/jen_parameter_utils/include/jen_parameter_utils/config_parameter_helper/parameter_conversions.hpp'
+#25 103.0 Lines executed:100.00% of 1
+#25 103.0 Creating 'parameter_conversions.hpp.gcov'
+#25 103.0 
+#25 103.0 File '/ros2_ws/src/camera_driver/src/Camera.cpp'
+#25 103.0 Lines executed:95.83% of 48
+#25 103.0 Creating 'Camera.cpp.gcov'
+#25 103.0 
+#25 103.0 File '/usr/include/boost/iterator/function_output_iterator.hpp'
+#25 103.0 Lines executed:0.00% of 1
+#25 103.0 Creating 'function_output_iterator.hpp.gcov'
+#25 103.0 
+#25 103.0 File '/ros2_ws/src/camera_driver/include/Camera.hpp'
+#25 103.0 No executable lines
+#25 103.0 Removing 'Camera.hpp.gcov'
+#25 103.0 
+#25 103.0 File '/ros2_ws/install/jen_image_scheduler/include/jen_image_scheduler/scheduler.hpp'
+#25 103.0 Lines executed:0.00% of 2
+#25 103.0 Creating 'scheduler.hpp.gcov'
+#25 103.0 
+#25 103.0 File '/usr/include/x86_64-linux-gnu/bits/string_fortified.h'
+#25 103.0 Lines executed:100.00% of 3
+#25 103.0 Creating 'string_fortified.h.gcov'
+#25 103.0 
+#25 103.0 File '/usr/include/boost/optional/detail/optional_trivially_copyable_base.hpp'
+#25 103.0 Lines executed:100.00% of 2
+#25 103.0 Creating 'optional_trivially_copyable_base.hpp.gcov'
+#25 103.0 
+#25 103.0 File '/usr/include/c++/13/bits/ranges_util.h'
+#25 103.0 Lines executed:100.00% of 5
+#25 103.0 Creating 'ranges_util.h.gcov'
+#25 103.0 
+#25 103.0 File '/ros2_ws/install/jen_image_scheduler/include/jen_image_scheduler/impl/schedulerImpl.hpp'
+#25 103.0 Lines executed:25.00% of 48
+#25 103.0 Creating 'schedulerImpl.hpp.gcov'
+#25 103.0 
+#25 103.0 File '/ros2_ws/install/jen_image_scheduler/include/jen_image_scheduler/impl/utilImpl.hpp'
+#25 103.0 Lines executed:88.24% of 17
+#25 103.0 Creating 'utilImpl.hpp.gcov'
+#25 103.0 
+#25 103.0 File '/ros2_ws/install/jen_image_scheduler/include/jen_image_scheduler/impl/taskImpl.hpp'
+#25 103.0 Lines executed:83.33% of 36
+#25 103.0 Creating 'taskImpl.hpp.gcov'
+#25 103.0 
+#25 103.0 File '/ros2_ws/src/camera_driver/include/CameraInterface.hpp'
+#25 103.0 Lines executed:100.00% of 1
+#25 103.0 Creating 'CameraInterface.hpp.gcov'
+#25 103.0 
+#25 103.0 File '/ros2_ws/src/camera_driver/src/FrameReadyWaitable.cpp'
+#25 103.0 Lines executed:95.65% of 23
+#25 103.0 Creating 'FrameReadyWaitable.cpp.gcov'
+#25 103.0 
+#25 103.0 File '/ros2_ws/src/camera_driver/src/main.cpp'
+#25 103.0 Lines executed:0.00% of 11
+#25 103.0 Creating 'main.cpp.gcov'
+#25 103.0 
+#25 103.0 File '/opt/ros/jazzy/include/rclcpp/rclcpp/node_options.hpp'
+#25 103.0 Lines executed:13.33% of 15
+#25 103.0 Creating 'node_options.hpp.gcov'
+#25 103.0 
+#25 103.0 File '/ros2_ws/src/camera_driver/src/main_mock.cpp'
+#25 103.0 Lines executed:0.00% of 11
+#25 103.1 Creating 'main_mock.cpp.gcov'
+#25 103.1 
+#25 103.1 File '/ros2_ws/src/camera_driver/test/test_MockDriver.cpp'
+#25 103.1 Lines executed:96.05% of 177
+#25 103.1 Creating 'test_MockDriver.cpp.gcov'
+#25 103.1 
+#25 103.1 File '/opt/ros/jazzy/src/gtest_vendor/include/gtest/internal/gtest-port.h'
+#25 103.1 Lines executed:54.35% of 138
+#25 103.1 Creating 'gtest-port.h.gcov'
+#25 103.1 
+#25 103.1 File '/opt/ros/jazzy/src/gtest_vendor/include/gtest/internal/gtest-param-util.h'
+#25 103.1 Lines executed:0.00% of 183
+#25 103.1 Creating 'gtest-param-util.h.gcov'
+#25 103.1 
+#25 103.1 File '/opt/ros/jazzy/src/gtest_vendor/include/gtest/internal/gtest-internal.h'
+#25 103.1 Lines executed:84.15% of 164
+#25 103.1 Creating 'gtest-internal.h.gcov'
+#25 103.1 
+#25 103.1 File '/opt/ros/jazzy/src/gtest_vendor/include/gtest/gtest-printers.h'
+#25 103.1 Lines executed:0.00% of 911
+#25 103.1 Creating 'gtest-printers.h.gcov'
+#25 103.1 
+#25 103.1 File '/usr/include/c++/13/bits/random.tcc'
+#25 103.1 Lines executed:60.71% of 112
+#25 103.1 Creating 'random.tcc.gcov'
+#25 103.1 
+#25 103.1 File '/opt/ros/jazzy/src/gtest_vendor/include/gtest/gtest.h'
+#25 103.1 Lines executed:45.66% of 346
+#25 103.1 Creating 'gtest.h.gcov'
+#25 103.1 
+#25 103.1 File '/usr/include/c++/13/bits/uniform_int_dist.h'
+#25 103.1 Lines executed:49.44% of 89
+#25 103.1 Creating 'uniform_int_dist.h.gcov'
+#25 103.1 
+#25 103.1 File '/usr/include/c++/13/fstream'
+#25 103.1 Lines executed:100.00% of 3
+#25 103.1 Creating 'fstream.gcov'
+#25 103.1 
+#25 103.1 File '/opt/ros/jazzy/src/gtest_vendor/include/gtest/gtest-assertion-result.h'
+#25 103.1 Lines executed:14.81% of 27
+#25 103.1 Creating 'gtest-assertion-result.h.gcov'
+#25 103.1 
+#25 103.1 File '/opt/ros/jazzy/src/gtest_vendor/include/gtest/gtest-message.h'
+#25 103.1 Lines executed:0.00% of 7
+#25 103.1 Creating 'gtest-message.h.gcov'
+#25 103.1 
+#25 103.1 File '/usr/include/opencv4/opencv2/core/matx.hpp'
+#25 103.1 Lines executed:100.00% of 2
+#25 103.1 Creating 'matx.hpp.gcov'
+#25 103.1 
+#25 103.1 File '/ros2_ws/src/camera_driver/test/test_Util.hpp'
+#25 103.1 Lines executed:65.96% of 47
+#25 103.1 Creating 'test_Util.hpp.gcov'
+#25 103.1 
+#25 103.1 File '/usr/include/c++/13/bits/random.h'
+#25 103.1 Lines executed:75.00% of 8
+#25 103.1 Creating 'random.h.gcov'
+#25 103.1 
+#25 103.1 File '/opt/ros/jazzy/src/gtest_vendor/include/gtest/internal/gtest-type-util.h'
+#25 103.1 Lines executed:0.00% of 105
+#25 103.1 Creating 'gtest-type-util.h.gcov'
+#25 103.1 
+#25 103.1 File '/usr/include/c++/13/any'
+#25 103.1 Lines executed:0.00% of 7
+#25 103.1 Creating 'any.gcov'
+#25 103.1 
+#25 103.1 File '/ros2_ws/src/camera_driver/test/test_CameraTypes.cpp'
+#25 103.1 Lines executed:96.59% of 88
+#25 103.1 Creating 'test_CameraTypes.cpp.gcov'
+#25 103.1 
+#25 103.1 File '/ros2_ws/src/camera_driver/test/test_CameraDriverNode.cpp'
+#25 103.1 Lines executed:94.12% of 306
+#25 103.1 Creating 'test_CameraDriverNode.cpp.gcov'
+#25 103.1 
+#25 103.1 File '/opt/ros/jazzy/include/action_msgs/action_msgs/srv/detail/cancel_goal__struct.hpp'
+#25 103.1 Lines executed:0.00% of 3
+#25 103.1 Creating 'cancel_goal__struct.hpp.gcov'
+#25 103.1 
+#25 103.1 File '/opt/ros/jazzy/include/action_msgs/action_msgs/msg/detail/goal_status_array__struct.hpp'
+#25 103.1 Lines executed:100.00% of 1
+#25 103.1 Creating 'goal_status_array__struct.hpp.gcov'
+#25 103.1 
+#25 103.1 File '/opt/ros/jazzy/include/std_msgs/std_msgs/msg/detail/empty__struct.hpp'
+#25 103.1 Lines executed:0.00% of 2
+#25 103.1 Creating 'empty__struct.hpp.gcov'
+#25 103.1 
+#25 103.1 File '/opt/ros/jazzy/src/gmock_vendor/include/gmock/gmock-actions.h'
+#25 103.1 Lines executed:76.41% of 708
+#25 103.1 Creating 'gmock-actions.h.gcov'
+#25 103.1 
+#25 103.1 File '/opt/ros/jazzy/include/rclcpp_action/rclcpp_action/client_goal_handle_impl.hpp'
+#25 103.1 Lines executed:64.10% of 39
+#25 103.1 Creating 'client_goal_handle_impl.hpp.gcov'
+#25 103.1 
+#25 103.1 File '/opt/ros/jazzy/src/gtest_vendor/include/gtest/gtest-matchers.h'
+#25 103.1 Lines executed:23.01% of 2916
+#25 103.1 Creating 'gtest-matchers.h.gcov'
+#25 103.1 
+#25 103.1 File '/opt/ros/jazzy/src/gmock_vendor/include/gmock/gmock-spec-builders.h'
+#25 103.1 Lines executed:26.92% of 10582
+#25 103.1 Creating 'gmock-spec-builders.h.gcov'
+#25 103.1 
+#25 103.1 File '/opt/ros/jazzy/include/rclcpp_action/rclcpp_action/client.hpp'
+#25 103.1 Lines executed:66.29% of 89
+#25 103.1 Creating 'client.hpp.gcov'
+#25 103.1 
+#25 103.1 File '/opt/ros/jazzy/include/rclcpp_action/rclcpp_action/client_goal_handle.hpp'
+#25 103.1 Lines executed:100.00% of 1
+#25 103.1 Creating 'client_goal_handle.hpp.gcov'
+#25 103.1 
+#25 103.1 File '/ros2_ws/src/camera_driver/test/mock_Camera.hpp'
+#25 103.1 Lines executed:92.31% of 13
+#25 103.1 Creating 'mock_Camera.hpp.gcov'
+#25 103.1 
+#25 103.1 File '/opt/ros/jazzy/src/gmock_vendor/include/gmock/gmock-matchers.h'
+#25 103.1 Lines executed:6.65% of 962
+#25 103.1 Creating 'gmock-matchers.h.gcov'
+#25 103.1 
+#25 103.1 File '/opt/ros/jazzy/include/rclcpp_action/rclcpp_action/create_client.hpp'
+#25 103.1 Lines executed:84.21% of 19
+#25 103.1 Creating 'create_client.hpp.gcov'
+#25 103.1 
+#25 103.1 File '/opt/ros/jazzy/src/gmock_vendor/include/gmock/internal/gmock-internal-utils.h'
+#25 103.1 Lines executed:57.76% of 116
+#25 103.1 Creating 'gmock-internal-utils.h.gcov'
+#25 103.1 
+#25 103.1 File '/opt/ros/jazzy/include/rclcpp_action/rclcpp_action/exceptions.hpp'
+#25 103.2 Lines executed:0.00% of 2
+#25 103.2 Creating 'exceptions.hpp.gcov'
+#25 103.2 
+#25 103.2 File '/opt/ros/jazzy/src/gmock_vendor/include/gmock/gmock-cardinalities.h'
+#25 103.2 Lines executed:100.00% of 2
+#25 103.2 Creating 'gmock-cardinalities.h.gcov'
+#25 103.2 
+#25 103.2 File '/opt/ros/jazzy/include/sensor_msgs/sensor_msgs/msg/detail/region_of_interest__struct.hpp'
+#25 103.2 Lines executed:100.00% of 8
+#25 103.2 Creating 'region_of_interest__struct.hpp.gcov'
+#25 103.2 
+#25 103.2 File '/usr/include/yaml-cpp/exceptions.h'
+#25 103.2 No executable lines
+#25 103.2 Removing 'exceptions.h.gcov'
+#25 103.2 
+#25 103.2 File '/ros2_ws/src/camera_driver/test/test_ImagerDevicePathProvider.cpp'
+#25 103.2 Lines executed:95.00% of 20
+#25 103.2 Creating 'test_ImagerDevicePathProvider.cpp.gcov'
+#25 103.2 
+#25 103.2 File '/ros2_ws/src/camera_driver/test/test_Config.cpp'
+#25 103.2 Lines executed:96.83% of 126
+#25 103.2 Creating 'test_Config.cpp.gcov'
+#25 103.2 
+#25 103.2 File '/ros2_ws/src/camera_driver/test/gtest_main.cpp'
+#25 103.2 Lines executed:100.00% of 4
+#25 103.2 Creating 'gtest_main.cpp.gcov'
+#25 103.2 
+#25 103.2 File '/ros2_ws/src/camera_driver/test/test_Camera.cpp'
+#25 103.2 Lines executed:94.80% of 250
+#25 103.2 Creating 'test_Camera.cpp.gcov'
+#25 103.2 
+#25 103.2 File '/ros2_ws/src/camera_driver/test/mock_DriverInterface.hpp'
+#25 103.2 Lines executed:50.00% of 18
+#25 103.2 Creating 'mock_DriverInterface.hpp.gcov'
+#25 103.2 
+#25 103.2 File '/usr/include/c++/13/bits/streambuf_iterator.h'
+#25 103.2 Lines executed:0.00% of 22
+#25 103.2 Creating 'streambuf_iterator.h.gcov'
+#25 103.2 
+#25 103.2 File '/usr/include/c++/13/streambuf'
+#25 103.2 Lines executed:0.00% of 6
+#25 103.2 Creating 'streambuf.gcov'
+#25 103.2 
+#25 103.2 File '/usr/include/c++/13/bits/chrono_io.h'
+#25 103.2 Lines executed:0.00% of 77
+#25 103.2 Creating 'chrono_io.h.gcov'
+#25 103.2 
+#25 103.2 File '/ros2_ws/src/camera_driver/test/test_CmosDriver.cpp'
+#25 103.2 Lines executed:96.28% of 1235
+#25 103.2 Creating 'test_CmosDriver.cpp.gcov'
+#25 103.2 
+#25 103.2 File '/ros2_ws/src/camera_driver/test/mock_RobotCmosDriver.hpp'
+#25 103.2 Lines executed:61.39% of 101
+#25 103.2 Creating 'mock_RobotCmosDriver.hpp.gcov'
+#25 103.2 
+#25 103.2 File '/ros2_ws/src/camera_driver/test/mock_XDmaController.hpp'
+#25 103.2 Lines executed:83.33% of 6
+#25 103.2 Creating 'mock_XDmaController.hpp.gcov'
+#25 103.2 
+#25 103.2 File '/ros2_ws/src/camera_driver/test/util_CmosDriver.hpp'
+#25 103.2 Lines executed:100.00% of 1
+#25 103.2 Creating 'util_CmosDriver.hpp.gcov'
+#25 103.2 
+#25 103.2 File '/ros2_ws/src/camera_driver/test/test_CameraInformationProvider.cpp'
+#25 103.2 Lines executed:95.77% of 142
+#25 103.2 Creating 'test_CameraInformationProvider.cpp.gcov'
+#25 103.2 
+#25 103.2 File '/usr/include/c++/13/iomanip'
+#25 103.2 Lines executed:0.00% of 1
+#25 103.2 Creating 'iomanip.gcov'
+#25 103.2 
+#25 103.2 Lines executed:24.30% of 81697
+#25 103.2 done with testing and  gcov  0
+#25 DONE 103.3s
+
+#26 exporting to image
+#26 exporting layers
+#26 exporting layers 57.3s done
+#26 exporting manifest sha256:a0c698b4c671e68857cf75e86f605981d5b1bceaa80efb24f415304428c1ddc9 done
+#26 exporting config sha256:9687cf9a8f7743f558f265d113648d4f8b0869a32010d6096ddcd9388f948e7d done
+#26 exporting attestation manifest sha256:27900d0c6d54fab8b3f762d78ceca0f97b467b992431b5c2d9606dd280e5b592 done
+#26 exporting manifest list sha256:5bc0fdc1c40169b6dffa58d47a43b85d1ae672ffd2dd634eb8e48ec7aa9ceec2 done
+#26 naming to docker.io/library/jen_calibration_manager_build:latest done
+#26 unpacking to docker.io/library/jen_calibration_manager_build:latest
+#26 unpacking to docker.io/library/jen_calibration_manager_build:latest 8.7s done
+#26 DONE 66.0s

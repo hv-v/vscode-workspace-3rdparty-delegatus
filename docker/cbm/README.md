@@ -51,6 +51,15 @@ worth the index.
 
 Pass the project name in queries (`{"project": "…-jen_plate_reader"}`).
 
+### Extensions CBM does not know
+
+CBM skips any file whose extension has no language. `cbm-config.json` is
+mounted as CBM's global config and maps extra extensions onto an existing
+language — ROS interface files (`.msg`, `.srv`, `.action`) go to INI, which
+gives them File nodes and makes their fields visible to `search_code`. They
+report as `parse_partial` (the `---` separator is not INI); that is expected.
+Edit the file, `./cbm.sh restart` if the mount is new, then re-index.
+
 ## How the pieces fit
 
 | Piece | Where |

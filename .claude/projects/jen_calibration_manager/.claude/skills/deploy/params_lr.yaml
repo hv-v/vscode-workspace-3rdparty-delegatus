@@ -1,0 +1,49 @@
+# jen_calibration_manager parameters for the left/right camera_info check
+# (lr_camera_info_check.sh). Same shape as params.yaml, but camera_info_static
+# carries one pair per camera, and the two cameras get deliberately different
+# intrinsics and frame_ids, so a swapped or cross-wired push is detectable.
+# lr_check.py holds the same values in EXPECTED; change both together.
+/**:
+  ros__parameters:
+    without_config_manager: true
+    forwarding_enabled: true
+    diagnostics:
+      health: "system/software/jen_calibration_manager"
+    tf: |
+      transforms: []
+    tf_static: |
+      transforms: []
+    camera_info: |
+      pairs: []
+    camera_info_static: |
+      pairs:
+        - service_name: /jen_sc_camera_driver_left/set_camera_info
+          camera_info:
+            header:
+              stamp: {sec: 0, nanosec: 0}
+              frame_id: "camera_left_optical"
+            height: 3040
+            width: 5328
+            distortion_model: plumb_bob
+            d: [-0.047692859, -0.309408765, 0.0, 0.0, 4.951333848]
+            k: [9218.784, 0.0, 2679.771, 0.0, 9218.784, 1551.636, 0.0, 0.0, 1.0]
+            r: [1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0]
+            p: [9218.784, 0.0, 2679.771, 0.0, 0.0, 9218.784, 1551.636, 0.0, 0.0, 0.0, 1.0, 0.0]
+            binning_x: 0
+            binning_y: 0
+            roi: {x_offset: 0, y_offset: 0, height: 0, width: 0, do_rectify: false}
+        - service_name: /jen_sc_camera_driver_right/set_camera_info
+          camera_info:
+            header:
+              stamp: {sec: 0, nanosec: 0}
+              frame_id: "camera_right_optical"
+            height: 3040
+            width: 5328
+            distortion_model: plumb_bob
+            d: [-0.051200000, -0.287300000, 0.0, 0.0, 4.702000000]
+            k: [9105.500, 0.0, 2650.250, 0.0, 9105.500, 1530.750, 0.0, 0.0, 1.0]
+            r: [1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0]
+            p: [9105.500, 0.0, 2650.250, -910.550, 0.0, 9105.500, 1530.750, 0.0, 0.0, 0.0, 1.0, 0.0]
+            binning_x: 0
+            binning_y: 0
+            roi: {x_offset: 0, y_offset: 0, height: 0, width: 0, do_rectify: false}

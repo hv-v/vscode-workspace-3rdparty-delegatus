@@ -1,0 +1,7 @@
+{
+  "extra_extensions": {
+    ".msg": "ini",
+    ".srv": "ini",
+    ".action": "ini"
+  }
+}

@@ -1,0 +1,279 @@
+#0 building with "default" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile
+#1 transferring dockerfile: 1.92kB done
+#1 DONE 0.0s
+
+#2 [internal] load metadata for nexus-hil.group.jenoptik.corp:8082/ros:jazzy
+#2 DONE 0.0s
+
+#3 [internal] load .dockerignore
+#3 transferring context: 2B done
+#3 DONE 0.0s
+
+#4 [builder  1/14] FROM nexus-hil.group.jenoptik.corp:8082/ros:jazzy@sha256:2589a8fba5257307857890173c069852c2abf913a0be7970f172478baecb09e4
+#4 resolve nexus-hil.group.jenoptik.corp:8082/ros:jazzy@sha256:2589a8fba5257307857890173c069852c2abf913a0be7970f172478baecb09e4 0.0s done
+#4 DONE 0.0s
+
+#5 [internal] load build context
+#5 transferring context: 30.50kB done
+#5 DONE 0.0s
+
+#6 [builder  4/14] COPY jen_logging/jen_logging ./src/jen_logging
+#6 CACHED
+
+#7 [builder  2/14] RUN mkdir /ros2_ws
+#7 CACHED
+
+#8 [builder  3/14] WORKDIR /ros2_ws
+#8 CACHED
+
+#9 [builder  5/14] COPY jen_logging/jen_py_logging ./src/jen_py_logging
+#9 CACHED
+
+#10 [builder  6/14] COPY jen_calibration_manager_msgs ./src/jen_calibration_manager_msgs
+#10 CACHED
+
+#11 [builder  7/14] COPY jen_calibration_manager ./src/jen_calibration_manager
+#11 DONE 0.0s
+
+#12 [builder  8/14] COPY --exclude=jen_logging  jen_config_manager_msgs ./src/jen_config_manager_msgs
+#12 DONE 0.1s
+
+#13 [builder  9/14] COPY scripts/_common_build.sh ./
+#13 DONE 0.0s
+
+#14 [builder 10/14] COPY scripts/build.sh ./
+#14 DONE 0.0s
+
+#15 [builder 11/14] RUN apt-get update &&     rosdep update &&     rosdep install --from-paths src --ignore-src -r -y &&     apt-get clean && rm -rf /var/cache/apt/archives /var/lib/apt/lists/*
+#15 0.357 Get:1 http://archive.ubuntu.com/ubuntu noble InRelease [256 kB]
+#15 0.541 Get:2 http://archive.ubuntu.com/ubuntu noble-updates InRelease [126 kB]
+#15 0.558 Get:3 http://security.ubuntu.com/ubuntu noble-security InRelease [126 kB]
+#15 0.584 Get:4 http://archive.ubuntu.com/ubuntu noble-backports InRelease [126 kB]
+#15 0.670 Get:5 http://archive.ubuntu.com/ubuntu noble/universe amd64 Packages [19.3 MB]
+#15 1.047 Get:6 http://archive.ubuntu.com/ubuntu noble/main amd64 Packages [1808 kB]
+#15 1.062 Get:7 http://archive.ubuntu.com/ubuntu noble/restricted amd64 Packages [117 kB]
+#15 1.063 Get:8 http://archive.ubuntu.com/ubuntu noble/multiverse amd64 Packages [331 kB]
+#15 1.065 Get:9 http://archive.ubuntu.com/ubuntu noble-updates/universe amd64 Packages [2151 kB]
+#15 1.081 Get:10 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 Packages [1562 kB]
+#15 1.094 Get:11 http://archive.ubuntu.com/ubuntu noble-updates/restricted amd64 Packages [1902 kB]
+#15 1.170 Get:12 http://archive.ubuntu.com/ubuntu noble-updates/multiverse amd64 Packages [55.8 kB]
+#15 1.171 Get:13 http://archive.ubuntu.com/ubuntu noble-backports/main amd64 Packages [48.9 kB]
+#15 1.171 Get:14 http://archive.ubuntu.com/ubuntu noble-backports/multiverse amd64 Packages [671 B]
+#15 1.171 Get:15 http://archive.ubuntu.com/ubuntu noble-backports/universe amd64 Packages [35.9 kB]
+#15 1.202 Get:16 http://packages.ros.org/ros2/ubuntu noble InRelease [4676 B]
+#15 1.265 Get:17 http://security.ubuntu.com/ubuntu noble-security/main amd64 Packages [1240 kB]
+#15 1.495 Get:18 http://packages.ros.org/ros2/ubuntu noble/main Sources [2095 kB]
+#15 1.858 Get:19 http://security.ubuntu.com/ubuntu noble-security/universe amd64 Packages [1530 kB]
+#15 1.988 Get:20 http://security.ubuntu.com/ubuntu noble-security/restricted amd64 Packages [1791 kB]
+#15 2.096 Get:21 http://security.ubuntu.com/ubuntu noble-security/multiverse amd64 Packages [50.0 kB]
+#15 3.097 Get:22 http://packages.ros.org/ros2/ubuntu noble/main amd64 Packages [1973 kB]
+#15 3.415 Fetched 36.6 MB in 3s (11.6 MB/s)
+#15 3.415 Reading package lists...
+#15 4.375 /usr/bin/rosdep:6: DeprecationWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html
+#15 4.375   from pkg_resources import load_entry_point
+#15 4.496 Warning: running 'rosdep update' as root is not recommended.
+#15 4.496   You should run 'sudo rosdep fix-permissions' and invoke 'rosdep update' again without sudo.
+#15 11.28 reading in sources list data from /etc/ros/rosdep/sources.list.d
+#15 11.28 Hit https://raw.githubusercontent.com/ros/rosdistro/master/rosdep/osx-homebrew.yaml
+#15 11.28 Hit https://raw.githubusercontent.com/ros/rosdistro/master/rosdep/base.yaml
+#15 11.28 Hit https://raw.githubusercontent.com/ros/rosdistro/master/rosdep/python.yaml
+#15 11.28 Hit https://raw.githubusercontent.com/ros/rosdistro/master/rosdep/ruby.yaml
+#15 11.28 Hit https://raw.githubusercontent.com/ros/rosdistro/master/releases/fuerte.yaml
+#15 11.28 Query rosdistro index https://raw.githubusercontent.com/ros/rosdistro/master/index-v4.yaml
+#15 11.28 Skip end-of-life distro "ardent"
+#15 11.28 Skip end-of-life distro "bouncy"
+#15 11.28 Skip end-of-life distro "crystal"
+#15 11.28 Skip end-of-life distro "dashing"
+#15 11.28 Skip end-of-life distro "eloquent"
+#15 11.28 Skip end-of-life distro "foxy"
+#15 11.28 Skip end-of-life distro "galactic"
+#15 11.28 Skip end-of-life distro "groovy"
+#15 11.28 Add distro "humble"
+#15 11.28 Skip end-of-life distro "hydro"
+#15 11.28 Skip end-of-life distro "indigo"
+#15 11.28 Skip end-of-life distro "iron"
+#15 11.28 Skip end-of-life distro "jade"
+#15 11.28 Add distro "jazzy"
+#15 11.28 Add distro "kilted"
+#15 11.28 Skip end-of-life distro "kinetic"
+#15 11.28 Skip end-of-life distro "lunar"
+#15 11.28 Add distro "lyrical"
+#15 11.28 Skip end-of-life distro "melodic"
+#15 11.28 Skip end-of-life distro "noetic"
+#15 11.28 Add distro "rolling"
+#15 11.28 updated cache in /root/.ros/rosdep/sources.cache
+#15 11.39 /usr/bin/rosdep:6: DeprecationWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html
+#15 11.39   from pkg_resources import load_entry_point
+#15 14.71 Reading package lists...
+#15 15.73 Building dependency tree...
+#15 16.15 Reading state information...
+#15 16.80 The following additional packages will be installed:
+#15 16.80   clang-format clang-format-18 libclang-cpp18 libedit2 libllvm18
+#15 16.81   ros-jazzy-ament-clang-format
+#15 16.89 The following NEW packages will be installed:
+#15 16.90   clang-format clang-format-18 libclang-cpp18 libedit2 libllvm18
+#15 16.90   ros-jazzy-ament-clang-format ros-jazzy-ament-cmake-clang-format
+#15 17.11 0 upgraded, 7 newly installed, 0 to remove and 63 not upgraded.
+#15 17.11 Need to get 41.2 MB of archives.
+#15 17.11 After this operation, 189 MB of additional disk space will be used.
+#15 17.11 Get:1 http://archive.ubuntu.com/ubuntu noble/main amd64 libedit2 amd64 3.1-20230828-1build1 [97.6 kB]
+#15 17.24 Get:2 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 libllvm18 amd64 1:18.1.3-1ubuntu1 [27.5 MB]
+#15 17.39 Get:3 http://packages.ros.org/ros2/ubuntu noble/main amd64 ros-jazzy-ament-clang-format amd64 0.17.5-1noble.20260410.080356 [16.6 kB]
+#15 17.70 Get:4 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 libclang-cpp18 amd64 1:18.1.3-1ubuntu1 [13.5 MB]
+#15 17.78 Get:5 http://packages.ros.org/ros2/ubuntu noble/main amd64 ros-jazzy-ament-cmake-clang-format amd64 0.17.5-1noble.20260410.113618 [7728 B]
+#15 17.79 Get:6 http://archive.ubuntu.com/ubuntu noble-updates/universe amd64 clang-format-18 amd64 1:18.1.3-1ubuntu1 [53.8 kB]
+#15 17.81 Get:7 http://archive.ubuntu.com/ubuntu noble/universe amd64 clang-format amd64 1:18.0-59~exp2 [5970 B]
+#15 18.07 debconf: delaying package configuration, since apt-utils is not installed
+#15 18.17 Fetched 41.2 MB in 1s (49.0 MB/s)
+#15 18.21 Selecting previously unselected package libedit2:amd64.
+#15 18.21 (Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%(Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%(Reading database ... 95%(Reading database ... 100%(Reading database ... 40147 files and directories currently installed.)
+#15 18.25 Preparing to unpack .../0-libedit2_3.1-20230828-1build1_amd64.deb ...
+#15 18.26 Unpacking libedit2:amd64 (3.1-20230828-1build1) ...
+#15 18.30 Selecting previously unselected package libllvm18:amd64.
+#15 18.30 Preparing to unpack .../1-libllvm18_1%3a18.1.3-1ubuntu1_amd64.deb ...
+#15 18.30 Unpacking libllvm18:amd64 (1:18.1.3-1ubuntu1) ...
+#15 18.89 Selecting previously unselected package libclang-cpp18.
+#15 18.89 Preparing to unpack .../2-libclang-cpp18_1%3a18.1.3-1ubuntu1_amd64.deb ...
+#15 18.89 Unpacking libclang-cpp18 (1:18.1.3-1ubuntu1) ...
+#15 19.07 Selecting previously unselected package clang-format-18.
+#15 19.07 Preparing to unpack .../3-clang-format-18_1%3a18.1.3-1ubuntu1_amd64.deb ...
+#15 19.07 Unpacking clang-format-18 (1:18.1.3-1ubuntu1) ...
+#15 19.09 Selecting previously unselected package clang-format:amd64.
+#15 19.09 Preparing to unpack .../4-clang-format_1%3a18.0-59~exp2_amd64.deb ...
+#15 19.10 Unpacking clang-format:amd64 (1:18.0-59~exp2) ...
+#15 19.12 Selecting previously unselected package ros-jazzy-ament-clang-format.
+#15 19.12 Preparing to unpack .../5-ros-jazzy-ament-clang-format_0.17.5-1noble.20260410.080356_amd64.deb ...
+#15 19.12 Unpacking ros-jazzy-ament-clang-format (0.17.5-1noble.20260410.080356) ...
+#15 19.14 Selecting previously unselected package ros-jazzy-ament-cmake-clang-format.
+#15 19.14 Preparing to unpack .../6-ros-jazzy-ament-cmake-clang-format_0.17.5-1noble.20260410.113618_amd64.deb ...
+#15 19.15 Unpacking ros-jazzy-ament-cmake-clang-format (0.17.5-1noble.20260410.113618) ...
+#15 19.17 Setting up libedit2:amd64 (3.1-20230828-1build1) ...
+#15 19.18 Setting up libllvm18:amd64 (1:18.1.3-1ubuntu1) ...
+#15 19.18 Setting up libclang-cpp18 (1:18.1.3-1ubuntu1) ...
+#15 19.18 Setting up clang-format-18 (1:18.1.3-1ubuntu1) ...
+#15 19.18 Setting up clang-format:amd64 (1:18.0-59~exp2) ...
+#15 19.19 Setting up ros-jazzy-ament-clang-format (0.17.5-1noble.20260410.080356) ...
+#15 19.19 Setting up ros-jazzy-ament-cmake-clang-format (0.17.5-1noble.20260410.113618) ...
+#15 19.19 Processing triggers for libc-bin (2.39-0ubuntu8.8) ...
+#15 19.24 Reading package lists...
+#15 19.87 Building dependency tree...
+#15 20.03 Reading state information...
+#15 20.21 The following NEW packages will be installed:
+#15 20.21   ros-jazzy-diagnostic-updater
+#15 20.52 0 upgraded, 1 newly installed, 0 to remove and 63 not upgraded.
+#15 20.52 Need to get 112 kB of archives.
+#15 20.52 After this operation, 484 kB of additional disk space will be used.
+#15 20.52 Get:1 http://packages.ros.org/ros2/ubuntu noble/main amd64 ros-jazzy-diagnostic-updater amd64 4.2.7-1noble.20260615.135857 [112 kB]
+#15 21.02 debconf: delaying package configuration, since apt-utils is not installed
+#15 21.05 Fetched 112 kB in 1s (161 kB/s)
+#15 21.07 Selecting previously unselected package ros-jazzy-diagnostic-updater.
+#15 21.07 (Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%(Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%(Reading database ... 95%(Reading database ... 100%(Reading database ... 40254 files and directories currently installed.)
+#15 21.09 Preparing to unpack .../ros-jazzy-diagnostic-updater_4.2.7-1noble.20260615.135857_amd64.deb ...
+#15 21.09 Unpacking ros-jazzy-diagnostic-updater (4.2.7-1noble.20260615.135857) ...
+#15 21.14 Setting up ros-jazzy-diagnostic-updater (4.2.7-1noble.20260615.135857) ...
+#15 21.22 [1mexecuting command [apt-get install -y ros-jazzy-ament-cmake-clang-format][0m
+#15 21.22 [1mexecuting command [apt-get install -y ros-jazzy-diagnostic-updater][0m
+#15 21.22 #All required rosdeps installed successfully
+#15 DONE 21.6s
+
+#16 [builder 12/14] RUN  rosdep keys -t exec --from-path src --ignore-src |      xargs rosdep resolve | grep -v '^#' > exec-rosdeps.txt
+#16 0.391 /usr/bin/rosdep:6: DeprecationWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html
+#16 0.391   from pkg_resources import load_entry_point
+#16 1.146 /usr/bin/rosdep:6: DeprecationWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html
+#16 1.146   from pkg_resources import load_entry_point
+#16 DONE 1.6s
+
+#17 [builder 13/14] RUN git init /ros2_ws || true
+#17 0.263 hint: Using 'master' as the name for the initial branch. This default branch name
+#17 0.263 hint: is subject to change. To configure the initial branch name to use in all
+#17 0.263 hint: of your new repositories, which will suppress this warning, call:
+#17 0.263 hint: 
+#17 0.263 hint: 	git config --global init.defaultBranch <name>
+#17 0.263 hint: 
+#17 0.263 hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+#17 0.263 hint: 'development'. The just-created branch can be renamed via this command:
+#17 0.263 hint: 
+#17 0.263 hint: 	git branch -m <name>
+#17 0.264 Initialized empty Git repository in /ros2_ws/.git/
+#17 DONE 0.3s
+
+#18 [builder 14/14] RUN ./build.sh
+#18 0.474 Starting >>> jen_config_manager_interface
+#18 0.479 Starting >>> jen_logging
+#18 0.481 Starting >>> jen_calibration_manager_msgs
+#18 8.542 Finished <<< jen_calibration_manager_msgs [8.06s]
+#18 10.84 Finished <<< jen_logging [10.4s]
+#18 11.15 Finished <<< jen_config_manager_interface [10.7s]
+#18 11.15 Starting >>> jen_scene_msgs
+#18 11.15 Starting >>> jen_config_manager_lib_cpp
+#18 12.20 Finished <<< jen_config_manager_lib_cpp [1.05s]
+#18 12.20 --- stderr: jen_config_manager_lib_cpp
+#18 12.20 fatal: not a git repository: /ros2_ws/src/jen_config_manager_msgs/../.git/modules/jen_config_manager_msgs
+#18 12.20 CMake Warning at CMakeLists.txt:113 (message):
+#18 12.20   Failed to set up Git hooks
+#18 12.20 
+#18 12.20 
+#18 12.20 ---
+#18 19.73 Finished <<< jen_scene_msgs [8.58s]
+#18 19.73 Starting >>> jen_parameter_msgs
+#18 30.05 Finished <<< jen_parameter_msgs [10.3s]
+#18 30.05 Starting >>> jen_parameter_utils
+#18 31.08 Finished <<< jen_parameter_utils [1.03s]
+#18 31.08 Starting >>> jen_calibration_manager
+#18 38.11 --- stderr: jen_calibration_manager
+#18 38.11 CMake Warning at CMakeLists.txt:98 (message):
+#18 38.11   Failed to set up Git hooks
+#18 38.11 
+#18 38.11 
+#18 38.11 /ros2_ws/src/jen_calibration_manager/src/CalibrationManagerNode.cpp: In member function ‘void jen_calibration_manager::CalibrationManagerNode::onConfigurationReceived(const std::vector<rclcpp::Parameter>&)’:
+#18 38.11 /ros2_ws/src/jen_calibration_manager/src/CalibrationManagerNode.cpp:143:31: error: ‘kExtrinsicStaticParam’ was not declared in this scope
+#18 38.11   143 |     if (containsParam(params, kExtrinsicStaticParam)) {
+#18 38.11       |                               ^~~~~~~~~~~~~~~~~~~~~
+#18 38.11 /ros2_ws/src/jen_calibration_manager/src/CalibrationManagerNode.cpp:146:31: error: ‘kIntrinsicStaticParam’ was not declared in this scope
+#18 38.11   146 |     if (containsParam(params, kIntrinsicStaticParam)) {
+#18 38.11       |                               ^~~~~~~~~~~~~~~~~~~~~
+#18 38.11 /ros2_ws/src/jen_calibration_manager/src/CalibrationManagerNode.cpp:149:31: error: ‘kExtrinsicParam’ was not declared in this scope
+#18 38.11   149 |     if (containsParam(params, kExtrinsicParam)) {
+#18 38.11       |                               ^~~~~~~~~~~~~~~
+#18 38.11 /ros2_ws/src/jen_calibration_manager/src/CalibrationManagerNode.cpp:152:31: error: ‘kIntrinsicParam’ was not declared in this scope
+#18 38.11   152 |     if (containsParam(params, kIntrinsicParam)) {
+#18 38.11       |                               ^~~~~~~~~~~~~~~
+#18 38.11 /ros2_ws/src/jen_calibration_manager/src/CalibrationManagerNode.cpp: At global scope:
+#18 38.11 /ros2_ws/src/jen_calibration_manager/src/CalibrationManagerNode.cpp:50:6: warning: ‘bool {anonymous}::containsParam(const std::vector<rclcpp::Parameter>&, const std::string&)’ defined but not used [-Wunused-function]
+#18 38.11    50 | bool containsParam(const std::vector<rclcpp::Parameter>& params, const std::string& name) {
+#18 38.11       |      ^~~~~~~~~~~~~
+#18 38.11 gmake[2]: *** [CMakeFiles/jen_calibration_manager_lib.dir/build.make:104: CMakeFiles/jen_calibration_manager_lib.dir/src/CalibrationManagerNode.cpp.o] Error 1
+#18 38.11 gmake[2]: *** Waiting for unfinished jobs....
+#18 38.11 gmake[1]: *** [CMakeFiles/Makefile2:139: CMakeFiles/jen_calibration_manager_lib.dir/all] Error 2
+#18 38.11 gmake: *** [Makefile:146: all] Error 2
+#18 38.11 ---
+#18 38.11 Failed   <<< jen_calibration_manager [7.04s, exited with code 2]
+#18 38.13 
+#18 38.13 Summary: 7 packages finished [37.8s]
+#18 38.13   1 package failed: jen_calibration_manager
+#18 38.13   2 packages had stderr output: jen_calibration_manager jen_config_manager_lib_cpp
+#18 ERROR: process "/bin/sh -c ./build.sh" did not complete successfully: exit code: 2
+------
+ > [builder 14/14] RUN ./build.sh:
+38.11 gmake[2]: *** [CMakeFiles/jen_calibration_manager_lib.dir/build.make:104: CMakeFiles/jen_calibration_manager_lib.dir/src/CalibrationManagerNode.cpp.o] Error 1
+38.11 gmake[2]: *** Waiting for unfinished jobs....
+38.11 gmake[1]: *** [CMakeFiles/Makefile2:139: CMakeFiles/jen_calibration_manager_lib.dir/all] Error 2
+38.11 gmake: *** [Makefile:146: all] Error 2
+38.11 ---
+38.11 Failed   <<< jen_calibration_manager [7.04s, exited with code 2]
+38.13 
+38.13 Summary: 7 packages finished [37.8s]
+38.13   1 package failed: jen_calibration_manager
+38.13   2 packages had stderr output: jen_calibration_manager jen_config_manager_lib_cpp
+------
+Dockerfile:32
+--------------------
+  30 |     RUN git init /ros2_ws || true
+  31 |     
+  32 | >>> RUN ./build.sh
+  33 |     
+  34 |     # Application test stage
+--------------------
+ERROR: failed to build: failed to solve: process "/bin/sh -c ./build.sh" did not complete successfully: exit code: 2

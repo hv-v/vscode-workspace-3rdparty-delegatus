@@ -122,7 +122,14 @@ Verified 2026-09-14:
 - driver side PASS for both cameras: diagnostics `Calibration loaded`, image
   accepted, intrinsics and frame_id match, no cross-over between cameras;
 - restore after restart PASS for intrinsics, WARN `frame_id` comes back `''`
-  (`camera_calibration_parsers` does not persist `header.frame_id`);
+  (`camera_calibration_parsers` does not persist `header.frame_id`).
+  **This PASS holds only for the harness:** `start_driver` mounts the named
+  volume `lrcheck-ros-<side>` on `/root/.ros`. Neither the driver's own chart
+  nor `shire-apps/shire-sr355` mounts anything there, so in the cluster the
+  YAML is lost with the container and the driver comes back uncalibrated.
+  The manager does not repair it: it pushes only from
+  `onConfigurationReceived`, when a calibration parameter changes, never
+  when a driver comes back;
 - **manager never pushes a `--params-file` `camera_info_static` at startup**
   (phase 0 FAIL): the post-set callback fires while the parameter is still
   being declared, `has_parameter()` is false, `pairs` stay empty, so zero calls

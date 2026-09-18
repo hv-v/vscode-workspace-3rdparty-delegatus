@@ -58,6 +58,10 @@ services:
       # Read-only — the agents that edit these files run on the host, not here.
       - "${CBM_WORKSPACE:?}:${CBM_WORKSPACE:?}:ro"
       - "cbm-cache:/cbm/cache"
+      # Global CBM config: extra extension → language mappings. ROS interface
+      # files (.msg/.srv/.action) have no built-in language, so CBM skipped
+      # them entirely; mapped to INI they get File nodes and search_code hits.
+      - "./cbm-config.json:/home/cbm/.config/codebase-memory-mcp/config.json:ro"
 
     networks:
       - isolated
