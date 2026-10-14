@@ -17,6 +17,10 @@ project. The `codebase_mcp` and `mcp-server` orientation skills are partial stub
 | `jen_calibration_manager` | `tester` | [jen_calibration_manager/.agents/skills/tester/SKILL.md](jen_calibration_manager/.agents/skills/tester/SKILL.md) |
 | `mcp-server` | `project` | [mcp-server/.agents/skills/project/SKILL.md](mcp-server/.agents/skills/project/SKILL.md) |
 
-Support scripts, YAML, references, examples, design notes and ticket context
-retain their relative hierarchy. Source command shortcuts, logs, hooks and
-client settings were not migrated as skills or activated in Codex.
+Support scripts, YAML and references retain their relative hierarchy. Ticket
+text, design notes, examples and build logs are agent-neutral and are shared
+with Claude from the workspace root: `.projects/<project>/` holds
+`.task_todos/`, `.design_todos/`, `.examples/` and `.errors/` (index:
+[../../.projects/README.md](../../.projects/README.md)). Do not add context
+files under `.codex/projects/`. Source command shortcuts, hooks and client
+settings were not migrated as skills or activated in Codex.

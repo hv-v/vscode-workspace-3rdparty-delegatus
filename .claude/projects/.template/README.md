@@ -16,9 +16,16 @@ identically — that mapping is how the configuration is found.
 | `.claude/skills/` | `project` (orientation), plus `build`, `tester`, `deploy`, `sandbox`, `debug` as they are written |
 | `.claude/commands/` | `/commands` scoped to this project, grouped in subdirectories |
 | `.claude/agents/` | subagents scoped to this project |
-| `.design_todos/` | design notes; say in the `project` skill which are authoritative and which run ahead of the code |
-| `.task_todos/` | ticket text, one file per ticket (`1619.md`) |
-| `.examples/` | working snippets worth copying, not owned by this repo |
+
+Ticket text, design notes, examples and logs are not agent-specific and do not
+go here. Copy their skeleton to the shared root at the same time:
+
+```bash
+cp -r .projects/.template .projects/<project>
+```
+
+In the `project` skill, say which `.projects/<project>/.design_todos/` notes are
+authoritative and which run ahead of the code.
 
 Real skills are **not** hand-written into `.claude/skills/`. Generate them so
 the frontmatter and placeholders are right:

@@ -23,7 +23,7 @@ workspace=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)
 readonly workspace
 
 # unit | package | kind | interface | fields with that unit | messages embedding it
-# Source: .claude/projects/jen_calibration_manager/.task_todos/1590_units_invalid.md
+# Source: .projects/jen_calibration_manager/.task_todos/1590_units_invalid.md
 readonly invalid_interfaces=(
   'ms (millisecond)|jen_buffer_node_msgs|srv|GetItemByTimestamp|threshold_ms|'
   'ms (millisecond)|jen_hal_msgs|msg|ClocksStatus|clock_diff_ms|'

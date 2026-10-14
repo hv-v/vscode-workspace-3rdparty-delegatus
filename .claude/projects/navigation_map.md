@@ -36,7 +36,7 @@ is a skeleton, not a project.
 
 | entry | project | build | tester | deploy | commands | context |
 |---|---|---|---|---|---|---|
-| jen_calibration_manager | ✅ | ✅ | ✅ | ✅ + `driver.py` | `build/`, `tester/` | `.task_todos/1619.md`, `.examples/scene_node.md` |
+| jen_calibration_manager | ✅ | ✅ | ✅ | ✅ + `driver.py` | `build/`, `tester/` | `.projects/jen_calibration_manager/` — `.task_todos/`, `.design_todos/`, `.examples/`, `.errors/` |
 | everything else | stub | — | — | — | — | — |
 
 A **stub** carries a `> **STUB.**` banner and a `STUB (not yet written)` prefix
@@ -57,29 +57,36 @@ Create a missing skill; do not hand-write one:
    `project` skill first.
 3. Query that project's code graph (`mcp__codebase-memory__*`) before grepping.
    Not indexed? `./docker/cbm/cbm.sh index <project>`.
-4. Load the workspace language skills for what you are writing: `l-cpp`,
+4. Read the task's context in `.projects/<that name>/` — ticket text, design
+   notes, examples.
+5. Load the workspace language skills for what you are writing: `l-cpp`,
    `l-bash`.
 
 ## Layout of one entry
 
 ```
-<project>/
-├── .claude/
-│   ├── skills/<name>/SKILL.md    project skills, unprefixed
-│   ├── commands/<group>/<x>.md   /commands scoped to this project
-│   └── agents/<name>.md          subagents scoped to this project
-├── .design_todos/                design notes
+.claude/projects/<project>/       Claude-specific
+└── .claude/
+    ├── skills/<name>/SKILL.md    project skills, unprefixed
+    ├── commands/<group>/<x>.md   /commands scoped to this project
+    └── agents/<name>.md          subagents scoped to this project
+
+.projects/<project>/              agent-neutral, shared with Codex
 ├── .task_todos/                  ticket text, one file per ticket
-└── .examples/                    snippets worth copying, not owned by the repo
+├── .design_todos/                design notes
+├── .examples/                    snippets worth copying, not owned by the repo
+└── .errors/                      build and run logs kept for diagnosis
 ```
 
 Nothing is ever written inside the project repo — those are submodules with
-their own history.
+their own history. Nothing agent-neutral is written here either; it goes to
+`.projects/` (see `.projects/README.md`).
 
 ## Not here
 
 | you want | look in |
 |---|---|
+| ticket text, design notes, examples, build logs | `.projects/<project>/` |
 | language / agent-entry skills (`l-cpp`, `l-bash`, `a-verify-cpp`) | `.claude/skills/` |
 | workspace subagents (`cpp-verifier`) | `.claude/agents/` |
 | the conventions themselves | `.claude/CLAUDE.md` |

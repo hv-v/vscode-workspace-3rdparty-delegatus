@@ -1,0 +1,3 @@
+# Track project context despite the local jen* project exclusion in .git/info/exclude.
+!/jen*/
+!/jen*/**

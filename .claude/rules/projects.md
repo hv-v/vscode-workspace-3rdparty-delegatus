@@ -20,8 +20,24 @@ repo, its code graph and what is actually filled in versus still a stub.
 
 Why here and not inside the repo: the project repos are submodules with their
 own history, and workspace tooling has no business appearing in their diffs.
-The layout also keeps the alternate contexts of a project (`.design_todos/`,
-`.task_todos/`, `.examples/`) beside its skills.
+
+## Project context lives in `.projects/`, shared with every agent
+
+What does not depend on the agent — ticket text, design notes, examples, build
+logs — sits once at the workspace root, under the same project name:
+
+```
+.projects/jen_calibration_manager/
+├── .task_todos/      ticket text, one file per ticket
+├── .design_todos/    design notes
+├── .examples/        snippets worth copying, not owned by the repo
+└── .errors/          build and run logs kept for diagnosis
+```
+
+`.claude/projects/` and `.codex/projects/` hold only agent-specific files. Never
+put a context file under either of them: a copy in one agent tree is a copy the
+other agent never sees. `.projects/README.md` lists every entry; copy
+`.projects/.template/` when a project joins.
 
 Working on a project:
 
@@ -32,4 +48,6 @@ Working on a project:
    them by path rather than assuming an absent skill means none exists. A file
    carrying a `> **STUB.**` banner records only verified facts: use it as a
    starting point, not as an account of behaviour, and fill in what you learn.
-3. Load the workspace `l-` skills for the languages involved.
+3. Check `.projects/<that name>/` for the ticket and design context of the task
+   — the `project` skill names which notes are authoritative.
+4. Load the workspace `l-` skills for the languages involved.

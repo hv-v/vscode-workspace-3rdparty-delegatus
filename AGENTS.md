@@ -10,6 +10,9 @@ Resolve the project from the files in scope and consult
 [.codex/projects/navigation_map.md](.codex/projects/navigation_map.md).
 Read its `project` skill and relevant build, tester or deploy skills by path;
 their absence from the runtime roster does not mean they are missing.
+Ticket text, design notes, examples and build logs are shared with Claude in
+[.projects/](.projects/README.md)`<project>/` — read the task's context there
+and never copy it under `.codex/projects/`.
 
 Agent definitions and the preserved `common/` and `utests-coverage/` groups are
 indexed in [.codex/agents/README.md](.codex/agents/README.md). The `a-` skills

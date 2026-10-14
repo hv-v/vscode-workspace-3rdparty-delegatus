@@ -72,7 +72,12 @@ before reading files or grepping — `get_architecture` for the shape,
 
 ## Design docs — read with care
 
-<!-- Which files are authoritative, which are historical, and which one wins when
+Ticket text, design notes, examples and build logs live outside the repo, in
+`.projects/{{PROJECT}}/` — `.task_todos/`, `.design_todos/`, `.examples/`,
+`.errors/` — shared with every agent. Write new notes there, never under
+`.claude/projects/`.
+
+<!-- List the files that exist there, one line each. Which files are authoritative, which are historical, and which one wins when
      two disagree. If the status lines run ahead of the code, say so explicitly
      and list what is described there but not implemented. -->
 

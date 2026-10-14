@@ -19,7 +19,9 @@ and the scripts.
    `skills/`, `commands/`, `agents/`. The directory name is the project's own
    root directory name, spelled identically, and nothing is written inside the
    project repo. `skills-t/new-skill.sh` and `install-skill.sh` place files
-   there for you; do not hand-create the path.
+   there for you; do not hand-create the path. Agent-neutral context —
+   ticket text, design notes, examples, logs — goes to the shared
+   `.projects/<project>/` instead (skeleton: `.projects/.template/`).
 2. **The `codebase-memory` code graph comes first.** Every skill, agent and
    command that reads code is written from graph queries
    (`mcp__codebase-memory__*`) rather than grep output, and any agent or command

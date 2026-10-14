@@ -8,6 +8,7 @@ Codex uses both `.codex` and `.agents`; they serve different purposes.
 | Custom subagents | `.codex/agents/<name>.toml` |
 | Skills and reusable command workflows | `.agents/skills/<skill-name>/SKILL.md` |
 | General project instructions, when needed | `AGENTS.md` in the repository root or relevant subdirectory |
+| Project context shared with Claude (tickets, design notes, examples, logs) | `.projects/<project>/` in the workspace root |
 
 Agents and skills have been converted from `.claude`, preserving the groups
 and project hierarchy. See `agents/README.md`, `../.agents/skills/README.md`,
@@ -55,6 +56,8 @@ and appropriate permissions. Built-in agents are available without custom files.
 5 agent definitions (one unimplemented), 10 workspace skills (four unimplemented),
 7 project skills (including the template and two partial stubs), C++ references,
 project support assets and prompt limitations. Original Claude files are retained.
+Project context (tickets, design notes, examples) has since been merged from both
+trees into the shared `.projects/` and is no longer listed in the map.
 Claude argument metadata is expressed as delegation-message inputs, and agent
 skill preloading is replaced with explicit reads. Models inherit the Codex parent.
 Claude hooks, command shortcuts and settings are not activated by this migration.

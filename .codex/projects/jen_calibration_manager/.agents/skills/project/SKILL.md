@@ -14,7 +14,9 @@ intrinsics into camera drivers via `SetCameraInfo`, reports every check on
 
 Repo root holds the ROS package in `jen_calibration_manager/`, the srv package
 `jen_calibration_manager_msgs/`, the `jen_config_manager_msgs/` submodule
-(where the `Jen*` message types live), `chart/` (Helm) and `design_todos/`.
+(where the `Jen*` message types live) and `chart/` (Helm). Ticket text and
+design notes are kept outside the repo, in `.projects/jen_calibration_manager/`
+(see *Workspace context* below).
 
 ## Runtime flow
 
@@ -136,7 +138,30 @@ Known soft spots: the `/config_manager/set_node_parameters` name is inferred
 by analogy (`jen_config_manager_lib_cpp` only exposes the *get* constant), and
 the async calls have no timeout beyond the 200ms availability wait.
 
+## Workspace context — `.projects/jen_calibration_manager/`
+
+Agent-neutral context, shared by Claude and Codex, at the workspace root:
+
+| path | holds |
+|---|---|
+| `.task_todos/1619.md` | the SHIRE-1619 ticket: the first iteration of this node |
+| `.task_todos/1590.md` | the SHIRE-1590 ticket: adopt the Shire units system in ROS messages |
+| `.task_todos/1590_*.md` | 1590 working notes: unit audit, invalid fields, usage per repo, branches, changed repos, conversion-lib gaps |
+| `.task_todos/readme_example.md` | a model README (from `jen_prediction_trigger`) to copy the shape of |
+| `.design_todos/1619-camera-info-flow.md` | how intrinsics reach `jen_sc_camera_driver` via `SetCameraInfo`, its weak points and scenarios |
+| `.design_todos/1619-jira-camera-info-flow.md`, `1757-tiket.md` | Jira drafts for the camera-info data flow |
+| `.design_todos/1590-report.md`, `1590-table.md`, `1590-outofconcept.md` | the 1590 unit audit of `jen-interfaces-modules`: report, per-field table, undetermined units |
+| `.examples/scene_node.md` | how `jen_scene_manager` receives a parameter from config_manager |
+| `.errors/` | Docker and GitLab build logs kept for diagnosis |
+
+Write new ticket or design notes there, never under `.claude/projects/` or
+`.codex/projects/`.
+
 ## design_todos/ — read with care
+
+> Not present in this checkout: neither the repo nor
+> `.projects/jen_calibration_manager/.design_todos/` holds the files below
+> (checked 2026-10-14). The warning stands for any copy that resurfaces.
 
 `design_todos/` holds the requirements and a running commentary:
 

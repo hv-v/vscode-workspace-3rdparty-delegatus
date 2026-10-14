@@ -27,6 +27,12 @@ Runtime flow (the real call path, input to output), the configuration contract,
 what validation passing does *not* prove, and which design notes run ahead of
 the code.
 
+## Context
+
+Ticket text, design notes, examples and build logs: `.projects/{{PROJECT}}/`
+(`.task_todos/`, `.design_todos/`, `.examples/`, `.errors/`), shared by every
+agent. Name here which design notes are authoritative once they exist.
+
 ## Sibling skills
 
 `build`, `tester`, `deploy` are not written yet:
