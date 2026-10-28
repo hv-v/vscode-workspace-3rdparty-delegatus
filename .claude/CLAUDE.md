@@ -12,6 +12,7 @@ the index and carries the rules that must fire before any file is opened.
 | `rules/code-graph.md` | always | the `codebase-memory` MCP server: query order, one graph per repo, what to do when it is stale or down |
 | `rules/skills.md` | always | the two skill homes, the `l-`/`a-` prefixes, the roster, and the rules for loading them |
 | `rules/projects.md` | always | `.claude/projects/<project>/` and the shared `.projects/<project>/` context — the naming rule, the layout, and how to work on a project |
+| `rules/atlassian.md` | always | the read-only Jira/Confluence mirror in `.atlassian/`: read it locally, never contact the servers except through `sync.sh` |
 | `rules/agents.md` | writing an agent | fresh context, no arguments, and the mandatory MCP tool grant |
 | `rules/prompt-limits.md` | authoring a limitation, or touching the prompt pipeline | `.claude/limits/`, the file contract, the 1.5× size budget, and the verify → approve → parse → dispatch flow |
 | `rules/skill-authoring.md` | touching skills or templates | `new-skill.sh`, `install-skill.sh`, and what never to hand-create |

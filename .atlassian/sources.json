@@ -1,0 +1,34 @@
+{
+  "confluence": {
+    "base_url": "https://confluence-sms.group.jenoptik.corp",
+    "pin": "sha256//2EXRqqMfvbQUMAlIQ2HZKBo8xJdE4/ONp93gvpvXCKw=",
+    "max_pages": 100,
+    "pages": [
+      {
+        "id": "284984803",
+        "note": "WIP Design: common rule loader and evaluator VERSION 1 (SHIRE-1509)",
+        "descendants": 2,
+        "comments": true
+      }
+    ]
+  },
+  "jira": {
+    "base_url": "https://jira-sms.group.jenoptik.corp",
+    "pin": "sha256//c4unyubIwElDpR4o3z5Q+JVDn0oOce09GcXkbrh+yHg=",
+    "max_issues_per_query": 200,
+    "issues": ["SHIRE-1509", "SHIRE-1774"],
+    "jql": [
+      {
+        "name": "my open issues",
+        "query": "assignee = currentUser() AND resolution = Unresolved ORDER BY updated DESC"
+      }
+    ],
+    "boards": [
+      {
+        "id": 362,
+        "name": "SHIRE board 362: my issues in open sprints",
+        "jql": "assignee = currentUser() AND sprint in openSprints()"
+      }
+    ]
+  }
+}

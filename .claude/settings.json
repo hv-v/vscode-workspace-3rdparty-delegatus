@@ -1,4 +1,12 @@
 {
+  "permissions": {
+    "deny": [
+      "Read(**/.atlassian/.secrets/credentials)",
+      "Read(**/.atlassian/.secrets/certs/**)",
+      "WebFetch(domain:jira-sms.group.jenoptik.corp)",
+      "WebFetch(domain:confluence-sms.group.jenoptik.corp)"
+    ]
+  },
   "hooks": {
     "SessionStart": [
       {
@@ -33,6 +41,17 @@
             "command": "sh -c 'h=\"${CLAUDE_PROJECT_DIR:-.}/.claude/hooks/graph-first.sh\"; [ -x \"$h\" ] && exec \"$h\" || exit 0'",
             "timeout": 5,
             "statusMessage": "Checking graph-first rule"
+          }
+        ]
+      },
+      {
+        "matcher": "Bash|WebFetch",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "sh -c 'h=\"${CLAUDE_PROJECT_DIR:-.}/.claude/hooks/atlassian-guard.sh\"; [ -x \"$h\" ] && exec \"$h\" || exit 0'",
+            "timeout": 5,
+            "statusMessage": "Checking Atlassian access rule"
           }
         ]
       },

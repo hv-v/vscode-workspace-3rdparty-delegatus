@@ -5,3 +5,16 @@
 # workspace projects specific
 
 3rdparty/
+
+# Atlassian mirror: pulled corporate content stays on this machine (.atlassian/README.md)
+/.atlassian/.confluence/
+/.atlassian/.jira/
+/.atlassian/.cache/
+/.atlassian/navigation_map.md
+# Only the placeholders in .secrets are tracked; the real credentials and certs never are.
+/.atlassian/.secrets/*
+!/.atlassian/.secrets/README.md
+!/.atlassian/.secrets/credentials.example
+!/.atlassian/.secrets/certs/
+/.atlassian/.secrets/certs/*
+!/.atlassian/.secrets/certs/.gitkeep

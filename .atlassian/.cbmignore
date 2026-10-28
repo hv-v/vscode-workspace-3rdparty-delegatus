@@ -1,0 +1,2 @@
+# The real credentials sit beside .jira and .confluence but must never reach the graph.
+.secrets/
