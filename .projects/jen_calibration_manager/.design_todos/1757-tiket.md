@@ -9,24 +9,27 @@ h3. How it works:
 *Receive (camera driver):* {{CameraInfoManager}} serves {{~/set_camera_info}}, so the service name comes from the driver's {{nodeName}} (for example {{/jen_sc_camera_driver_left/set_camera_info}}), not from its {{camera_id}}. The service is up before the hardware is initialised. A request replaces the calibration in memory, which is then saved to a file inside the container and lost on restart. The response's {{success}} reflects that file save.
 
 h3. What could go wrong:
+ * *Driver starts after the calibration manager* the single send finds no service and is never repeated. The camera stays uncalibrated and rejects every image. ( Driver is up but not yet discovered within 200 ms)
+ * *Driver restarts* The calibration is lost with the container, and nothing sends it again. Same result, until someone restarts the calibration manager.
+ * *Driver stops answering after receiving the request{*}: there is no timeout, so the delivery state stays unknown.
+ * *Driver pod gets a read-only filesystem{*}: the calibration is applied, but it is reported as failed because the file save fails.
 
-* *Driver starts after the calibration manager* the single send finds no service and is never repeated. The camera stays uncalibrated and rejects every image. ( Driver is up but not yet discovered within 200 ms)
+h3. Proposed solution:
 
-* *Driver restarts* The calibration is lost with the container, and nothing sends it again. Same result, until someone restarts the calibration manager.
+*Calibration Manager:* serves {{~/get_camera_info}}, a new service or a replacement for the {{SetCameraInfo}}. New srv in {{jen_calibration_manager_msgs}}: request {{camera_name}} (e.g. {{camera_left}}), response {{camera_info}}.
 
-* *Driver stops answering after receiving the request*: there is no timeout, so the delivery state stays unknown.
-* *Driver pod gets a read-only filesystem*: the calibration is applied, but it is reported as failed because the file save fails.
+*Camera driver:* requests once at startup, before accepting images, and applies the result with {{CameraInfoManager::setCameraInfo}}. On no service or timeout it retries. Once applied, it reports back to the calibration manager: {{success}}, {{message}}, driver node name.
+
+*Errors (calibration manager):* if no report arrives within the *delivery window*, or it has {{success = false}}, the calibration manager logs it and reports an ERROR on {{/diagnostics}} for that camera. It never throws or stops, and the error clears once a successful report arrives.
 
 h3. Acceptance criteria:
+ * *Driver starts after the calibration manager:* the driver receives its calibration within the *delivery window* after its {{set_camera_info}} service becomes reachable. This holds however long after the calibration manager the driver starts, and also when service discovery takes longer than 200 ms.
 
-* *Driver starts after the calibration manager:* the driver receives its calibration within the *delivery window* after its {{set_camera_info}} service becomes reachable. This holds however long after the calibration manager the driver starts, and also when service discovery takes longer than 200 ms.
+ * *Driver restarts:* a restarted driver receives its calibration again within the {*}delivery window{*}, without restarting the calibration manager and without setting {{camera_info_static}} or {{camera_info}} again.
 
-* *Driver restarts:* a restarted driver receives its calibration again within the *delivery window*, without restarting the calibration manager and without setting {{camera_info_static}} or {{camera_info}} again.
+ * *Driver stops answering after receiving the request:* every {{SetCameraInfo}} request has a timeout. When it expires, the delivery is reported as failed for that camera and is sent again. The delivery state of a camera is never unknown.
 
-* *Driver stops answering after receiving the request:* every {{SetCameraInfo}} request has a timeout. When it expires, the delivery is reported as failed for that camera and is sent again. The delivery state of a camera is never unknown.
+ * *Driver pod gets a read-only filesystem:* a calibration that the driver has applied is reported as successful, even when the file cannot be saved.
 
-* *Driver pod gets a read-only filesystem:* a calibration that the driver has applied is reported as successful, even when the file cannot be saved.
-
-* *Tests:* automated tests cover each of the four cases above: a driver that starts late, a driver that restarts, a driver that does not answer, and a driver that cannot save the file.
-
-*Delivery window:* the longest time allowed between the moment a driver's {{set_camera_info}} service becomes reachable and the moment that driver holds the current calibration. It is one configurable value for all cameras. Its concrete value is chosen during implementation, from how long the system may wait for a camera after start. It is not the request timeout: the request timeout limits a single {{SetCameraInfo}} call and must be shorter, so that a call that got no answer can be sent again inside the delivery window.
+h3. Notes
+ * *Delivery window -* the longest time allowed between the moment a driver's {{set_camera_info}} service becomes reachable and the moment that driver holds the current calibration.

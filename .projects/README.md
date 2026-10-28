@@ -32,6 +32,7 @@ their own history.
 | entry | repo | context |
 |---|---|---|
 | [jen_calibration_manager](jen_calibration_manager/) | `jen_calibration_manager/` | `.task_todos/` (1590, 1619), `.design_todos/` (1590, 1619, 1757), `.examples/scene_node.md`, `.errors/` |
+| [jen_config_manager](jen_config_manager/) | `jen_config_manager/` | `.task_todos/` (SHIRE-1409), `.design_todos/` (SHIRE-1409), `.errors/` |
 | [codebase_mcp](codebase_mcp/) | `3rdparty/codebase-memory-mcp` | empty |
 | [mcp-server](mcp-server/) | `mcp-server/` | empty |
 | [.template](.template/) | — | skeleton |

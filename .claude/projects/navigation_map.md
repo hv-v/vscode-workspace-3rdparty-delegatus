@@ -14,6 +14,7 @@ An absent skill in the roster is not evidence that none exists.
 | entry | repo | what it is | code graph |
 |---|---|---|---|
 | [jen_calibration_manager](jen_calibration_manager/) | `jen_calibration_manager/` | ROS 2 relay: calibration params → `/tf`, `SetCameraInfo`, `/diagnostics` (SHIRE-1619) | `…-jen_calibration_manager` · 1.1k nodes |
+| [jen_config_manager](jen_config_manager/) | `jen_config_manager/` | ROS 2 config manager: schema-validated node parameters (`get/set_node_parameters`), checksums, diagnostics | `…-jen_config_manager` · 2.9k nodes |
 | [jen_plate_reader](jen_plate_reader/) | `jen_plate_reader/` | ROS 2 plate reading; the big one — C++/Python, 15 packages around `libalgo` | `…-jen_plate_reader` · 9.1k nodes |
 | [jen_scene_manager](jen_scene_manager/) | `jen_scene_manager/` | ROS 2 validating proxy for Scene parameters (`jen_scene_msgs`) | **not indexed** |
 | [k3s-qemu](k3s-qemu/) | `k3s-qemu/` | local K3s cluster in a QEMU VM; `ubuntu/` and `shireos/` variants | `…-k3s-qemu` · 72 nodes |
@@ -37,6 +38,7 @@ is a skeleton, not a project.
 | entry | project | build | tester | deploy | commands | context |
 |---|---|---|---|---|---|---|
 | jen_calibration_manager | ✅ | ✅ | ✅ | ✅ + `driver.py` | `build/`, `tester/` | `.projects/jen_calibration_manager/` — `.task_todos/`, `.design_todos/`, `.examples/`, `.errors/` |
+| jen_config_manager | — | ✅ | ✅ | — | — | `.projects/jen_config_manager/` — `.task_todos/`, `.design_todos/`, `.errors/` |
 | everything else | stub | — | — | — | — | — |
 
 A **stub** carries a `> **STUB.**` banner and a `STUB (not yet written)` prefix
