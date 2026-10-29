@@ -23,7 +23,7 @@ is a slash command that opens a UI over those files — not a path.
 | `SessionStart` | `graph-status.sh` | names project directories with no code graph, so `rules/code-graph.md` cannot be followed silently against an unindexed repo |
 | `UserPromptSubmit` | inline `jq` | asks for `a-verify-prompt` plus the approval gate — **off unless `JO_VERIFY_PROMPT=1`**; see `rules/prompt-limits.md` |
 | `PreToolUse` / `Bash` | `graph-first.sh` | denies a recursive `grep`/`find` over a project tree — `rules/code-graph.md` |
-| `PreToolUse` / `Bash\|WebFetch` | `atlassian-guard.sh` | denies any command or fetch naming a `jenoptik.corp` host except a bare `.atlassian/sync.sh` call, and any command touching the real credentials file in `.atlassian/.secrets/` — `rules/atlassian.md`; a `permissions.deny` on WebFetch backs it up, since a hook fails open |
+| `PreToolUse` / `Bash\|WebFetch` | `corp-guard.sh` | denies any command or fetch naming a `jenoptik.corp` host except a bare `.atlassian/sync.sh` or `.gitlab/sync.sh` call or plain `git` over SSH, and any command touching a real `credentials` file in `.atlassian/.secrets/` or `.gitlab/.secrets/` — `rules/atlassian.md`, `rules/gitlab.md`; a `permissions.deny` on WebFetch and Read backs it up, since a hook fails open |
 | `PreToolUse` / `Write\|Edit` | `guard-generated.sh` | denies a hand-edit of `.gitmodules` — `rules/generated-files.md` |
 | `PostToolUse` / `Write\|Edit` | `clang-format.sh` | applies the owning repo's `.clang-format` — the layout authority in `l-cpp` |
 

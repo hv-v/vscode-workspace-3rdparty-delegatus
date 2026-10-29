@@ -8,7 +8,7 @@ file you need. Search across it with the graph project
 `home-vhaponov-Documents-jo-workspace-.atlassian`.
 
 - **Never contact `*.jenoptik.corp` any other way** — no curl, no WebFetch, no
-  subagent, no cloud session. The hook `atlassian-guard.sh` and a WebFetch deny
+  subagent, no cloud session. The hook `corp-guard.sh` and a WebFetch deny
   rule enforce it; `sync.sh` is GET-only and pins the servers' keys.
 - A page or issue that is missing: `.atlassian/sync.sh add <link or key>`, run
   alone. Stale: `.atlassian/sync.sh pull --index`. Both need the user's

@@ -35,7 +35,7 @@ them `sync.sh` checks the chain *and* the pin.
 |---|---|
 | git | the workspace `.gitignore` tracks only `README.md`, `credentials.example` and `certs/.gitkeep` here |
 | the code graph | `../.cbmignore` excludes `.secrets/` from the `.atlassian` index; the workspace-root index honours `.gitignore` |
-| the agent | `.claude/settings.json` denies `Read` of `credentials`, and `atlassian-guard.sh` refuses any `Bash` command naming it |
+| the agent | `.claude/settings.json` denies `Read` of `credentials`, and `corp-guard.sh` refuses any `Bash` command naming it |
 
 Not kept out: anything running as you on this machine, and the CBM container,
 which mounts the whole workspace read-only (it never indexes this folder, but

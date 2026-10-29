@@ -1,0 +1,18 @@
+{
+  "base_url": "http://as-git-01.jenoptik.corp",
+  "allow_plain_http_host": "as-git-01.jenoptik.corp",
+  "password_login": false,
+  "pin": "",
+  "group": "shire",
+  "max_mrs_per_query": 100,
+  "log_tail_lines": 40,
+  "merge_requests": [
+    "shire/jen_lidar_falcon_driver!29",
+    "shire/jen_metrics_monitor!42",
+    "shire/spikes/jen_data_player_prototype!4"
+  ],
+  "queries": [
+    { "name": "authored by me", "params": "state=opened&author_username={me}" },
+    { "name": "I review", "params": "state=opened&reviewer_username={me}" }
+  ]
+}

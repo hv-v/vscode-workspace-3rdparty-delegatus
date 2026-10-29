@@ -18,3 +18,15 @@
 !/.atlassian/.secrets/certs/
 /.atlassian/.secrets/certs/*
 !/.atlassian/.secrets/certs/.gitkeep
+
+# GitLab mirror: MRs, threads and job logs stay on this machine (.gitlab/README.md)
+/.gitlab/.mr/
+/.gitlab/.logs/
+/.gitlab/.cache/
+/.gitlab/navigation_map.md
+/.gitlab/.secrets/*
+!/.gitlab/.secrets/README.md
+!/.gitlab/.secrets/credentials.example
+!/.gitlab/.secrets/certs/
+/.gitlab/.secrets/certs/*
+!/.gitlab/.secrets/certs/.gitkeep

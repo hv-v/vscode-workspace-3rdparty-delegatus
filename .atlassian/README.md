@@ -27,7 +27,7 @@ stays on this machine. Only the tooling is tracked.
 | guarantee | how |
 |---|---|
 | **read-only** | `api_get` in `sync.sh` is the only request that carries credentials: `curl --request GET`, no body, no redirects, https only. |
-| **from this host only** | `sync.sh` runs locally; the hosts resolve only over the VPN. `.claude/hooks/atlassian-guard.sh` refuses any agent `Bash` command naming a `jenoptik.corp` host, and `.claude/settings.json` denies `WebFetch` to both hosts — an agent reaches them only by running `sync.sh`. |
+| **from this host only** | `sync.sh` runs locally; the hosts resolve only over the VPN. `.claude/hooks/corp-guard.sh` refuses any agent `Bash` command naming a `jenoptik.corp` host, and `.claude/settings.json` denies `WebFetch` to both hosts — an agent reaches them only by running `sync.sh`. |
 | **right server** | the servers' certificates come from a Jenoptik CA this machine does not trust, so each server's **public key is pinned** in `sources.json`: curl aborts before sending a byte if the key differs. A CA in `certs/` (below) adds chain verification on top. |
 | **credentials stay put** | `.secrets/` is git-ignored except its placeholders, excluded from the graph by `.cbmignore`, and off-limits to the agent (a `Read` deny plus the guard hook); file mode 600, or the GNOME keyring; handed to curl through a pipe, never argv; sent only to hosts under `.group.jenoptik.corp`. |
 

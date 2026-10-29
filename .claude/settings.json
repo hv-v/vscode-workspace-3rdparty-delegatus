@@ -4,7 +4,10 @@
       "Read(**/.atlassian/.secrets/credentials)",
       "Read(**/.atlassian/.secrets/certs/**)",
       "WebFetch(domain:jira-sms.group.jenoptik.corp)",
-      "WebFetch(domain:confluence-sms.group.jenoptik.corp)"
+      "WebFetch(domain:confluence-sms.group.jenoptik.corp)",
+      "Read(**/.gitlab/.secrets/credentials)",
+      "Read(**/.gitlab/.secrets/certs/**)",
+      "WebFetch(domain:as-git-01.jenoptik.corp)"
     ]
   },
   "hooks": {
@@ -49,9 +52,9 @@
         "hooks": [
           {
             "type": "command",
-            "command": "sh -c 'h=\"${CLAUDE_PROJECT_DIR:-.}/.claude/hooks/atlassian-guard.sh\"; [ -x \"$h\" ] && exec \"$h\" || exit 0'",
+            "command": "sh -c 'h=\"${CLAUDE_PROJECT_DIR:-.}/.claude/hooks/corp-guard.sh\"; [ -x \"$h\" ] && exec \"$h\" || exit 0'",
             "timeout": 5,
-            "statusMessage": "Checking Atlassian access rule"
+            "statusMessage": "Checking corporate-host access rule"
           }
         ]
       },

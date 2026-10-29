@@ -1,0 +1,2 @@
+# The real credentials sit beside .mr and .logs but must never reach the graph.
+.secrets/
