@@ -14,7 +14,7 @@ instead of reaching the servers.
 ├── navigation_map.md                generated index — read it first         ignored
 ├── .confluence/<id>.html            page source (storage-format XHTML)      ignored
 ├── .confluence/<id>.comments.html   its comments, same format               ignored
-├── .jira/<KEY>.json                 issue fields; text in Jira wiki markup  ignored
+├── .jira/<status>/<KEY>.json        issue fields, one folder per status     ignored
 └── .cache/                          version stamps, Jira field catalogue    ignored
 ```
 
@@ -84,6 +84,7 @@ in once in the browser.
 | a new Jira issue | `sync.sh add SHIRE-1234`, or paste the issue / board link |
 | refresh now | `sync.sh pull --index` |
 | more queries or boards | edit `sources.json`, then `pull` |
+| group statuses into folders | `jira.status_folders` in `sources.json` maps a status to a folder name (`"In Review": "review"`); unmapped statuses get their own folder named after the status. An issue moves folder on the pull after its status changes. |
 | weekly refresh off | `sync.sh unschedule` |
 | timer logs | `journalctl --user -u jo-atlassian-sync.service` |
 

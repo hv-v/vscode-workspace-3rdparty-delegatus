@@ -16,6 +16,10 @@
     "base_url": "https://jira-sms.group.jenoptik.corp",
     "pin": "sha256//c4unyubIwElDpR4o3z5Q+JVDn0oOce09GcXkbrh+yHg=",
     "max_issues_per_query": 200,
+    "status_folders": {
+      "Ready to Review": "review",
+      "In Review": "review"
+    },
     "issues": ["SHIRE-1509", "SHIRE-1774"],
     "jql": [
       {

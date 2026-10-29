@@ -6,7 +6,7 @@
 # What lands on disk is the servers' own source, not a re-rendering:
 #   .confluence/<id>.html            the page's storage-format XHTML
 #   .confluence/<id>.comments.html   its comments, same format
-#   .jira/<KEY>.json                 the issue's fields; text stays in Jira wiki markup
+#   .jira/<status>/<KEY>.json        the issue's fields; text stays in Jira wiki markup
 #   navigation_map.md                the index — read it first, open one file
 #
 # Read-only by construction: api_get is the only function that sends a request
@@ -247,6 +247,7 @@ api_get() { # service path-with-query output-file
         --proto '=https' --tlsv1.2 \
         "${tls[@]}" \
         --connect-timeout 15 --max-time 120 \
+        --retry 3 --retry-delay 3 \
         --header 'Accept: application/json' \
         --config <(curl_auth_config) \
         --output "$out" \
@@ -406,6 +407,42 @@ jira_custom_field() { # display-name -> id, or "-"
     jq -r --arg n "$1" 'map(select(.name == $n))[0].id // "-"' "$fields"
 }
 
+# Issues sit in one folder per status: .jira/<folder>/<KEY>.json. The folder
+# is jira.status_folders[status] from sources.json (several statuses may share
+# one), else the status as a slug ("Selected for Development" →
+# selected-for-development).
+jira_status_dir() { # status
+    local dir
+    dir="$(jq -rn --arg s "$1" --slurpfile src "$sources_file" '
+        ($src[0].jira.status_folders // {})[$s]
+        // ($s | ascii_downcase | gsub("[^a-z0-9]+"; "-") | ltrimstr("-") | rtrimstr("-"))
+        | if . == "" then "no-status" else . end')"
+    [[ "$dir" =~ ^[a-z0-9][a-z0-9._-]*$ ]] || die "jira: status folder '${dir}' for '$1' is not a plain folder name" "$ex_config"
+    printf '%s' "$dir"
+}
+
+# The issue's current file, whichever status folder it is in; empty if none.
+jira_issue_file() { # key
+    local file
+    for file in "${jira_dir}"/*/"$1".json; do
+        [[ -e "$file" ]] && { printf '%s' "$file"; return 0; }
+    done
+    return 0
+}
+
+# One-off move of issues pulled before status folders existed. No network.
+jira_migrate_flat() {
+    local file key dir
+    for file in "${jira_dir}"/*.json; do
+        [[ -e "$file" ]] || continue
+        key="$(basename -- "$file" .json)"
+        dir="$(jira_status_dir "$(jq -r '.status // ""' "$file")")"
+        mkdir -p -- "${jira_dir}/${dir}"
+        mv -- "$file" "${jira_dir}/${dir}/${key}.json"
+        changed+=("jira:${key}:moved")
+    done
+}
+
 # Download the full fields of the given keys and write one trimmed file each.
 jira_fetch() { # key...
     local sprint epic fields page
@@ -447,13 +484,22 @@ jira_fetch() { # key...
                   }
                 | with_entries(select(.value != null and .value != [] and .value != ""))' \
                 "$page" > "${jira_dir}/${key}.json.new"
-            install_if_changed "${jira_dir}/${key}.json.new" "${jira_dir}/${key}.json" "jira:${key}"
+            local dir target old
+            dir="$(jira_status_dir "$(jq -r '.status // ""' "${jira_dir}/${key}.json.new")")"
+            target="${jira_dir}/${dir}/${key}.json"
+            old="$(jira_issue_file "$key")"
+            if [[ -n "$old" && "$old" != "$target" ]]; then
+                rm -f -- "$old"   # status changed: the issue moves folder
+            fi
+            mkdir -p -- "${jira_dir}/${dir}"
+            install_if_changed "${jira_dir}/${key}.json.new" "$target" "jira:${key}"
         done < <(jq -r '.issues[].key' "$page")
     done
 }
 
 pull_jira() {
     mkdir -p "${cache_dir}/jira" "$jira_dir"
+    jira_migrate_flat
     local max entry name jql key updated board quick extra listing
     local -a stale=()
     local queries="[]"
@@ -509,10 +555,12 @@ pull_jira() {
     printf '%s\n' "$queries" > "${cache_dir}/jira/queries.json"
 
     # Phase 2: full download only for what is new or was updated since.
+    local current
     for key in "${!latest[@]}"; do
         seen_issues["$key"]=1
-        if [[ ! -f "${jira_dir}/${key}.json" ]] \
-            || [[ "$(jq -r '.updated // ""' "${jira_dir}/${key}.json")" != "${latest[$key]}" ]]; then
+        current="$(jira_issue_file "$key")"
+        if [[ -z "$current" ]] \
+            || [[ "$(jq -r '.updated // ""' "$current")" != "${latest[$key]}" ]]; then
             stale+=("$key")
         fi
     done
@@ -523,7 +571,7 @@ pull_jira() {
     fi
 
     local file
-    for file in "${jira_dir}"/*.json; do
+    for file in "${jira_dir}"/*/*.json; do
         [[ -e "$file" ]] || continue
         key="$(basename -- "$file" .json)"
         if [[ -z "${seen_issues[$key]:-}" ]]; then
@@ -531,6 +579,7 @@ pull_jira() {
             changed+=("jira:${key}:removed")
         fi
     done
+    find "$jira_dir" -mindepth 1 -maxdepth 1 -type d -empty -delete
 }
 
 # ── Navigation map ──────────────────────────────────────────────
@@ -539,8 +588,9 @@ write_navigation_map() {
     local changed_json issues_index
     changed_json="$(printf '%s\n' ${changed[@]+"${changed[@]}"} | jq -Rsc 'split("\n") | map(select(length > 0))')"
     issues_index="$(new_tmp)"
-    if compgen -G "${jira_dir}/*.json" >/dev/null; then
-        jq -s 'map({(.key): {type, status, summary, updated}}) | add' "${jira_dir}"/*.json > "$issues_index"
+    if compgen -G "${jira_dir}/*/*.json" >/dev/null; then
+        jq -n --arg root "${script_dir}/" '[inputs | {(.key): {type, status, summary, updated,
+                path: (input_filename | ltrimstr($root))}}] | add' "${jira_dir}"/*/*.json > "$issues_index"
     else
         printf '{}\n' > "$issues_index"
     fi
@@ -574,13 +624,20 @@ write_navigation_map() {
         fi
 
         printf '\n## Jira\n\n'
+        if [[ "$(jq 'length' "$issues_index")" -gt 0 ]]; then
+            printf 'One folder per status, `.jira/<folder>/<KEY>.json`:\n\n'
+            jq -r 'to_entries | group_by(.value.path | split("/")[1])[]
+                   | "- `\(.[0].value.path | split("/")[1])/` (\([.[].value.status] | unique | join(", "))): "
+                     + ([.[].key] | sort | join(", "))' "$issues_index"
+            printf '\n'
+        fi
         if [[ -f "${cache_dir}/jira/queries.json" ]]; then
             jq -r --slurpfile idx "$issues_index" --argjson changed "$changed_json" '
                 .[] | "### \(.name) — \(.keys | length)\n\n`\(.query)`\n",
                 (if (.keys | length) == 0 then "_none_\n" else
                    "| key | type | status | summary | updated |\n|---|---|---|---|---|",
                    (.keys[] as $k | $idx[0][$k] as $i
-                    | "| [\($k)](.jira/\($k).json)\(if ($changed | index("jira:\($k)")) then " ★" else "" end) "
+                    | "| [\($k)](\($i.path // ".jira/\($k).json"))\(if ($changed | index("jira:\($k)")) then " ★" else "" end) "
                       + "| \($i.type // "") | \($i.status // "") | \(($i.summary // "") | gsub("\\|"; "\\|")) "
                       + "| \(($i.updated // "")[0:10]) |"),
                    ""
