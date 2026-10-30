@@ -33,7 +33,7 @@ their own history.
 |---|---|---|
 | [jen_calibration_manager](jen_calibration_manager/) | `jen_calibration_manager/` | `.task_todos/` (1590, 1619), `.design_todos/` (1590, 1619, 1757), `.examples/scene_node.md`, `.errors/` |
 | [jen_config_manager](jen_config_manager/) | `jen_config_manager/` | `.task_todos/` (SHIRE-1409), `.design_todos/` (SHIRE-1409), `.errors/` |
-| [jen_evidence_rules_manager](jen_evidence_rules_manager/) | `jen_evidence_rules_manager/` | `.design_todos/` (1695), `.task_todos/`, `.examples/` empty |
+| [jen_evidence_rules_manager](jen_evidence_rules_manager/) | `jen_evidence_rules_manager/` | `.design_todos/` (1695, SHIRE-1695-review), `.task_todos/SHIRE-1695-mr-comments.md`, `.examples/SHIRE-1695-enforce-speed-action.md` |
 | [codebase_mcp](codebase_mcp/) | `3rdparty/codebase-memory-mcp` | empty |
 | [mcp-server](mcp-server/) | `mcp-server/` | empty |
 | [.template](.template/) | — | skeleton |

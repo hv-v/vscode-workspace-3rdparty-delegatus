@@ -4,8 +4,8 @@
 # that the codebase-memory graph can index.
 #
 # What lands on disk is the servers' own source, not a re-rendering:
-#   .confluence/<id>.html            the page's storage-format XHTML
-#   .confluence/<id>.comments.html   its comments, same format
+#   .confluence/<SPACE>/<id>.html            the page's storage-format XHTML
+#   .confluence/<SPACE>/<id>.comments.html   its comments, same format
 #   .jira/<status>/<KEY>.json        the issue's fields; text stays in Jira wiki markup
 #   navigation_map.md                the index — read it first, open one file
 #
@@ -43,6 +43,7 @@ readonly allowed_host_suffix=".group.jenoptik.corp"
 
 readonly jira_batch=50
 readonly confluence_batch=100
+readonly confluence_fetch_batch=25
 readonly jira_base_fields="summary,status,issuetype,priority,assignee,reporter,created,updated,resolution,labels,components,fixVersions,parent,subtasks,issuelinks,description,comment"
 
 # Exit codes: 64 usage, 65 bad data, 69 unavailable (network/server), 70 internal, 78 config.
@@ -54,7 +55,8 @@ readonly ex_config=78
 
 declare -A base_urls=()
 declare -A pins=()
-declare -A seen_pages=()
+declare -A seen_pages=()      # id -> how its comments are kept: space | page | none
+declare -A page_versions=()   # id -> version the server reports
 declare -A seen_issues=()
 atlassian_user=""
 atlassian_password=""
@@ -64,7 +66,10 @@ changed=()
 tmp_paths=()
 pulled_pages=0
 max_pages=100
+max_pages_warned=false
+confluence_item=""
 fetched_at=""
+curl_err=""
 
 cleanup() {
     local path
@@ -93,8 +98,8 @@ Usage: ./sync.sh <command> [options]
   pull [--index]      Refresh everything in sources.json; only what changed is
                       downloaded and rewritten. --index re-indexes the graph.
   add <link> [--children N]
-                      Add a Confluence page link, or a Jira link / issue key,
-                      to sources.json, then pull
+                      Add a Confluence page or space link, or a Jira link /
+                      issue key, to sources.json, then pull
   login               Store your password in the GNOME keyring (needs secret-tool)
   pin [--write]       Show the servers' current public-key pins; --write
                       replaces the ones in sources.json (after a cert renewal)
@@ -216,6 +221,7 @@ prepare() {
     require_tools
     load_services
     load_tls
+    curl_err="$(new_tmp)"   # curl's stderr, kept apart from the status code
     load_credentials
 }
 
@@ -252,7 +258,8 @@ api_get() { # service path-with-query output-file
         --config <(curl_auth_config) \
         --output "$out" \
         --write-out '%{http_code}' \
-        "${base_urls[$service]}${path}" 2>&1)" || {
+        "${base_urls[$service]}${path}" 2>"$curl_err")" || {
+        status="$(cat -- "$curl_err")"   # a retry's warnings stay out of the status of a success
         case "$status" in
             *"(90)"*|*pinned*) die "${service}: the server's public key does not match the pin in sources.json — certificate renewed, or not the real server. Check, then ./sync.sh pin --write" "$ex_unavailable" ;;
             *"(6)"*|*"resolve host"*) die "${service}: cannot resolve $(host_of "$service") — is the VPN connected?" "$ex_unavailable" ;;
@@ -284,53 +291,66 @@ install_if_changed() { # new-file target change-label
 }
 
 # ── Confluence ──────────────────────────────────────────────────
+#
+# A pull first decides WHICH pages to mirror and at what version — whole spaces
+# (one listing request per 100 pages) and pinned pages with their children —
+# then downloads only the pages whose version moved, 25 per request. Comments
+# never move a page's version, so they are tracked on their own: per space, one
+# listing of every comment's id and version; a page's comments are fetched
+# again only when that set changed.
 
-# One page (if its version moved), its comments, and its children to <depth>.
-confluence_visit() { # id known-version depth with-comments
-    local id="$1" version="$2" depth="$3" with_comments="$4"
-    [[ -n "${seen_pages[$id]:-}" ]] && return 0
+# Pages sit in one folder per space: .confluence/<SPACE>/<id>.html.
+confluence_page_dir() { # id -> its folder per the cached meta, or empty
+    local meta="${cache_dir}/confluence/$1.json"
+    [[ -f "$meta" ]] || return 0
+    printf '%s/%s' "$confluence_dir" "$(jq -r '.space' "$meta")"
+}
+
+# Mirror this page at this version. The first source to reach a page decides
+# how its comments are kept: "space" (by the space's comment listing), "page"
+# (fetched every pull) or "none". Returns 1 once max_pages is reached.
+confluence_track() { # id version comments
+    [[ -n "${seen_pages[$1]:-}" ]] && return 0
     if (( pulled_pages >= max_pages )); then
-        warn "confluence: max_pages (${max_pages}) reached, skipping page ${id}"
-        return 0
+        if [[ "$max_pages_warned" == false ]]; then
+            warn "confluence: max_pages (${max_pages}) reached — the rest is skipped; raise confluence.max_pages in sources.json"
+            max_pages_warned=true
+        fi
+        return 1
     fi
-    seen_pages["$id"]=1
+    seen_pages["$1"]="$3"
+    page_versions["$1"]="$2"
     pulled_pages=$((pulled_pages + 1))
+}
 
-    local meta="${cache_dir}/confluence/${id}.json" body="${confluence_dir}/${id}.html" tmp
+# Every current page of a space, with its version. No page text.
+confluence_space() { # key with-comments
+    local key="$1" mode=none start=0 size id version listing
+    [[ "$2" == true ]] && mode=space
+    listing="$(new_tmp)"
+    log "confluence: space ${key}"
+    while :; do
+        api_get confluence "/rest/api/content?spaceKey=$(uri "$key")&type=page&status=current&expand=version&limit=${confluence_batch}&start=${start}" "$listing"
+        while IFS=' ' read -r id version; do
+            [[ "$id" =~ ^[0-9]+$ ]] || die "confluence: unexpected page id '${id}' in space ${key}" "$ex_dataerr"
+            confluence_track "$id" "$version" "$mode" || return 0
+        done < <(jq -r '.results[] | "\(.id) \(.version.number)"' "$listing")
+        size="$(jq '.size // 0' "$listing")"
+        (( size > 0 )) && [[ -n "$(jq -r '._links.next // empty' "$listing")" ]] || break
+        start=$((start + size))
+    done
+}
+
+# A pinned page and its children to <depth>.
+confluence_visit() { # id known-version depth comments
+    local id="$1" version="$2" depth="$3" comments="$4" tmp
+    [[ -n "${seen_pages[$id]:-}" ]] && return 0
     tmp="$(new_tmp)"
     if [[ -z "$version" ]]; then
         api_get confluence "/rest/api/content/${id}?expand=version" "$tmp"
         version="$(jq -r '.version.number' "$tmp")"
     fi
-
-    if [[ ! -f "$meta" || ! -f "$body" || "$(jq -r '.version' "$meta")" != "$version" ]]; then
-        log "confluence: ${id} v${version} — downloading"
-        api_get confluence "/rest/api/content/${id}?expand=$(uri 'body.storage,version,space,ancestors')" "$tmp"
-        jq '{id, title, space: .space.key, space_name: .space.name,
-             version: .version.number, updated: .version.when, by: .version.by.displayName,
-             url: (._links.base + ._links.webui),
-             ancestors: [.ancestors[] | {id, title}]}' "$tmp" > "${meta}.new"
-        jq -r '"<!-- confluence page \(.id) | \(.title) | space \(.space.key) | v\(.version.number), \(.version.when) by \(.version.by.displayName) | \(._links.base + ._links.webui) -->",
-               "<h1>\(.title | @html)</h1>",
-               .body.storage.value' "$tmp" > "${body}.new"
-        mv -- "${meta}.new" "$meta"
-        install_if_changed "${body}.new" "$body" "confluence:${id}"
-    fi
-
-    local comments="${confluence_dir}/${id}.comments.html"
-    if [[ "$with_comments" == true ]]; then
-        api_get confluence "/rest/api/content/${id}/child/comment?expand=$(uri 'body.storage,history')&depth=all&limit=200" "$tmp"
-        if [[ "$(jq '.results | length' "$tmp")" -gt 0 ]]; then
-            jq -r '"<!-- comments on confluence page '"${id}"' -->",
-                   (.results[] | "<h2>\(.history.createdBy.displayName | @html) — \(.history.createdDate[0:10])</h2>", .body.storage.value)' \
-                "$tmp" > "${comments}.new"
-            install_if_changed "${comments}.new" "$comments" "confluence:${id}:comments"
-        else
-            rm -f -- "$comments"
-        fi
-    else
-        rm -f -- "$comments"
-    fi
+    confluence_track "$id" "$version" "$comments" || return 0
 
     (( depth > 0 )) || return 0
     local start=0 size child child_version
@@ -343,25 +363,196 @@ confluence_visit() { # id known-version depth with-comments
             child_version="${child#* }"
             child="${child%% *}"
             [[ "$child" =~ ^[0-9]+$ ]] || die "confluence: unexpected child id '${child}'" "$ex_dataerr"
-            confluence_visit "$child" "$child_version" $((depth - 1)) "$with_comments"
+            confluence_visit "$child" "$child_version" $((depth - 1)) "$comments"
         done
         (( size >= confluence_batch )) || break
         start=$((start + size))
     done
 }
 
+# Write one page of a content response: meta to the cache, source to its
+# space folder. A page moved to another space leaves its old folder.
+confluence_write() { # response-file id
+    local id="$2" space dir old meta="${cache_dir}/confluence/$2.json"
+    jq --arg id "$id" '.results[] | select(.id == $id)' "$1" > "$confluence_item"
+    space="$(jq -r '.space.key' "$confluence_item")"
+    [[ "$space" =~ ^~?[A-Za-z0-9_]+$ ]] || die "confluence: page ${id} has an unexpected space key '${space}'" "$ex_dataerr"
+    dir="${confluence_dir}/${space}"
+    old="$(confluence_page_dir "$id")"
+    if [[ -n "$old" && "$old" != "$dir" ]]; then
+        rm -f -- "${old}/${id}.html" "${old}/${id}.comments.html" "${cache_dir}/confluence/${id}.comments.stamp"
+    fi
+    mkdir -p -- "$dir"
+    jq '{id, title, space: .space.key, space_name: .space.name,
+         version: .version.number, updated: .version.when, by: .version.by.displayName,
+         url: (._links.base + ._links.webui),
+         ancestors: [.ancestors[] | {id, title}]}' "$confluence_item" > "${meta}.new"
+    jq -r '"<!-- confluence page \(.id) | \(.title) | space \(.space.key) | v\(.version.number), \(.version.when) by \(.version.by.displayName) | \(._links.base + ._links.webui) -->",
+           "<h1>\(.title | @html)</h1>",
+           .body.storage.value' "$confluence_item" > "${dir}/${id}.html.new"
+    mv -- "${meta}.new" "$meta"
+    install_if_changed "${dir}/${id}.html.new" "${dir}/${id}.html" "confluence:${id}"
+}
+
+# Full source of the given pages, confluence_fetch_batch per request.
+confluence_fetch() { # id...
+    local response id
+    local -a batch
+    local -A got=()
+    response="$(new_tmp)"
+    while (( $# > 0 )); do
+        batch=("${@:1:confluence_fetch_batch}")
+        shift $(( $# < confluence_fetch_batch ? $# : confluence_fetch_batch ))
+        log "confluence: downloading ${#batch[@]} page(s), $# to go"
+        api_get confluence "/rest/api/content/search?cql=$(uri "id in ($(IFS=,; printf '%s' "${batch[*]}"))")&limit=${confluence_fetch_batch}&expand=$(uri 'body.storage,version,space,ancestors')" "$response"
+        got=()
+        while IFS= read -r id; do
+            [[ -n "${page_versions[$id]:-}" ]] || continue
+            confluence_write "$response" "$id"
+            got["$id"]=1
+        done < <(jq -r '.results[].id' "$response")
+        # A search can come back short (permissions on the index, a server cap);
+        # those pages are asked for one by one.
+        for id in "${batch[@]}"; do
+            [[ -n "${got[$id]:-}" ]] && continue
+            api_get confluence "/rest/api/content/${id}?expand=$(uri 'body.storage,version,space,ancestors')" "$response"
+            jq '{results: [.]}' "$response" > "${response}.one"
+            mv -- "${response}.one" "$response"
+            confluence_write "$response" "$id"
+        done
+    done
+}
+
+# Every comment of a space as "<page id> <comment id>.<version>", sorted.
+confluence_comment_stamps() { # key
+    local key="$1" start=0 size listing
+    listing="$(new_tmp)"
+    while :; do
+        api_get confluence "/rest/api/content/search?cql=$(uri "space = \"${key}\" and type = comment")&expand=$(uri 'version,container')&limit=${confluence_batch}&start=${start}" "$listing"
+        jq -r '.results[] | "\(.container.id) \(.id).\(.version.number)"' "$listing"
+        size="$(jq '.size // 0' "$listing")"
+        (( size > 0 )) && [[ -n "$(jq -r '._links.next // empty' "$listing")" ]] || break
+        start=$((start + size))
+    done
+}
+
+# One page's comments, beside it as <id>.comments.html.
+confluence_comments() { # id
+    local id="$1" dir tmp comments
+    dir="$(confluence_page_dir "$id")"
+    [[ -n "$dir" ]] || return 0
+    comments="${dir}/${id}.comments.html"
+    tmp="$(new_tmp)"
+    api_get confluence "/rest/api/content/${id}/child/comment?expand=$(uri 'body.storage,history')&depth=all&limit=200" "$tmp"
+    if [[ "$(jq '.results | length' "$tmp")" -gt 0 ]]; then
+        # The comment id keeps each heading unique: one graph node per comment.
+        jq -r '"<!-- comments on confluence page '"${id}"' -->",
+               (.results[] | "<h2>\(.history.createdBy.displayName | @html) — \(.history.createdDate[0:10]) — comment \(.id)</h2>", .body.storage.value)' \
+            "$tmp" > "${comments}.new"
+        install_if_changed "${comments}.new" "$comments" "confluence:${id}:comments"
+    elif [[ -f "$comments" ]]; then
+        rm -f -- "$comments"
+        changed+=("confluence:${id}:comments")
+    fi
+}
+
+# One-off move of pages pulled before space folders existed. No network.
+confluence_migrate_flat() {
+    local file name id dir
+    for file in "${confluence_dir}"/*.html; do
+        [[ -e "$file" ]] || continue
+        name="$(basename -- "$file" .html)"
+        id="${name%%.*}"
+        dir="$(confluence_page_dir "$id")"
+        if [[ -z "$dir" ]]; then
+            rm -f -- "$file"   # no meta: the pull downloads it again
+            continue
+        fi
+        mkdir -p -- "$dir"
+        mv -- "$file" "${dir}/"
+        changed+=("confluence:${name}:moved")
+    done
+}
+
 pull_confluence() {
     mkdir -p "${cache_dir}/confluence" "$confluence_dir"
+    confluence_migrate_flat
     max_pages="$(jq -r '.confluence.max_pages // 100' "$sources_file")"
-    local entry id depth with_comments
+    [[ "$max_pages" =~ ^[0-9]+$ ]] || die "sources.json: confluence.max_pages must be a number" "$ex_config"
+    confluence_item="$(new_tmp)"
+
+    # Which pages, at which version: spaces first, then pinned pages.
+    local entry key id depth comments
+    local -a comment_spaces=()
+    while IFS= read -r entry; do
+        key="$(jq -r '.key' <<<"$entry")"
+        comments="$(jq -r 'if .comments == false then "false" else "true" end' <<<"$entry")"
+        [[ "$key" =~ ^~?[A-Za-z0-9_]+$ ]] || die "sources.json: confluence space key '${key}' is not a space key" "$ex_config"
+        confluence_space "$key" "$comments"
+        [[ "$comments" == true ]] && comment_spaces+=("$key")
+    done < <(jq -c '.confluence.spaces // [] | .[]' "$sources_file")
     while IFS= read -r entry; do
         id="$(jq -r '.id | tostring' <<<"$entry")"
         depth="$(jq -r '.descendants // 0' <<<"$entry")"
-        with_comments="$(jq -r 'if .comments == false then "false" else "true" end' <<<"$entry")"
+        comments="$(jq -r 'if .comments == false then "none" else "page" end' <<<"$entry")"
         [[ "$id" =~ ^[0-9]+$ ]] || die "sources.json: confluence page id '${id}' is not numeric" "$ex_config"
         [[ "$depth" =~ ^[0-9]+$ ]] || die "sources.json: descendants of ${id} must be a number" "$ex_config"
-        confluence_visit "$id" "" "$depth" "$with_comments"
+        confluence_visit "$id" "" "$depth" "$comments"
     done < <(jq -c '.confluence.pages // [] | .[]' "$sources_file")
+
+    # Text only for what is new or whose version moved.
+    local -a stale=()
+    local meta dir
+    for id in "${!seen_pages[@]}"; do
+        meta="${cache_dir}/confluence/${id}.json"
+        dir="$(confluence_page_dir "$id")"
+        if [[ ! -f "$meta" || ! -f "${dir}/${id}.html" ]] \
+            || [[ "$(jq -r '.version' "$meta")" != "${page_versions[$id]}" ]]; then
+            stale+=("$id")
+        fi
+    done
+    log "confluence: ${#seen_pages[@]} page(s) tracked, ${#stale[@]} to download"
+    if (( ${#stale[@]} > 0 )); then
+        confluence_fetch "${stale[@]}"
+    fi
+
+    # Comments: a space's pages by their comment stamps, pinned pages always.
+    local stamps stamp_file current
+    stamps="$(new_tmp)"
+    for key in ${comment_spaces[@]+"${comment_spaces[@]}"}; do
+        log "confluence: comments in ${key}"
+        confluence_comment_stamps "$key" >> "$stamps"
+    done
+    declare -A page_stamps=()
+    while IFS=' ' read -r id current; do
+        page_stamps["$id"]="$current"
+    done < <(sort "$stamps" | awk '{s[$1] = s[$1] " " $2} END {for (p in s) print p s[p]}')
+    for id in "${!seen_pages[@]}"; do
+        stamp_file="${cache_dir}/confluence/${id}.comments.stamp"
+        dir="$(confluence_page_dir "$id")"
+        case "${seen_pages[$id]}" in
+            page)
+                confluence_comments "$id" ;;
+            space)
+                current="${page_stamps[$id]:-}"
+                if [[ -z "$current" ]]; then
+                    if [[ -f "${dir}/${id}.comments.html" ]]; then
+                        rm -f -- "${dir}/${id}.comments.html"
+                        changed+=("confluence:${id}:comments")
+                    fi
+                    rm -f -- "$stamp_file"
+                elif [[ ! -f "${dir}/${id}.comments.html" || "$(cat -- "$stamp_file" 2>/dev/null)" != "$current" ]]; then
+                    confluence_comments "$id"
+                    printf '%s\n' "$current" > "$stamp_file"
+                fi ;;
+            *)
+                if [[ -f "${dir}/${id}.comments.html" ]]; then
+                    rm -f -- "${dir}/${id}.comments.html"
+                    changed+=("confluence:${id}:comments")
+                fi
+                rm -f -- "$stamp_file" ;;
+        esac
+    done
 
     # Pages no longer reachable from sources.json leave the mirror.
     local file
@@ -369,10 +560,13 @@ pull_confluence() {
         [[ -e "$file" ]] || continue
         id="$(basename -- "$file" .json)"
         if [[ -z "${seen_pages[$id]:-}" ]]; then
-            rm -f -- "$file" "${confluence_dir}/${id}.html" "${confluence_dir}/${id}.comments.html"
+            dir="$(confluence_page_dir "$id")"
+            rm -f -- "$file" "${dir}/${id}.html" "${dir}/${id}.comments.html" \
+                "${cache_dir}/confluence/${id}.comments.stamp"
             changed+=("confluence:${id}:removed")
         fi
     done
+    find "$confluence_dir" -mindepth 1 -maxdepth 1 -type d -empty -delete
 }
 
 # ── Jira ────────────────────────────────────────────────────────
@@ -602,23 +796,26 @@ write_navigation_map() {
 
         printf '## Confluence\n\n'
         if compgen -G "${cache_dir}/confluence/*.json" >/dev/null; then
+            printf 'One folder per space, `.confluence/<SPACE>/<id>.html`'
+            if compgen -G "${confluence_dir}/*/*.comments.html" >/dev/null; then
+                printf '; comments beside a page as `<id>.comments.html`'
+            fi
+            printf '. Pages are listed as a tree, under their parent.\n\n'
             jq -rs --argjson changed "$changed_json" '
                 def pad($n): if $n > 0 then "  " * $n else "" end;
-                (map(.id)) as $ids
-                | sort_by([.space, (.ancestors | map(.title)) + [.title]])
-                | .[]
-                | .id as $id
-                | (.ancestors | map(select(.id as $a | $ids | index($a))) | length) as $depth
-                | (if $depth == 0 and (.ancestors | length) > 0
-                     then "\(pad($depth))- _\(.space): \(.ancestors | map(.title) | join(" / "))_\n" else "" end)
-                  + "\(pad($depth + (if $depth == 0 and (.ancestors | length) > 0 then 1 else 0 end)))"
-                  + "- [\(.title)](.confluence/\(.id).html) — v\(.version), \(.updated[0:10]), \(.by)"
-                  + (if ($changed | index("confluence:\($id)")) or ($changed | index("confluence:\($id):comments"))
-                       then " ★" else "" end)' "${cache_dir}"/confluence/*.json
-            printf '\n'
-            if compgen -G "${confluence_dir}/*.comments.html" >/dev/null; then
-                printf 'Comments sit beside a page as `<id>.comments.html`.\n'
-            fi
+                (map({(.id): true}) | add) as $have
+                | ($changed | map({(.): true}) | add // {}) as $hot
+                | group_by(.space)[]
+                | "### \(.[0].space) — \(.[0].space_name) — \(length) page\(if length == 1 then "" else "s" end)\n",
+                  (sort_by((.ancestors | map(.title)) + [.title]) | .[]
+                   | .id as $id
+                   | (.ancestors | map(select($have[.id])) | length) as $depth
+                   | ($depth == 0 and (.ancestors | length) > 0) as $orphan
+                   | (if $orphan then "- _\(.ancestors | map(.title) | join(" / "))_\n" else "" end)
+                     + "\(pad($depth + (if $orphan then 1 else 0 end)))"
+                     + "- [\(.title)](.confluence/\(.space)/\(.id).html) — v\(.version), \(.updated[0:10]), \(.by)"
+                     + (if $hot["confluence:\($id)"] or $hot["confluence:\($id):comments"] then " ★" else "" end)),
+                  ""' "${cache_dir}"/confluence/*.json
         else
             printf '_Nothing pulled yet._\n'
         fi
@@ -722,12 +919,18 @@ cmd_add() {
             then (.confluence.pages[] | select((.id | tostring) == $id) | .descendants) = $d
             else .confluence.pages += [{id: $id, descendants: $d, comments: true}] end' "$sources_file")"
         log "confluence page ${id} (children: ${children}) added to sources.json"
+    elif [[ "$link" =~ (/spaces/|/display/|spaceKey=)(~?[A-Za-z0-9_]+)(/overview)?/?([?#&].*)?$ ]]; then
+        local space="${BASH_REMATCH[2]}"
+        next="$(jq --arg k "$space" '
+            if any(.confluence.spaces[]?; .key == $k) then .
+            else .confluence.spaces = ((.confluence.spaces // []) + [{key: $k, comments: true}]) end' "$sources_file")"
+        log "confluence space ${space} added to sources.json"
     elif [[ "$link" =~ (selectedIssue=|/browse/|^)([A-Z][A-Z0-9_]+-[0-9]+) ]]; then
         local key="${BASH_REMATCH[2]}"
         next="$(jq --arg k "$key" '.jira.issues = ((.jira.issues // []) + [$k] | unique)' "$sources_file")"
         log "jira issue ${key} added to sources.json"
     else
-        die "add: not a Confluence page link (…/pages/<id>/… or pageId=<id>) nor a Jira key/link" "$ex_usage"
+        die "add: not a Confluence page link (…/pages/<id>/… or pageId=<id>), space link (…/spaces/<KEY> or …/display/<KEY>) nor a Jira key/link" "$ex_usage"
     fi
     printf '%s\n' "$next" > "${sources_file}.new"
     mv -- "${sources_file}.new" "$sources_file"

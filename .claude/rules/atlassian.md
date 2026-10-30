@@ -7,6 +7,12 @@ version or status and marks what changed in the last pull — and open only the
 file you need. Search across it with the graph project
 `home-vhaponov-Documents-jo-workspace-.atlassian`.
 
+The whole SHIR space is mirrored, in `.confluence/SHIR/<id>.html`. Every page
+heading is a `Section` node whose docstring holds that section's text, so
+`search_graph` with a `query` and `label: "Section"` finds the section that
+talks about something. `get_code_snippet` on that node returns the chapter.
+`search_code` covers text beyond the first 500 characters of a section.
+
 - **Never contact `*.jenoptik.corp` any other way** — no curl, no WebFetch, no
   subagent, no cloud session. The hook `corp-guard.sh` and a WebFetch deny
   rule enforce it; `sync.sh` is GET-only and pins the servers' keys.

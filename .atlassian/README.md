@@ -12,8 +12,8 @@ instead of reaching the servers.
 ├── .cbmignore                       keeps .secrets/ out of the graph        tracked
 ├── .secrets/                        your login — see .secrets/README.md     placeholders only
 ├── navigation_map.md                generated index — read it first         ignored
-├── .confluence/<id>.html            page source (storage-format XHTML)      ignored
-├── .confluence/<id>.comments.html   its comments, same format               ignored
+├── .confluence/<SPACE>/<id>.html    page source (storage-format XHTML)      ignored
+├── .confluence/<SPACE>/<id>.comments.html  its comments, same format        ignored
 ├── .jira/<status>/<KEY>.json        issue fields, one folder per status     ignored
 └── .cache/                          version stamps, Jira field catalogue    ignored
 ```
@@ -80,6 +80,7 @@ in once in the browser.
 
 | want | run |
 |---|---|
+| a whole Confluence space | `sync.sh add '<space link>'`, or add `{"key": "SHIR"}` to `confluence.spaces` in `sources.json` (`"comments": false` to skip comments) |
 | a new Confluence page | `sync.sh add '<page link>'` (add `--children N` to follow child pages) |
 | a new Jira issue | `sync.sh add SHIRE-1234`, or paste the issue / board link |
 | refresh now | `sync.sh pull --index` |
@@ -92,6 +93,13 @@ A pull is incremental: it first asks only for version numbers (Confluence)
 and update stamps (Jira), downloads full text only for what changed, and
 rewrites only files whose content changed. `navigation_map.md` marks those ★.
 Anything no longer reachable from `sources.json` is removed from the mirror.
+
+For a Confluence space, an unchanged pull costs one listing request per 100
+pages plus one per 100 comments (SHIR: about 10 requests). Changed pages are
+downloaded 25 per request. Comments do not move a page's version, so each
+page's comment ids and versions are compared instead, and only pages whose
+comments changed are fetched again. Pages are sorted into one folder per
+space, and the navigation map lists each space as a page tree.
 
 The graph project is `home-vhaponov-Documents-jo-workspace-.atlassian`.
 
@@ -110,7 +118,8 @@ Current certificates expire 2028-06-09.
 ## Limits
 
 - Attachments and images are not downloaded; links in the source point at the server.
-- Up to 200 comments per Confluence page; `max_pages` per pull (100);
-  `max_issues_per_query` per Jira query (200).
+- Up to 200 comments per Confluence page; `max_pages` per pull (set to
+  3000, default 100); `max_issues_per_query` per Jira query (200).
+- Spaces are mirrored as pages only: blog posts are not pulled.
 - Storage format keeps macros as `<ac:…>` tags, not expanded — e.g. a Jira
   issue list macro shows its query, not its results.

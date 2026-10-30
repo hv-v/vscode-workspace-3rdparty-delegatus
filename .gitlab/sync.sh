@@ -75,6 +75,7 @@ tail_lines=40
 changed=()
 tmp_paths=()
 fetched_at=""
+curl_err=""
 declare -A seen=()
 
 # A password session's token is revoked on the way out, even after an error;
@@ -243,6 +244,7 @@ prepare() {
     require_tools
     load_config
     load_tls
+    curl_err="$(new_tmp)"   # curl's stderr, kept apart from the status code
     load_credentials
     login
 }
@@ -287,7 +289,7 @@ api_get() { # path-with-query output-file [soft]
         --config <(auth_config) \
         --output "$out" \
         --write-out '%{http_code}' \
-        "${base_url}/api/v4${path}" 2>&1)" || curl_failed "$status" "GET ${path}"
+        "${base_url}/api/v4${path}" 2>"$curl_err")" || curl_failed "$(cat -- "$curl_err")" "GET ${path}"
     case "$status" in
         200) return 0 ;;
         30?) die "HTTP ${status} on GET ${path} — redirected, most likely to a login page" "$ex_unavailable" ;;
