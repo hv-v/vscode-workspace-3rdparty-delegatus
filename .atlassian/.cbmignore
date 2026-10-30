@@ -1,2 +1,4 @@
-# The real credentials sit beside .jira and .confluence but must never reach the graph.
+# The real credentials sit beside .jira and .db but must never reach the graph.
 .secrets/
+# Confluence lives in a SQLite file, searched with kb.sh rather than the graph.
+.db/

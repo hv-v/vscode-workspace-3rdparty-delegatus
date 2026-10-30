@@ -1,5 +1,8 @@
 # SHIRE-1695 — MR review threads and draft replies
 
+> **2026-10-30:** the draft replies and the prepared change below are superseded by
+> `../.design_todos/SHIRE-1695-design-v2-check.md`, which rechecks the messages against the updated design.
+
 Threads read from the `.gitlab` mirror (pull 2026-10-29). Comments are paraphrased; the full text is in
 `.gitlab/.mr/shire/interfaces/jen_speed_enforcement_msgs/1.json` and `.gitlab/.mr/shire/jen_evidence_rules_manager/3.json`.
 Nothing here has been posted — copy the replies into GitLab yourself.

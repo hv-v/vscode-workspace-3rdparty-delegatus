@@ -56,5 +56,23 @@
   "C_Cpp_Runner.showCompilationTime": false,
   "C_Cpp_Runner.useLinkTimeOptimization": false,
   "C_Cpp_Runner.msvcSecureNoWarnings": false,
-  "cmake.sourceDirectory": "/home/vhaponov/Documents/jo-workspace/jen_units_msgs"
+  "cmake.sourceDirectory": "/home/vhaponov/Documents/jo-workspace/jen_units_msgs",
+  "files.watcherExclude": {
+    "**/.atlassian/.db/**": true,
+    "**/.atlassian/.confluence/**": true,
+    "**/.atlassian/.cache/**": true,
+    "**/.gitlab/.logs/**": true,
+    "**/.gitlab/.cache/**": true,
+    "**/3rdparty/*/build/**": true,
+    "**/node_modules/**": true
+  },
+  "search.exclude": {
+    "**/.atlassian/.db/**": true,
+    "**/.atlassian/.confluence/**": true,
+    "**/.atlassian/.cache/**": true,
+    "**/.gitlab/.logs/**": true,
+    "**/.gitlab/.cache/**": true,
+    "**/3rdparty/*/build/**": true,
+    "**/node_modules/**": true
+  }
 }

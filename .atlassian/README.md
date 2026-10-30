@@ -9,18 +9,72 @@ instead of reaching the servers.
 ├── README.md                        this file                               tracked
 ├── sources.json                     what to pull, server URLs and key pins  tracked
 ├── sync.sh                          the only thing that talks to the servers tracked
-├── .cbmignore                       keeps .secrets/ out of the graph        tracked
+├── kb.sh                            read and search Confluence (no network) tracked
+├── kb/kb.py, kb/Dockerfile          the database code and the search image  tracked
+├── .cbmignore                       keeps .secrets/ and .db/ out of the graph tracked
 ├── .secrets/                        your login — see .secrets/README.md     placeholders only
 ├── navigation_map.md                generated index — read it first         ignored
-├── .confluence/<SPACE>/<id>.html    page source (storage-format XHTML)      ignored
-├── .confluence/<SPACE>/<id>.comments.html  its comments, same format        ignored
+├── .db/confluence.db                Confluence pages, comments, search index ignored
+├── .db/kb.sock                      the search container's socket, while it runs ignored
 ├── .jira/<status>/<KEY>.json        issue fields, one folder per status     ignored
 └── .cache/                          version stamps, Jira field catalogue    ignored
 ```
 
-Files hold the servers' own source, not a conversion. Pulled content is
-corporate data: the workspace root `.gitignore` keeps it out of git, so it
-stays on this machine. Only the tooling is tracked.
+Everything stored is the servers' own source, not a conversion. Pulled
+content is corporate data: the workspace root `.gitignore` keeps it out of
+git, so it stays on this machine. Only the tooling is tracked.
+
+## Confluence lives in one SQLite file
+
+Hundreds of page files slowed VS Code down, so Confluence is kept in
+`.db/confluence.db`. Jira stays as files. Each page is one row:
+
+| column | holds |
+|---|---|
+| `version` | the server's version number; a pull downloads a page only when it moved |
+| `updated_at` | when the page was last changed on the server, UTC, ISO 8601 |
+| `indexed` | 0 when the page or its comments changed since the last `kb.sh index`, 1 once its search index matches |
+| `body` | the storage-format XHTML, as served |
+
+and also `space`, `title`, `ancestors`, `updated_by`, `url`, `comment_stamp`.
+Comments sit in their own table. `sync.sh` writes the file through
+`kb/kb.py`, which needs only Python's standard library.
+
+Reading and searching, with no network:
+
+```bash
+.atlassian/kb.sh search "how does the evidence rules manager receive events"
+.atlassian/kb.sh search --keyword SHIRE-1509   # keyword only: no Docker, instant
+.atlassian/kb.sh page 215588435                # a page as text, with its comments
+.atlassian/kb.sh page 215588435 --source       # the storage XHTML
+.atlassian/kb.sh status
+```
+
+`search` fuses two rankings: keyword matches (SQLite FTS5) and matches by
+meaning (vectors in sqlite-vec). Each page is split into its sections, at most
+1200 characters each, and each comment is a piece of its own. The vectors come
+from `multilingual-e5-small` (English and German). It runs in the `jo-kb`
+Docker image with `--network none`, a read-only root and your user id, and
+only `.db/` is mounted writable. The model is pinned to a commit and to the
+SHA-256 of each file, and downloaded once, when the image is built
+(`kb.sh build`). Page text never leaves this machine.
+
+The model stays loaded in a resident `jo-kb` container, which answers
+`search` and `index` on the Unix socket `.db/kb.sock`. The first search starts
+it, in about a second and a half. After that a search takes about 0.15 s.
+After 30 minutes without a request it stops by itself and frees its memory
+(about 410 MiB while running, capped at 1 GiB). If it cannot start, the
+command runs once in a one-off container instead, which loads the model each
+time (about 9 s).
+
+```bash
+.atlassian/kb.sh status   # …plus the container's state and memory
+.atlassian/kb.sh up       # start it now
+.atlassian/kb.sh down     # stop it now
+```
+
+`kb.sh index` embeds only the pages whose `indexed` is 0. The first full run
+took about 8 minutes for 481 pages.
 
 ## Guarantees
 
@@ -68,7 +122,7 @@ but git-ignored and excluded from the graph. Details: `.secrets/README.md`.
 3. **Check, pull, schedule:**
    ```bash
    .atlassian/sync.sh check          # logs in, prints who you are — nothing else
-   .atlassian/sync.sh pull --index   # first full pull, then index the graph
+   .atlassian/sync.sh pull --index   # first full pull, then the search index and the graph
    .atlassian/sync.sh schedule       # weekly refresh, Mondays 09:00
    ```
 
@@ -83,7 +137,8 @@ in once in the browser.
 | a whole Confluence space | `sync.sh add '<space link>'`, or add `{"key": "SHIR"}` to `confluence.spaces` in `sources.json` (`"comments": false` to skip comments) |
 | a new Confluence page | `sync.sh add '<page link>'` (add `--children N` to follow child pages) |
 | a new Jira issue | `sync.sh add SHIRE-1234`, or paste the issue / board link |
-| refresh now | `sync.sh pull --index` |
+| refresh now | `sync.sh pull --index` (also runs `kb.sh index`) |
+| search Confluence | `kb.sh search "<question>"`; then `kb.sh page <id>` |
 | more queries or boards | edit `sources.json`, then `pull` |
 | group statuses into folders | `jira.status_folders` in `sources.json` maps a status to a folder name (`"In Review": "review"`); unmapped statuses get their own folder named after the status. An issue moves folder on the pull after its status changes. |
 | weekly refresh off | `sync.sh unschedule` |
@@ -91,17 +146,19 @@ in once in the browser.
 
 A pull is incremental: it first asks only for version numbers (Confluence)
 and update stamps (Jira), downloads full text only for what changed, and
-rewrites only files whose content changed. `navigation_map.md` marks those ★.
+rewrites only what changed. `navigation_map.md` marks those ★.
 Anything no longer reachable from `sources.json` is removed from the mirror.
 
 For a Confluence space, an unchanged pull costs one listing request per 100
 pages plus one per 100 comments (SHIR: about 10 requests). Changed pages are
 downloaded 25 per request. Comments do not move a page's version, so each
 page's comment ids and versions are compared instead, and only pages whose
-comments changed are fetched again. Pages are sorted into one folder per
-space, and the navigation map lists each space as a page tree.
+comments changed are fetched again. The navigation map lists each space as a
+page tree, with each page's id.
 
-The graph project is `home-vhaponov-Documents-jo-workspace-.atlassian`.
+The graph project is `home-vhaponov-Documents-jo-workspace-.atlassian`. It
+holds the tooling, Jira and the navigation map; Confluence is searched with
+`kb.sh`.
 
 ## When the certificate is renewed
 

@@ -8,6 +8,7 @@
 
 # Atlassian mirror: pulled corporate content stays on this machine (.atlassian/README.md)
 /.atlassian/.confluence/
+/.atlassian/.db/
 /.atlassian/.jira/
 /.atlassian/.cache/
 /.atlassian/navigation_map.md
