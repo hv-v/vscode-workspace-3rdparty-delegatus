@@ -168,6 +168,15 @@ constructor then loaded the data without ever publishing it. With the fix the
 callback is skipped until the constructor ends and the constructor publishes
 once: no errors, `/tf_static received: ['base_link->falcon']`, `PASS`.
 
+`runtime_check.py` drives every runtime update path against a booted node
+with the mock running (the mock's `set_node_parameters` forwards to the node's
+`set_parameters_atomically`, as the real manager does): `set_parameters` on
+`tf` and `tf_static`, `set_parameters_atomically` on both, `~/set_transformation`
+round-tripping through the mock, and `camera_info_static` to an absent camera
+(`set_camera_info_failures` → `1`). Verified 2026-11-03: all 12 checks PASS on
+the fixed build; on the unfixed build only `boot_tf_static` fails. Every one
+of these paths ends in the post-set callback `onConfigurationReceived`.
+
 `set_tf_static.py` sets `tf_static` after boot through the plain
 `set_parameters` service (adds `base_link->camera_left`) to prove the runtime
 path still publishes. Use it, not `ros2 param set`: the CLI parses the YAML
