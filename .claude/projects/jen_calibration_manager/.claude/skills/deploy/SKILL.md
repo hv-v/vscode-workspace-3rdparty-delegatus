@@ -24,7 +24,7 @@ file (the driver then dies with `can't find '__main__' module in
 '/driver.py'`, leaving a root-owned empty dir behind):
 
 ```bash
-SK=/home/vhaponov/Documents/jo-workspace/jen_calibration_manager/.claude/skills/deploy
+SK=/home/vhaponov/Documents/jo-workspace/.claude/projects/jen_calibration_manager/.claude/skills/deploy
 ```
 
 ## Launch
@@ -136,6 +136,42 @@ Verified 2026-09-14:
   are made and `set_camera_info_failures` still reads `0`.
   `push_camera_info_static.py` re-sets the parameter through `set_parameters`
   as a workaround (`ros2 param load` asserts on this params file).
+  The SHIRE-1796 fix (below) publishes and pushes the full set at the end of
+  the constructor, which covers this case too once it is merged.
+
+## Boot through config_manager (SHIRE-1796)
+
+`boot_check.sh` reproduces the cluster boot with no cluster: a mock
+`/config_manager/get_node_parameters` (`mock_config_manager.py`) serves the
+six schema parameters plus the SHIRE-1773 `tf_static` (`base_link->falcon`),
+the node starts through its normal entrypoint with **no params file**, and a
+late-joining `TRANSIENT_LOCAL` subscriber (`watch_tf_static.py`) reports what
+`/tf_static` holds. Exit code 0 means `base_link->falcon` was received.
+
+```bash
+"$SK/boot_check.sh" -i <image> [-d <ROS_DOMAIN_ID>]
+```
+
+Verified 2026-11-03. Before the fix (master `79e34d9` code):
+
+```
+[ERROR] ... [trace=onConfigurationReceived] Failed to read parameters: parameter 'diagnostics.health' is not initialized
+/tf_static received: NOTHING
+VERDICT: FAIL
+```
+
+`initializeFromConfigManager` applies the fetched parameters with the
+non-atomic `set_parameters`, one post-set callback each, in
+`unordered_map` order; `tf_static`, `tf`, `camera_info*` came before
+`diagnostics.health`, so each callback threw and returned, and the
+constructor then loaded the data without ever publishing it. With the fix the
+callback is skipped until the constructor ends and the constructor publishes
+once: no errors, `/tf_static received: ['base_link->falcon']`, `PASS`.
+
+`set_tf_static.py` sets `tf_static` after boot through the plain
+`set_parameters` service (adds `base_link->camera_left`) to prove the runtime
+path still publishes. Use it, not `ros2 param set`: the CLI parses the YAML
+value itself and aborts with `Assertion 'PyUnicode_Check(field)' failed`.
 
 ## Gotchas
 

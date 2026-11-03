@@ -38,6 +38,7 @@ is a skeleton, not a project.
 | entry | project | build | tester | deploy | commands | context |
 |---|---|---|---|---|---|---|
 | jen_calibration_manager | ✅ | ✅ | ✅ | ✅ + `driver.py` | `build/`, `tester/` | `.projects/jen_calibration_manager/` — `.task_todos/`, `.design_todos/`, `.examples/`, `.errors/` |
+| shire-apps | — | — | — | ✅ offline render + umbrella composition | — | — |
 | jen_config_manager | — | ✅ | ✅ | — | — | `.projects/jen_config_manager/` — `.task_todos/`, `.design_todos/`, `.errors/` |
 | everything else | stub | — | — | — | — | — |
 

@@ -1,5 +1,8 @@
 # SHIRE-1695 — messages checked against the design as of 2026-10-30
 
+> **2026-11-02:** superseded by `../.task_todos/SHIRE-1695-mr1-round3.md` (Jose's second review: the service became an
+> action, post-validation moved into the speed node).
+
 Supersedes the message parts of `SHIRE-1695-review.md` and the draft replies in
 `../.task_todos/SHIRE-1695-mr-comments.md`. Everything is local: the changes sit uncommitted in the working tree of
 `jen_evidence_rules_manager/jen_speed_enforcement_msgs` (branch `SHIRE-1695-speed-event`, base `307bb69`).
@@ -22,11 +25,11 @@ Supersedes the message parts of `SHIRE-1695-review.md` and the draft replies in
 | file | change | source |
 |---|---|---|
 | `srv/CheckSpeed.srv` | `speed`: `KmH` → `MetersPerSecond` | matches `TriggerEvent.speed`; no conversion in the manager |
-| | response `bool has_rule` → `EnforcementAction action` + `bool has_condition` | V2: the outcome is CONFIRM / DISCARD / TRIGGER_POST_VALIDATION; "rule" now means an enforcement-rule override, the "no rule associated" case of the ticket is "no speed condition" |
+| | response `bool has_rule` → `EnforcementDecision decision` + `bool has_condition` | V2: the outcome is CONFIRM / DISCARD / TRIGGER_POST_VALIDATION; "rule" now means an enforcement-rule override, the "no rule associated" case of the ticket is "no speed condition" |
 | `msg/SpeedEvent.msg` | `speed`: `KmH` → `MetersPerSecond` | as above |
 | | `+ string vehicle_class` | the class the limits were selected for, part of the evidence metadata |
-| | `- bool is_violation` | replaced by `action` |
-| `msg/EnforcementAction.msg` | new: `NO_ACTION`, `CONFIRM_VIOLATION`, `DISCARD_EVENT`, `TRIGGER_POST_VALIDATION` | V1/V2 action list |
+| | `- bool is_violation` | replaced by `decision` |
+| `msg/EnforcementDecision.msg` | new: `NO_DECISION`, `CONFIRM_VIOLATION`, `DISCARD_EVENT`, `TRIGGER_POST_VALIDATION` | V1/V2 action list; named "decision", not "action", so it is not read as a ROS action |
 | `CMakeLists.txt`, `package.xml` | new interface files, `builtin_interfaces` dependency | |
 | `README.md` | address table in the style of `jen_operational_profile_msgs`, unit note | |
 
@@ -52,7 +55,7 @@ jen_scene_msgs/DirectionOfTravel direction
 string vehicle_class
 jen_units_msgs/MetersPerSecond speed
 ---
-EnforcementAction action
+EnforcementDecision decision
 bool has_condition
 SpeedEvent speed_event
 
@@ -75,7 +78,7 @@ SpeedRange speed_range
 3. **Confidence thresholds.** `min_confidence_speed_*` / `min_confidence_class_*` need confidences and a stage;
    `TriggerEvent` has no speed confidence, and the configuration page still debates whether the manager or the
    speed node applies them. Left out of the request until that is decided.
-4. **Shared `EnforcementAction`.** V2 uses the same actions for redlight and sighting. Keep it here until a second
+4. **Shared `EnforcementDecision`.** V2 uses the same actions for redlight and sighting. Keep it here until a second
    enforcement node exists, then move it to a shared package.
 5. **Mixed units in `SpeedEvent`.** Speed in m/s and limits in km/h are each the unit of their source, so nothing is
    converted on the way. If reviewers want one unit per message, it has to be m/s, and the speed node converts the
@@ -88,8 +91,9 @@ SpeedRange speed_range
 > Changed to a service, `CheckSpeed.srv` (`/jen_speed_enforcement/check_speed`), as Zach suggested. The check is
 > synchronous: the node resolves the active operational profile for the timestamp and compares the speed against
 > its limits ([rule loader V2](https://confluence-sms.group.jenoptik.corp/spaces/SHIR/pages/286851081),
-> "Responsibilities distribution"). The decision comes back as `EnforcementAction`: `CONFIRM_VIOLATION`,
-> `DISCARD_EVENT` or `TRIGGER_POST_VALIDATION`.
+> "Responsibilities distribution"). The result comes back as `EnforcementDecision`: `CONFIRM_VIOLATION`,
+> `DISCARD_EVENT` or `TRIGGER_POST_VALIDATION`. These are the design's "actions", renamed so they are not
+> confused with ROS actions.
 >
 > After post-validation the manager calls `CheckSpeed` again with the validated speed and class, because post-validation
 > "can change the speed value and/or class"

@@ -1,5 +1,7 @@
 # SHIRE-1695 — MR review threads and draft replies
 
+> **2026-11-02:** current replies are in `SHIRE-1695-mr1-round3.md`.
+>
 > **2026-10-30:** the draft replies and the prepared change below are superseded by
 > `../.design_todos/SHIRE-1695-design-v2-check.md`, which rechecks the messages against the updated design.
 

@@ -39,7 +39,8 @@
     "issues": [
       "SHIRE-1509",
       "SHIRE-1719",
-      "SHIRE-1774"
+      "SHIRE-1774",
+      "SHIRE-1796"
     ],
     "jql": [
       {
