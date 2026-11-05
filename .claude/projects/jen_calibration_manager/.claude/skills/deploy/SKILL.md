@@ -176,6 +176,24 @@ round-tripping through the mock, and `camera_info_static` to an absent camera
 (`set_camera_info_failures` → `1`). Verified 2026-11-03: all 12 checks PASS on
 the fixed build; on the unfixed build only `boot_tf_static` fails. Every one
 of these paths ends in the post-set callback `onConfigurationReceived`.
+`runtime_check.sh` starts the mock and the node and runs it in one go:
+
+```bash
+"$SK/runtime_check.sh" -i <image> [-d <ROS_DOMAIN_ID>]
+```
+
+Verified 2026-11-04 on MR !11 `42686f9` (the build the shire-apps chart
+`jen-calibration-manager 0.0.1-dev-3-MR-11+42686f9` ships), rebuilt from that
+commit with CI's checkout (first-level submodules only): `boot_check.sh` PASS,
+`runtime_check.sh` 12/12 PASS. The only warning in the node log is the expected
+`/absent_camera/set_camera_info` failure.
+
+`set_camera_info_failures` is reset once per update that carries a camera
+parameter. Before that change, each push reset it, so only the last push's
+failures showed: with both lists pointing at absent cameras the count read `1`
+instead of `2`. Check it by booting standalone with a params file whose
+`camera_info` and `camera_info_static` name different absent drivers, then
+`ros2 topic echo --once /diagnostics`.
 
 `set_tf_static.py` sets `tf_static` after boot through the plain
 `set_parameters` service (adds `base_link->camera_left`) to prove the runtime
@@ -209,6 +227,22 @@ value itself and aborts with `Assertion 'PyUnicode_Check(field)' failed`.
 - **Nothing is published when `forwarding_enabled` is false** — the log says
   `Data forwarding is disabled, nothing is published`. That is the
   NOT_RUNNING/RUNNING gate, not a fault.
+- **A malformed calibration parameter does not stop the node, at boot or
+  at runtime** (decided 2026-11-04 on SHIRE-1796). The constructor checks only
+  `diagnostics.health` and `frame_id_pairs`, and throws if they are missing.
+  `tf`, `tf_static`, `camera_info` and `camera_info_static` are parsed in
+  `onConfigurationReceived`, which logs `Failed to read parameters: yaml-cpp: …`
+  and returns. The node stays up and publishes nothing, and `/diagnostics` shows
+  ERROR with an empty message. Look for that log line when a node is up but
+  silent.
+- **`get_parameters({names})` throws for a declared but unset parameter.**
+  The calibration parameters are declared with a type and no default
+  (`declare_parameter(name, rclcpp::PARAMETER_STRING)`), so running without a
+  config manager and with one missing from the params file leaves it unset. Then
+  `get_parameters` throws `parameter '<name>' is not initialized`, and the node
+  exits with `Failed to start CalibrationManager`. `get_parameter(name, param)`,
+  the bool overload `throwOnUninitializedParams` uses, returns false instead.
+  Verified 2026-11-04. Reproduce with `params.yaml` minus `camera_info`.
 - **`ros2 param list` prints `Node not found`** when `--ipc host` is missing.
   The driver uses the `get_parameters`/`set_parameters` services directly and
   avoids the CLI daemon entirely.
