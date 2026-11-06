@@ -1,14 +1,15 @@
 {
-  "clang-format": {
-    "PostToolUse": [
+  "graph-status": {
+    "SessionStart": [
+      { "type": "command", "command": "./hooks/claude-hook.sh graph-status", "timeout": 12 }
+    ]
+  },
+  "graph-first": {
+    "PreToolUse": [
       {
-        "matcher": "write_file|edit_file",
+        "matcher": "run_command",
         "hooks": [
-          {
-            "type": "command",
-            "command": "sh -c 'h=\"$PWD/.claude/hooks/clang-format.sh\"; [ -x \"$h\" ] && exec \"$h\" || exit 0'",
-            "timeout": 15
-          }
+          { "type": "command", "command": "./hooks/claude-hook.sh graph-first", "timeout": 5 }
         ]
       }
     ]
@@ -16,13 +17,9 @@
   "corp-guard": {
     "PreToolUse": [
       {
-        "matcher": "run_command",
+        "matcher": "run_command|read_url_content|view_file|write_to_file|replace_file_content|multi_replace_file_content|code_action",
         "hooks": [
-          {
-            "type": "command",
-            "command": "sh -c 'h=\"$PWD/.claude/hooks/corp-guard.sh\"; [ -x \"$h\" ] && exec \"$h\" || exit 0'",
-            "timeout": 5
-          }
+          { "type": "command", "command": "./hooks/claude-hook.sh corp-guard", "timeout": 5 }
         ]
       }
     ]
@@ -30,13 +27,19 @@
   "guard-generated": {
     "PreToolUse": [
       {
-        "matcher": "write_file|edit_file",
+        "matcher": "write_to_file|replace_file_content|multi_replace_file_content|code_action",
         "hooks": [
-          {
-            "type": "command",
-            "command": "sh -c 'h=\"$PWD/.claude/hooks/guard-generated.sh\"; [ -x \"$h\" ] && exec \"$h\" || exit 0'",
-            "timeout": 5
-          }
+          { "type": "command", "command": "./hooks/claude-hook.sh guard-generated", "timeout": 5 }
+        ]
+      }
+    ]
+  },
+  "clang-format": {
+    "PostToolUse": [
+      {
+        "matcher": "write_to_file|replace_file_content|multi_replace_file_content|code_action",
+        "hooks": [
+          { "type": "command", "command": "./hooks/claude-hook.sh clang-format", "timeout": 15 }
         ]
       }
     ]

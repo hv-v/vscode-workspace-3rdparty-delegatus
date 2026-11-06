@@ -56,6 +56,11 @@ Give a rule `paths:` frontmatter whenever it only matters for part of the tree;
 that is the only thing here that actually reduces context, because every
 unscoped rule is loaded in full at launch exactly like this file.
 
+Codex and Antigravity read converted copies of this tree from `.agents/` (entry
+`AGENTS.md`; Antigravity also `GEMINI.md`). A change to a rule, skill, agent or
+hook here should be mirrored there in the same change — `.agents/README.md`
+says which file is which.
+
 Do **not** wire the rules in with `@path` imports. Rules already load on their
 own, so an import would place the same text in context twice; the paths above
 are in backticks precisely so they stay literal. Target under 200 lines for

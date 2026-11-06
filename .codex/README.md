@@ -7,12 +7,16 @@ Codex uses both `.codex` and `.agents`; they serve different purposes.
 | CLI and IDE settings | `.codex/config.toml` |
 | Custom subagents | `.codex/agents/<name>.toml` |
 | Skills and reusable command workflows | `.agents/skills/<skill-name>/SKILL.md` |
+| Project skills | `.agents/projects/<project>/.agents/skills/` |
+| Prompt limitations | `.agents/limits/` |
 | General project instructions, when needed | `AGENTS.md` in the repository root or relevant subdirectory |
 | Project context shared with Claude (tickets, design notes, examples, logs) | `.projects/<project>/` in the workspace root |
 
 Agents and skills have been converted from `.claude`, preserving the groups
 and project hierarchy. See `agents/README.md`, `../.agents/skills/README.md`,
-and `projects/navigation_map.md`. The root `AGENTS.md` routes project guidance.
+and `../.agents/projects/navigation_map.md`. Everything under `.agents/` is
+shared with Antigravity, which reads the same root (`../.agents/README.md`).
+The root `AGENTS.md` routes project guidance.
 A README is documentation and does not register a skill or agent.
 
 ## Current settings
@@ -57,7 +61,9 @@ and appropriate permissions. Built-in agents are available without custom files.
 7 project skills (including the template and two partial stubs), C++ references,
 project support assets and prompt limitations. Original Claude files are retained.
 Project context (tickets, design notes, examples) has since been merged from both
-trees into the shared `.projects/` and is no longer listed in the map.
+trees into the shared `.projects/` and is no longer listed in the map. Project
+skills and limitations moved from `.codex/projects/` and `.codex/limits/` to
+`.agents/`, where Antigravity reads them too; the map records the new paths.
 Claude argument metadata is expressed as delegation-message inputs, and agent
 skill preloading is replaced with explicit reads. Models inherit the Codex parent.
 Claude hooks, command shortcuts and settings are not activated by this migration.

@@ -7,6 +7,10 @@
 # Plain git over SSH (git@<host>:group/repo.git) also passes: that is the
 # user's ordinary clone/fetch/push route, and it carries no password.
 #
+# The credentials check also covers file tools (Read, Write, Edit) when a
+# harness routes them here — Antigravity does, through .agents/hooks/; Claude
+# Code relies on the Read deny in settings.json for that.
+#
 # WebFetch is also denied by permissions in settings.json; this covers the
 # Bash side — a hand-written curl/wget could send a POST or leak a password,
 # the scripts cannot. A bare script call passes even when it carries a link
@@ -23,6 +27,7 @@ tool=$(jq -r '.tool_name // ""' <<<"$payload" 2>/dev/null) || exit 0
 target=$(jq -r '
     if .tool_name == "WebFetch" then .tool_input.url // ""
     elif .tool_name == "Bash" then .tool_input.command // ""
+    elif .tool_name == "Read" or .tool_name == "Write" or .tool_name == "Edit" then .tool_input.file_path // ""
     else "" end' <<<"$payload" 2>/dev/null) || exit 0
 
 deny() {
@@ -32,13 +37,14 @@ deny() {
 }
 
 # The real credentials files are the user's alone; the .example placeholders are not.
-if [[ "$tool" == Bash ]] \
+if [[ "$tool" != WebFetch ]] \
     && printf '%s' "$target" | grep -qE '\.secrets/+(credentials($|[^.])|[*?[{])'; then
     deny "Blocked: .atlassian/.secrets/credentials and .gitlab/.secrets/credentials hold the user's \
 password and are theirs alone — never read, print, copy or edit them. To test a login run \
 '.atlassian/sync.sh check' or '.gitlab/sync.sh check'; to change one, ask the user."
 fi
 
+[[ "$tool" == Bash || "$tool" == WebFetch ]] || exit 0
 printf '%s' "$target" | grep -qiE 'jenoptik\.corp' || exit 0
 
 if [[ "$tool" == Bash && "$target" != *$'\n'* ]]; then

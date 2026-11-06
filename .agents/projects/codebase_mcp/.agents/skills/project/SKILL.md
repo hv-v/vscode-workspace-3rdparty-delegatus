@@ -6,7 +6,7 @@ description: STUB (not yet written) - orientation for codebase-memory-mcp, the c
 # codebase-memory-mcp — how it is put together
 
 > **STUB.** Fill it from real runs before relying on it — template:
-> `.codex/projects/.template/.agents/skills/project/SKILL.md`, standard:
+> `.agents/projects/.template/.agents/skills/project/SKILL.md`, standard:
 > the Codex `skill-creator` skill.
 
 > **Directory-name mismatch.** The convention in `AGENTS.md` is that a

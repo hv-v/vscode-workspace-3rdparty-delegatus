@@ -24,7 +24,7 @@ file (the driver then dies with `can't find '__main__' module in
 '/driver.py'`, leaving a root-owned empty dir behind):
 
 ```bash
-SK=/home/vhaponov/Documents/jo-workspace/.codex/projects/jen_calibration_manager/.agents/skills/deploy
+SK=/home/vhaponov/Documents/jo-workspace/.agents/projects/jen_calibration_manager/.agents/skills/deploy
 ```
 
 ## Launch

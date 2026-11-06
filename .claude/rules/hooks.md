@@ -27,6 +27,17 @@ is a slash command that opens a UI over those files — not a path.
 | `PreToolUse` / `Write\|Edit` | `guard-generated.sh` | denies a hand-edit of `.gitmodules` — `rules/generated-files.md` |
 | `PostToolUse` / `Write\|Edit` | `clang-format.sh` | applies the owning repo's `.clang-format` — the layout authority in `l-cpp` |
 
+## Shared with Antigravity
+
+Antigravity runs the same scripts: `.agents/hooks.json` calls
+`.agents/hooks/claude-hook.sh <script>`, which translates its payload into the
+shape above and the answer back. So a script here must keep reading only
+`tool_name`, `tool_input.command`, `tool_input.file_path` and `tool_input.url`,
+and answer only through `permissionDecision` or `additionalContext` — anything
+else never reaches Antigravity. `corp-guard.sh` also checks `Read`/`Write`/`Edit`
+paths for the credentials files, because Antigravity has no `permissions.deny`
+to back it up.
+
 ## Writing one
 
 Scripts take the hook JSON on stdin and are read with `jq`, never by

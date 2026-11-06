@@ -2,12 +2,11 @@
 trigger: glob
 globs:
   - ".gitmodules"
-  - ".gitmodules.t"
-  - ".gitparams"
-  - "gen-gitmodules.sh"
 ---
 
 # Generated Files
 
-`.gitmodules` is generated, not tracked directly. `./gen-gitmodules.sh` renders it from tracked `.gitmodules.t` and ignored `.gitparams`.
-Never hand-edit `.gitmodules`; regenerate with `./gen-gitmodules.sh`.
+`.gitmodules` is generated from `.gitmodules.t`, not hand-edited. The generator
+(`gen-gitmodules.sh`) and `.gitmodules.t` are not present in this checkout, so
+confirm with the user how it is regenerated before changing anything. The
+`guard-generated` hook (`.agents/hooks.json`) denies a direct edit.

@@ -7,7 +7,7 @@ description: STUB (not yet written) - orientation for {{PROJECT}}. Use before ch
 
 > **STUB.** Nothing below is a verified account of the runtime behaviour. Do
 > not cite it as one. Fill it from the code graph and real runs before relying
-> on it — template: `.codex/projects/.template/.agents/skills/project/SKILL.md`,
+> on it — template: `.agents/projects/.template/.agents/skills/project/SKILL.md`,
 > standard: the Codex `skill-creator` skill.
 
 Repo: `{{PROJECT}}/`.

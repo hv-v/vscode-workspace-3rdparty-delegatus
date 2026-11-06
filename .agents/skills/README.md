@@ -1,7 +1,8 @@
 # Workspace skill map
 
-Use `$skill-name` when the skill is in the runtime roster. Otherwise read its
-file by path. Grouping folders preserve the source hierarchy; they are not
+Shared by Codex and Antigravity, which both discover `.agents/skills/`. Invoke a
+skill in the runtime roster with `$skill-name` (Codex) or `/skill-name`
+(Antigravity); otherwise read its file by path. Grouping folders preserve the source hierarchy; they are not
 skills themselves. Do not add duplicate copies or symlinks for discovery.
 
 | skill | path |
@@ -19,6 +20,9 @@ skills themselves. Do not add duplicate copies or symlinks for discovery.
 
 `a-py-tester`, `p-build`, `p-tester`, and `p-deploy` were empty in the source
 and remain explicitly unimplemented. Project-specific implementations live
-under `.codex/projects/`; consult its navigation map.
+under `.agents/projects/`; consult its navigation map.
+
+These skills are shared: Codex and Antigravity both discover `.agents/skills/`.
+Antigravity reaches the grouped ones through `../skills.json`.
 
 Format: https://learn.chatgpt.com/docs/build-skills

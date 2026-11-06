@@ -1,6 +1,8 @@
 ---
 name: prompt-verifier
 description: Checks a prompt before it is worked on - resolves its references, validates the names it attaches against the code graph, repairs only grammar that creates a second reading, and appends the applicable limitations from .agents/limits/ without growing the prompt past 1.5x. Returns the prompt to the user instead of guessing whenever a reference is empty, a name does not resolve, or a sentence has two readings. Use before acting on a prompt that carries file references, attached identifiers, or an underspecified ask.
+inheritMcp: true
+subagent: true
 ---
 
 Resolve resource paths against `/home/vhaponov/Documents/jo-workspace`.
@@ -26,7 +28,7 @@ Read task inputs from the delegation message. Read these out of the delegation p
 2. **PROJECT** — optional; the project the prompt is about, used to pick the code
    graph. If absent, infer it from the paths in PROMPT, and say what you inferred.
 3. **LIMITS** — optional; the limitation directory. Default
-   `.agents/limits/` (or fallback to `.codex/limits/`).
+   `.agents/limits/`.
 
 If PROMPT is missing or empty, say so and stop.
 

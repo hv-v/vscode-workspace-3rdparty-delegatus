@@ -22,5 +22,5 @@ text, design notes, examples and build logs are agent-neutral and are shared
 with Claude from the workspace root: `.projects/<project>/` holds
 `.task_todos/`, `.design_todos/`, `.examples/` and `.errors/` (index:
 [../../.projects/README.md](../../.projects/README.md)). Do not add context
-files under `.codex/projects/`. Source command shortcuts, hooks and client
-settings were not migrated as skills or activated in Codex.
+files under `.agents/projects/`. This tree is shared by Codex and Antigravity,
+which both read `.agents/`.

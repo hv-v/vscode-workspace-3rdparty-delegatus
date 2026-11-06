@@ -1,0 +1,5 @@
+{
+  "name": "jo-workspace",
+  "description": "Wires the codebase-memory code graph (docker/cbm/) into Antigravity for this workspace.",
+  "version": "1.0.0"
+}

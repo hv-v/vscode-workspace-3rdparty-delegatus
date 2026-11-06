@@ -9,4 +9,4 @@ description: Unavailable p-deploy workflow, preserved from an empty source skill
 
 Report that this skill is unavailable; do not claim to have performed it.
 
-Read the matching project skill under `.codex/projects/<project>/.agents/skills/` when one exists.
+Read the matching project skill under `.agents/projects/<project>/.agents/skills/` when one exists.

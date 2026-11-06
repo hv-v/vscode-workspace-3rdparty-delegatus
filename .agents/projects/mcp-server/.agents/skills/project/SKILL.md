@@ -6,7 +6,7 @@ description: STUB (not yet written) - orientation for mcp-server/, which holds t
 # mcp-server — how it is put together
 
 > **STUB.** Fill it from real runs before relying on it — template:
-> `.codex/projects/.template/.agents/skills/project/SKILL.md`, standard:
+> `.agents/projects/.template/.agents/skills/project/SKILL.md`, standard:
 > the Codex `skill-creator` skill.
 
 Repo: `mcp-server/` (workspace root). Its `README.md` is currently empty.

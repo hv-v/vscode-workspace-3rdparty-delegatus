@@ -15,12 +15,12 @@ reasons about what the references contain.
 ## Checks
 
 1. **Extract every reference.** Anything that names a location: a path
-   (`src/Foo.cpp`, `.codex/limits/`), a skill or agent name, a ticket file
+   (`src/Foo.cpp`, `.agents/limits/`), a skill or agent name, a ticket file
    (`1619.md`), a template, a code-graph project, a URL.
 
 2. **Resolve each one.** Paths and directories with `Glob` or `test -e`; skills
    and agents using `.agents/skills/README.md` and `.codex/agents/README.md`; a project graph with
-   `mcp__codebase-memory__index_status`. Resolve relative paths against the
+   codebase-memory `index_status`. Resolve relative paths against the
    workspace root, then against the project the prompt is about.
 
 3. **Measure it.** For a file, `wc -c`. For a directory, whether it holds
@@ -46,6 +46,6 @@ reasons about what the references contain.
 ## Do not
 
 Do not treat a file the prompt asks you to *create* as a missing reference:
-`write X to .codex/limits/new-rule.md` cites a destination, not a source. The
+`write X to .agents/limits/new-rule.md` cites a destination, not a source. The
 verb decides — read/use/follow/according-to means source; write/create/add means
 destination.

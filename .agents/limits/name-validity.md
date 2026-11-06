@@ -33,10 +33,10 @@ graph is why this check is cheap enough to run every time.
 3. **Existence, through the graph.** Resolve the project first, then query its
    graph `home-vhaponov-Documents-jo-workspace-<project>`:
 
-   - `mcp__codebase-memory__search_graph` — the symbol, class or function
-   - `mcp__codebase-memory__get_file_outline` — a file's symbols, to confirm a
+   - codebase-memory `search_graph` — the symbol, class or function
+   - codebase-memory `get_file_outline` — a file's symbols, to confirm a
      method belongs to the type the prompt attached it to
-   - `mcp__codebase-memory__search_code` — literals the graph does not hold:
+   - codebase-memory `search_code` — literals the graph does not hold:
      topics, services, parameter names, YAML keys
 
    **Cap: 8 queries per prompt, one per distinct name.** Over the cap, check the

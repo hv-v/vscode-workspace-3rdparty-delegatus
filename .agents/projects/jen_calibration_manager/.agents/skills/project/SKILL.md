@@ -155,7 +155,7 @@ Agent-neutral context, shared by Claude and Codex, at the workspace root:
 | `.errors/` | Docker and GitLab build logs kept for diagnosis |
 
 Write new ticket or design notes there, never under `.claude/projects/` or
-`.codex/projects/`.
+`.agents/projects/`.
 
 ## design_todos/ — read with care
 

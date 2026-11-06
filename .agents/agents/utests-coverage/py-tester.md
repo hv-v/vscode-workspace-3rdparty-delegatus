@@ -1,6 +1,8 @@
 ---
 name: py-tester
 description: Unavailable Python test agent, preserved from an empty source definition.
+subagent: false
+hidden: true
 ---
 
 Resolve resource paths against `/home/vhaponov/Documents/jo-workspace`.

@@ -31,3 +31,6 @@
 !/.gitlab/.secrets/certs/
 /.gitlab/.secrets/certs/*
 !/.gitlab/.secrets/certs/.gitkeep
+
+# Antigravity conversation data, if a session writes it under the workspace
+/.gemini/

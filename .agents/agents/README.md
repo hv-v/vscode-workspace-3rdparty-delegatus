@@ -14,6 +14,8 @@ Each subagent is defined in Markdown with standard frontmatter (`name`, `descrip
 
 ## Discovery & Delegation
 
-- Configured via `.agents/agents.json` to discover both root and grouped (`common/`, `utests-coverage/`) subagents.
+- Registered by `.agents/agents.json`, which names the root and each grouping folder (`common/`, `utests-coverage/`): a manifest entry scans one level deep. Add a new group there; never add a symlink — each agent then loads twice.
+- `inheritMcp: true` gives each active agent the parent's `codebase-memory` server; `py-tester` is `subagent: false` and `hidden: true` until it is written.
+- Check the roster with `agy agents`.
 - Subagents can be invoked directly with `invoke_subagent` or defined via `define_subagent`.
 - Wrapped and driven by their corresponding `a-` skills in `.agents/skills/` (`a-verify-cpp`, `a-prompt-parser`, `a-verify-prompt`, `a-cpp-tester`, `a-py-tester`).

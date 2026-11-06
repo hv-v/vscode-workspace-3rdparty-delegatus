@@ -1,4 +1,4 @@
-# `.codex/limits/` — limitation rules for the prompt verifier
+# `.agents/limits/` — limitation rules for the prompt verifier
 
 One file per limitation. The `prompt-verifier` agent reads **this index first**
 and then opens only the files whose trigger fired — that is what keeps the pass
@@ -36,7 +36,7 @@ append-short: <a ≤60-char form used when the budget is tight; optional>
 
 The body is the instruction list: what the verifier checks, in order, and what
 each outcome is. Write checks the verifier can actually perform with `Read`,
-`Glob`, `Bash` and the `mcp__codebase-memory__*` tools — a check it cannot
+`Glob`, `Bash` and the `codebase-memory` MCP tools — a check it cannot
 execute is worse than no check, because it reads as having been done.
 
 ## The size budget

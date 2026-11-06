@@ -1,6 +1,6 @@
 ---
 name: a-verify-prompt
-description: Verify a prompt before working on it - resolve its references, validate attached names against the code graph, repair only ambiguous grammar, and append the applicable limitations from .codex/limits/ within a 1.5x size ceiling. Takes the prompt text and an optional project. Use when a request cites files or identifiers, reads underspecified, or before handing work to another agent.
+description: Verify a prompt before working on it - resolve its references, validate attached names against the code graph, repair only ambiguous grammar, and append the applicable limitations from .agents/limits/ within a 1.5x size ceiling. Takes the prompt text and an optional project. Use when a request cites files or identifiers, reads underspecified, or before handing work to another agent.
 ---
 
 # Verify a prompt before acting on it
@@ -23,7 +23,7 @@ assumption you have already made is invisible to you and obvious to it.
    so and stop. Never paraphrase it, never fix it on the way in — the verifier
    must see exactly what the user wrote, including the parts you found unclear.
 
-2. Confirm `.codex/limits/README.md` exists. If it does not, say so and stop:
+2. Confirm `.agents/limits/README.md` exists. If it does not, say so and stop:
    with no limitation files there is nothing to verify against, and a pass that
    checked nothing is worse than no pass.
 
@@ -31,7 +31,7 @@ assumption you have already made is invisible to you and obvious to it.
    the values in the delegation prompt in exactly this shape:
 
    ```
-   LIMITS: .codex/limits/
+   LIMITS: .agents/limits/
    PROJECT: <project name, or "infer">
 
    BEGIN PROMPT
@@ -91,7 +91,7 @@ assumption you have already made is invisible to you and obvious to it.
 
 ## Adding a limitation
 
-A limitation is a file in `.codex/limits/` plus a row in its `README.md`; the
+A limitation is a file in `.agents/limits/` plus a row in its `README.md`; the
 agent needs no change. The frontmatter contract and the size budget are
 documented there. Keep `append` lines short — the budget is the scarce resource,
 and a limitation that always fits is worth more than one that is always dropped.

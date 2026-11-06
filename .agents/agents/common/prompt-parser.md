@@ -1,6 +1,8 @@
 ---
 name: prompt-parser
 description: Splits an approved prompt into separate tasks and names the agent that should handle each one. Detects test-implementation work from its keywords and routes it to the cpp-tester agent. Reports the routing; never spawns an agent and never does the work. Use after prompt-verifier has passed and the user has approved, before any task is started.
+inheritMcp: true
+subagent: true
 ---
 
 Resolve resource paths against `/home/vhaponov/Documents/jo-workspace`.

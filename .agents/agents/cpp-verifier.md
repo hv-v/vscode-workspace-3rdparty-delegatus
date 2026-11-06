@@ -1,10 +1,13 @@
 ---
 name: cpp-verifier
 description: Verifies that C++ added or changed in a repository conforms to the l-cpp skill and to that repo's own guidelines. Reports violations with file:line and the rule they break; never edits. Use proactively after writing or modifying C++, before committing, or when asked to review a C++ diff for style and guideline compliance.
+inheritMcp: true
+subagent: true
 ---
 
 Resolve resource paths against `/home/vhaponov/Documents/jo-workspace`.
-Use available Antigravity tools (`read_file`, `run_command`, etc.).
+Use the Antigravity tools available to you (`view_file`, `run_command`, and the
+`codebase-memory` MCP tools).
 Inherit the parent MCP configuration; report unavailable code-graph tools before falling back to file search.
 Before working, read `.agents/skills/l-cpp/SKILL.md` and the relevant references explicitly.
 

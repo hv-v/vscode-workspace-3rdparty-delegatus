@@ -1,1 +1,0 @@
-utests-coverage/py-tester.md

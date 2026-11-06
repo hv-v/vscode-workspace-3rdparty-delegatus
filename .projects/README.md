@@ -2,12 +2,13 @@
 
 Ticket text, design notes, examples and build logs for each project. None of it
 depends on which agent reads it, so it lives here once instead of being copied
-into `.claude/projects/` and `.codex/projects/`. Those two trees keep only what
-is agent-specific: skills, commands and subagents.
+into `.claude/projects/` (Claude Code) and `.agents/projects/` (Codex and
+Antigravity). Those trees keep only what is agent-specific: skills, commands
+and subagents.
 
 One directory per project, **named exactly like the project's own root
 directory** — the same name used under `.claude/projects/` and
-`.codex/projects/`. Rename all three together.
+`.agents/projects/`. Rename all three together.
 
 ```
 .projects/<project>/

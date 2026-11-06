@@ -34,9 +34,9 @@ logs — sits once at the workspace root, under the same project name:
 └── .errors/          build and run logs kept for diagnosis
 ```
 
-`.claude/projects/` and `.codex/projects/` hold only agent-specific files. Never
-put a context file under either of them: a copy in one agent tree is a copy the
-other agent never sees. `.projects/README.md` lists every entry; copy
+`.claude/projects/` and `.agents/projects/` (shared by Codex and Antigravity)
+hold only agent-specific files. Never put a context file under either of them:
+a copy in one agent tree is a copy the other agents never see. `.projects/README.md` lists every entry; copy
 `.projects/.template/` when a project joins.
 
 Working on a project:
