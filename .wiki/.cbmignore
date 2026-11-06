@@ -1,0 +1,4 @@
+# The real credentials sit beside .db but must never reach the graph.
+.ipp-wiki.env
+# Pages live in a SQLite file, searched with kb.sh rather than the graph.
+.db/

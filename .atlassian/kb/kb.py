@@ -7,7 +7,8 @@ One file, two halves:
       sync.sh stores what it downloads here: init, put-pages, put-comments,
       drop-comments, versions, stamps, prune, import-files, nav-map.
       Readers: page, status, search --keyword.
-  container (kb/Dockerfile: model + onnxruntime + sqlite-vec, no network)
+  container (the jo-confluence-kb image, docker/confluence/: model +
+  onnxruntime + sqlite-vec, no network; this file is mounted over /app/kb.py)
       index    pages whose `indexed` flag is 0 → sections → chunks, FTS5 rows
                and embeddings; then the flag goes to 1
       search   keyword and vector hits fused into one ranking
@@ -741,13 +742,14 @@ def cmd_serve(args):
     server.bind(path)
     os.chmod(path, 0o600)
     server.listen(8)
-    server.settimeout(args.idle)
+    server.settimeout(args.idle if args.idle > 0 else None)   # 0: never exit idle
 
     def stop(signum, frame):
         raise SystemExit(0)
     signal.signal(signal.SIGTERM, stop)   # PID 1 in a container ignores SIGTERM without a handler
     signal.signal(signal.SIGINT, stop)
-    print(f"kb: serving on {path}, exiting after {args.idle} s idle", file=sys.stderr, flush=True)
+    print(f"kb: serving on {path}" + (f", exiting after {args.idle} s idle" if args.idle > 0 else ""),
+          file=sys.stderr, flush=True)
     try:
         while True:
             try:
@@ -814,8 +816,8 @@ def build_parser():
     s.add_argument("--limit", type=int, default=10); s.add_argument("--keyword", action="store_true")
     s = sub.add_parser("index"); s.add_argument("--all", action="store_true")
     sub.add_parser("ping")
-    s = sub.add_parser("serve"); s.add_argument("--socket", default="/data/kb.sock")
-    s.add_argument("--idle", type=int, default=1800, help="seconds without a request before exiting")
+    s = sub.add_parser("serve"); s.add_argument("--socket", default="/tmp/kb.sock")
+    s.add_argument("--idle", type=int, default=1800, help="seconds without a request before exiting; 0: never")
     return p
 
 

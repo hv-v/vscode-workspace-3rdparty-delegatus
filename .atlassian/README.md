@@ -10,12 +10,11 @@ instead of reaching the servers.
 ├── sources.json                     what to pull, server URLs and key pins  tracked
 ├── sync.sh                          the only thing that talks to the servers tracked
 ├── kb.sh                            read and search Confluence (no network) tracked
-├── kb/kb.py, kb/Dockerfile          the database code and the search image  tracked
+├── kb/kb.py                         the database code                        tracked
 ├── .cbmignore                       keeps .secrets/ and .db/ out of the graph tracked
 ├── .secrets/                        your login — see .secrets/README.md     placeholders only
 ├── navigation_map.md                generated index — read it first         ignored
 ├── .db/confluence.db                Confluence pages, comments, search index ignored
-├── .db/kb.sock                      the search container's socket, while it runs ignored
 ├── .jira/<status>/<KEY>.json        issue fields, one folder per status     ignored
 └── .cache/                          version stamps, Jira field catalogue    ignored
 ```
@@ -53,24 +52,25 @@ Reading and searching, with no network:
 `search` fuses two rankings: keyword matches (SQLite FTS5) and matches by
 meaning (vectors in sqlite-vec). Each page is split into its sections, at most
 1200 characters each, and each comment is a piece of its own. The vectors come
-from `multilingual-e5-small` (English and German). It runs in the `jo-kb`
-Docker image with `--network none`, a read-only root and your user id, and
-only `.db/` is mounted writable. The model is pinned to a commit and to the
-SHA-256 of each file, and downloaded once, when the image is built
-(`kb.sh build`). Page text never leaves this machine.
+from `multilingual-e5-small` (English and German). It runs in the
+`jo-confluence-kb` Docker image, built from [`docker/confluence/`](../docker/confluence/README.md),
+with `--network none`, a read-only root and your user id, and only `.db/`
+mounted writable. The model is pinned to a commit and to the SHA-256 of each
+file, and downloaded once, when the image is built (`kb.sh build`). Page text
+never leaves this machine.
 
-The model stays loaded in a resident `jo-kb` container, which answers
-`search` and `index` on the Unix socket `.db/kb.sock`. The first search starts
-it, in about a second and a half. After that a search takes about 0.15 s.
-After 30 minutes without a request it stops by itself and frees its memory
-(about 410 MiB while running, capped at 1 GiB). If it cannot start, the
-command runs once in a one-off container instead, which loads the model each
-time (about 9 s).
+The model stays loaded in the Confluence search service, configured in
+`docker/confluence/` (container `jo-confluence-kb`), separate from the wiki's
+in `docker/wiki/`. The first search starts it in a few seconds; after that a
+search takes about 1 s. Started by a search, it stops itself after 30 minutes
+without a request and frees its memory (about 410 MiB while running, capped at
+1 GiB). If it cannot start, the command runs once in a one-off container
+instead, which loads the model each time (about 9 s).
 
 ```bash
-.atlassian/kb.sh status   # …plus the container's state and memory
-.atlassian/kb.sh up       # start it now
-.atlassian/kb.sh down     # stop it now
+.atlassian/kb.sh status                    # …plus the service's state and memory
+.atlassian/kb.sh up | down                 # start it now (30 min idle) / stop it
+docker/confluence/services.sh up           # start it and keep it up until down
 ```
 
 `kb.sh index` embeds only the pages whose `indexed` is 0. The first full run

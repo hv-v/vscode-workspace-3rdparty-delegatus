@@ -1,0 +1,9 @@
+{
+  "base_url": "https://wiki.tok.ipp.cas.cz",
+  "api_path": "/api.php",
+  "allowed_host_suffix": ".ipp.cas.cz",
+  "max_pages": 3000,
+  "namespaces": [0],
+  "categories": [],
+  "pages": []
+}

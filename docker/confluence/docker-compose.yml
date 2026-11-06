@@ -1,0 +1,48 @@
+# confluence — the search service of the Confluence mirror (.atlassian/), on its own;
+# the wiki one is in ../wiki/.
+#
+#   service confluence   database .atlassian/.db/confluence.db   container jo-confluence-kb
+#
+# It holds the embedding model in memory and answers search / index over a
+# Unix socket in its own /tmp; clients reach it with `docker exec`, so no port
+# and no network at all (a socket in a host-mounted folder fails on Docker
+# Desktop for macOS). The database is the mirror's SQLite file, bind-mounted;
+# sync.sh on the host writes it, the container only reads and indexes it.
+# The image is built from ./Dockerfile; wiki builds its own.
+#
+# Prefer ./services.sh — it writes .env (KB_UID/KB_GID) and waits for health.
+
+name: jo-confluence
+
+services:
+  confluence:
+    build:
+      context: .
+    image: "${KB_IMAGE:-jo-confluence-kb:local}"
+    container_name: jo-confluence-kb
+    user: "${KB_UID:?run ./services.sh, which writes .env}:${KB_GID:?run ./services.sh}"
+    init: true
+    restart: "no"
+    # Without a request for KB_IDLE seconds the server exits and frees its
+    # memory; 0 keeps it up until `services.sh down`.
+    command: ["serve", "--socket", "/tmp/kb.sock", "--idle", "${KB_IDLE:-0}"]
+    environment:
+      KB_DB: /data/confluence.db
+    volumes:
+      - ../../.atlassian/.db:/data
+      - ../../.atlassian/kb/kb.py:/app/kb.py:ro
+    network_mode: none
+    read_only: true
+    tmpfs:
+      - /tmp
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    mem_limit: "${KB_MEMORY:-1g}"
+    healthcheck:
+      test: ["CMD", "env", "KB_SOCKET=/tmp/kb.sock", "python3", "/app/kb.py", "ping"]
+      interval: 30s
+      timeout: 5s
+      start_period: 60s
+      start_interval: 1s

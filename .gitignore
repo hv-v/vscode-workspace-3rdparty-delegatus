@@ -18,6 +18,11 @@
 /.atlassian/.secrets/certs/*
 !/.atlassian/.secrets/certs/.gitkeep
 
+# Wiki mirror: pulled pages and the bot password stay on this machine (.wiki/README.md)
+/.wiki/.db/
+/.wiki/navigation_map.md
+/.wiki/.ipp-wiki.env
+
 # GitLab mirror: MRs, threads and job logs stay on this machine (.gitlab/README.md)
 /.gitlab/.mr/
 /.gitlab/.logs/
