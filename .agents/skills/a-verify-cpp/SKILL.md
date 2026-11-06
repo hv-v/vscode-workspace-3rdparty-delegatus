@@ -55,3 +55,14 @@ absolute workspace root so relative resource paths resolve correctly.
 Inherit the configured model and available MCP tools. If delegation is
 unavailable, report that limitation instead of claiming an independent pass.
 Argument names above describe message inputs, not automatic substitutions.
+
+## Antigravity delegation
+
+Use the `cpp-verifier` subagent defined in `.agents/agents/cpp-verifier.md`.
+Invoke it using `invoke_subagent` with `TypeName: "cpp-verifier"` (or define it dynamically via `define_subagent` if absent from the runtime roster).
+Pass the formatted task inputs in the delegation prompt:
+```
+REPO: <absolute path>
+GUIDELINES: <absolute path, inline text, or "none">
+```
+Use read-only workspace mode (`Workspace: "inherit"`), and inherit the model. Relay the subagent's report verbatim.

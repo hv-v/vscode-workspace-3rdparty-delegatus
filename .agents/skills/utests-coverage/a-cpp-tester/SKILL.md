@@ -79,3 +79,16 @@ absolute workspace root so relative resource paths resolve correctly.
 Inherit the configured model and available MCP tools. If delegation is
 unavailable, report that limitation instead of claiming an independent pass.
 Argument names above describe message inputs, not automatic substitutions.
+
+## Antigravity delegation
+
+Use the `cpp-tester` subagent defined in `.agents/agents/utests-coverage/cpp-tester.md` (or `.agents/agents/cpp-tester.md`).
+Invoke it using `invoke_subagent` with `TypeName: "cpp-tester"` and workspace write permission (`Workspace: "inherit"`).
+Pass the task inputs in the delegation prompt:
+```
+TEST_DIR: <path>
+SRC_DIR: <path>
+INCLUDE_DIR: <path>
+TARGETS: <paths or classes, optional>
+```
+Relay the report verbatim; do not run Docker builds directly in this skill.

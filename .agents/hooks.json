@@ -1,0 +1,44 @@
+{
+  "clang-format": {
+    "PostToolUse": [
+      {
+        "matcher": "write_file|edit_file",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "sh -c 'h=\"$PWD/.claude/hooks/clang-format.sh\"; [ -x \"$h\" ] && exec \"$h\" || exit 0'",
+            "timeout": 15
+          }
+        ]
+      }
+    ]
+  },
+  "corp-guard": {
+    "PreToolUse": [
+      {
+        "matcher": "run_command",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "sh -c 'h=\"$PWD/.claude/hooks/corp-guard.sh\"; [ -x \"$h\" ] && exec \"$h\" || exit 0'",
+            "timeout": 5
+          }
+        ]
+      }
+    ]
+  },
+  "guard-generated": {
+    "PreToolUse": [
+      {
+        "matcher": "write_file|edit_file",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "sh -c 'h=\"$PWD/.claude/hooks/guard-generated.sh\"; [ -x \"$h\" ] && exec \"$h\" || exit 0'",
+            "timeout": 5
+          }
+        ]
+      }
+    ]
+  }
+}

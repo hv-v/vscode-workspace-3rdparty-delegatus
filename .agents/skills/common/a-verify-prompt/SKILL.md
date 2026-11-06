@@ -106,3 +106,17 @@ absolute workspace root so relative resource paths resolve correctly.
 Inherit the configured model and available MCP tools. If delegation is
 unavailable, report that limitation instead of claiming an independent pass.
 Argument names above describe message inputs, not automatic substitutions.
+
+## Antigravity delegation
+
+Use the `prompt-verifier` subagent defined in `.agents/agents/common/prompt-verifier.md` (or `.agents/agents/prompt-verifier.md`).
+Invoke it using `invoke_subagent` with `TypeName: "prompt-verifier"`, passing task inputs between markers:
+```
+LIMITS: .agents/limits/
+PROJECT: <project name, or "infer">
+
+BEGIN PROMPT
+<prompt>
+END PROMPT
+```
+Relay the report, handle `RETURNED` by consulting the user, and enforce the approval gate on `CHANGED: yes`.

@@ -79,3 +79,16 @@ absolute workspace root so relative resource paths resolve correctly.
 Inherit the configured model and available MCP tools. If delegation is
 unavailable, report that limitation instead of claiming an independent pass.
 Argument names above describe message inputs, not automatic substitutions.
+
+## Antigravity delegation
+
+Use the `prompt-parser` subagent defined in `.agents/agents/common/prompt-parser.md` (or `.agents/agents/prompt-parser.md`).
+Invoke it using `invoke_subagent` with `TypeName: "prompt-parser"`, passing task inputs between markers:
+```
+PROJECT: <project name, or "infer">
+
+BEGIN PROMPT
+<approved prompt>
+END PROMPT
+```
+Relay the task breakdown and dispatch routed tasks to their corresponding `a-` skills (e.g. `cpp-tester` tasks to `a-cpp-tester`).
