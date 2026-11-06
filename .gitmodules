@@ -1,16 +1,18 @@
-# private submodules
-[submodule "mindrally-claude-skills"]
-	path = 3rdparty/mindrally-claude-skills
-	url = https://github.com/Mindrally/skills.git
-	branch = master
-	# branch = 05a71308897983093248d719a2ffa1bca61d0768
+# # private submodules
+# [submodule "mindrally-claude-skills"]
+# 	path = 3rdparty/mindrally-claude-skills
+# 	url = https://github.com/Mindrally/skills.git
+# 	branch = master
+# 	# branch = 05a71308897983093248d719a2ffa1bca61d0768
 
-[submodule "awesome-claude-code-subagents"]
-	path = 3rdparty/awesome-claude-code-subagents
-	url = https://github.com/VoltAgent/awesome-claude-code-subagents.git
-	branch = master
-	# branch = c9e51ec0b3d43f5dcdd0b558a6cd28ba6ada97c1
+# [submodule "awesome-claude-code-subagents"]
+# 	path = 3rdparty/awesome-claude-code-subagents
+# 	url = https://github.com/VoltAgent/awesome-claude-code-subagents.git
+# 	branch = master
+# 	# branch = c9e51ec0b3d43f5dcdd0b558a6cd28ba6ada97c1
 
-[submodule "3rdparty/codebase-memory-mcp"]
-	path = 3rdparty/codebase-memory-mcp
-	url = git@github.com-vh:hv-v/codebase-memory-mcp.git
+# [submodule "3rdparty/codebase-memory-mcp"]
+# 	path = 3rdparty/codebase-memory-mcp
+# 	url = git@github.com-vh:hv-v/codebase-memory-mcp.git
+
+# origin  git@github.com:hv-v/vscode-workspace-3rdparty-delegatus.git
