@@ -21,6 +21,7 @@ An absent skill in the roster is not evidence that none exists.
 | [shire-apps](shire-apps/) | `shire-apps/` | Helm charts: `shire-base` aggregator + `shire-sr355` / `shire-vector4` | `…-shire-apps` · 127 nodes |
 | [mcp-server](mcp-server/) | `mcp-server/` | the generated `.mcp.json` that wires Claude Code to the graph | none needed (config) |
 | [codebase_mcp](codebase_mcp/) | `3rdparty/codebase-memory-mcp` | the CBM server itself (Go), run containerized from `docker/cbm/` | `…-3rdparty-codebase-memory-mcp` · 26k nodes |
+| delegatus *(no entry yet)* | `3rdparty/delegatus` | agent board and orchestrator (TypeScript, Next.js on Bun), run offline from `docker/delegatus/` | `…-3rdparty-delegatus` · 188k nodes |
 | [.template](.template/) | — | the skeleton to copy for a new project | — |
 
 Graph names are the full absolute path with separators flattened; the `…` above
@@ -29,7 +30,7 @@ stands for `home-vhaponov-Documents-jo-workspace`. The workspace-root graph
 own — a parent index skips its registered submodules — so always pass the
 project's own graph.
 
-**Two entries do not match a workspace root directory:** `codebase_mcp` is
+**`delegatus` has no configuration entry yet** — only the container in `docker/delegatus/` (README there). **Two entries do not match a workspace root directory:** `codebase_mcp` is
 `3rdparty/codebase-memory-mcp` (rename pending — see its stub), and `.template`
 is a skeleton, not a project.
 

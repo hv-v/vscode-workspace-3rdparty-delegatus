@@ -1,0 +1,14 @@
+{
+  "operator": {
+    "locale": "en",
+    "timeZone": "Europe/Prague"
+  },
+  "projects": {
+    "workspaceRoot": "jo-workspace",
+    "discover": ["*", "3rdparty/*"],
+    "exclude": [
+      "3rdparty/awesome-claude-code-subagents",
+      "3rdparty/mindrally-claude-skills"
+    ]
+  }
+}

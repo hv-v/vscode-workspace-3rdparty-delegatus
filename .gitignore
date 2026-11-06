@@ -4,8 +4,6 @@
 
 # workspace projects specific
 
-3rdparty/
-
 # Atlassian mirror: pulled corporate content stays on this machine (.atlassian/README.md)
 /.atlassian/.confluence/
 /.atlassian/.db/

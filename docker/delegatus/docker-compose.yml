@@ -1,0 +1,104 @@
+# Delegatus — offline, loopback-only container for jo-workspace.
+#
+# Differences from the upstream compose file (3rdparty/delegatus), each one a
+# fix, not a preference — upstream runs:
+#   privileged: true, pid: host, network_mode: host   → full host access
+#   ${HOME}:${HOME} read-write                         → every file you own
+#   group_add docker GID + a docker CLI shim            → root on the host
+# Here instead:
+#   * no privileges, every capability dropped, no-new-privileges, own PID
+#     namespace, read-only root filesystem;
+#   * network: the same no-NAT bridge as docker/cbm — packets have no return
+#     path off the host, DNS is black-holed, and the UI is published on host
+#     loopback only. Nothing leaves the machine (install ping, update checks,
+#     agent provider APIs included);
+#   * state lives in a named volume; the host paths mounted are the agent
+#     transcript folders and the workspace, all read-only, and the login key,
+#     as a compose secret. Inside the workspace, every secret and corporate
+#     mirror folder is hidden behind an empty mount (compose.masks.yml, which
+#     delegatus.sh writes from the paths that exist).
+#
+# Prefer ./delegatus.sh — it writes .env, the key and the masks, and runs these
+# commands with both compose files.
+
+name: delegatus
+
+services:
+  delegatus:
+    build:
+      context: ../../3rdparty/delegatus
+      dockerfile: ../../docker/delegatus/Dockerfile
+      additional_contexts:
+        dlgdocker: .
+      args:
+        DELEGATUS_UID: "${DELEGATUS_UID:-1000}"
+        DELEGATUS_GID: "${DELEGATUS_GID:-1000}"
+    image: "${DELEGATUS_IMAGE:-delegatus:local}"
+    container_name: "${DELEGATUS_CONTAINER:-delegatus}"
+    hostname: delegatus
+    restart: unless-stopped
+    init: false # tini is the image's entrypoint
+    stop_grace_period: 30s
+
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    read_only: true
+    tmpfs:
+      - /tmp:mode=1777,size=512m
+      - /app/.next/cache:uid=${DELEGATUS_UID:-1000},gid=${DELEGATUS_GID:-1000},mode=0700,size=256m
+    pids_limit: 512
+    mem_limit: "${DELEGATUS_MEM_LIMIT:-4g}"
+
+    # Black-holed resolver: nothing listens on 127.0.0.1:53 in the container.
+    dns:
+      - 127.0.0.1
+
+    env_file:
+      - path: .env
+        required: true
+    environment:
+      # Pinned here so .env cannot turn them back on.
+      DELEGATUS_TELEMETRY: "0"
+      DELEGATUS_TELEMETRY_OVERRIDE: "0"
+      DO_NOT_TRACK: "1"
+      NEXT_TELEMETRY_DISABLED: "1"
+      DELEGATUS_PORT: "8898"
+
+    ports:
+      - "127.0.0.1:${DELEGATUS_HOST_PORT:-8898}:8898"
+
+    secrets:
+      - source: delegatus_token
+        target: delegatus_token
+
+    volumes:
+      - "delegatus-home:/home/delegatus"
+      # Read-only: Delegatus shows these as chats; it never writes them here.
+      - "${DELEGATUS_CLAUDE_TRANSCRIPTS:?run ./delegatus.sh init}:/home/delegatus/.claude/projects:ro"
+      - "${DELEGATUS_CODEX_TRANSCRIPTS:?run ./delegatus.sh init}:/home/delegatus/.codex/sessions:ro"
+      # The workspace at its own path: transcript working directories and
+      # project roots then resolve inside the container exactly as on the host.
+      - "${DELEGATUS_WORKSPACE:?run ./delegatus.sh init}:${DELEGATUS_WORKSPACE:?}:ro"
+
+    networks:
+      - isolated
+
+secrets:
+  delegatus_token:
+    file: ./.secrets/token
+
+networks:
+  isolated:
+    name: "${DELEGATUS_NETWORK:-delegatus-isolated}"
+    driver: bridge
+    driver_opts:
+      com.docker.network.bridge.enable_ip_masquerade: "false"
+    ipam:
+      config:
+        - subnet: "${DELEGATUS_SUBNET:-172.31.97.0/24}"
+
+volumes:
+  delegatus-home:
+    name: "${DELEGATUS_VOLUME:-delegatus-home}"
