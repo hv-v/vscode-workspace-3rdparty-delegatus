@@ -1,15 +1,16 @@
 "use client";
 
-import { createContext, useContext, useEffect } from "react";
+import { createContext, useContext, useEffect, useRef } from "react";
 
 import { DraftAgentPane } from "@/components/DraftAgentPane";
 import { TaskComposer } from "@/components/tasks/TaskComposer";
+import { TaskTicketFields, useTaskTicket } from "@/components/tasks/TaskTicketFields";
 import { useTaskCreateDraft } from "@/components/tasks/useTaskCreateDraft";
 import { WorkflowDraftPane } from "@/components/workflows/WorkflowDraftPane";
 import { isWorkflowDraftId } from "@/components/workflows/workflowModel";
 import { useLocale } from "@/lib/i18n";
 import type { BoardTask } from "@/lib/tasks/types";
-import type { FileEntry } from "@/lib/types";
+import type { FileEntry, ProjectCatalogEntry } from "@/lib/types";
 
 import { CloseGlyph } from "./kanbanGlyphs";
 
@@ -64,20 +65,31 @@ function DraftPanes({ ids }: { ids: readonly string[] }) {
 }
 
 /**
- * `+ Task`: an inline card at the top of Inbox (plan §12). The full shared
- * composer (text, voice, images, deadline) over the project's own task draft
- * and its create (`useTaskCreateDraft`): one task per request id, and a
- * refusal keeps the text and says why.
+ * `+ Task`: an inline ticket at the top of Inbox (plan §12): Title, then the
+ * full shared composer as the Description (text, voice, images, deadline),
+ * then Project, Priority and Assignee, over the project's own task draft and
+ * its create (`useTaskCreateDraft`): one task per request id, and a refusal
+ * keeps the form and says why.
  */
-export function KanbanTaskComposer({ project, onCreated, onCancel }: { project: string; onCreated: (task: BoardTask) => void; onCancel: () => void }) {
+export function KanbanTaskComposer({ project, projectName, projectCatalog, projectCwd, files, onCreated, onCancel }: {
+  project: string;
+  projectName?: string;
+  projectCatalog?: readonly ProjectCatalogEntry[];
+  projectCwd?: string;
+  files: FileEntry[];
+  onCreated: (task: BoardTask) => void;
+  onCancel: () => void;
+}) {
   const { t } = useLocale();
+  const ticket = useTaskTicket(project);
   /* The kanban places no task on a map: its column is its status. */
-  const draft = useTaskCreateDraft(project, { placement: "unplaced" }, onCreated);
+  const draft = useTaskCreateDraft(project, { placement: "unplaced" }, onCreated, { ticket, files, projectCatalog, originCwd: projectCwd });
   const { composer } = draft;
+  const titleRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    composer.inputRef.current?.focus();
-  }, [composer.inputRef]);
+    titleRef.current?.querySelector<HTMLInputElement>("[data-task-ticket-title]")?.focus();
+  }, []);
 
   return (
     <form
@@ -102,7 +114,11 @@ export function KanbanTaskComposer({ project, onCreated, onCancel }: { project: 
           </button>
         </div>
       </div>
-      <TaskComposer draft={draft} placeholder={t("tasks.newPlaceholder")} createLabel={t("tasks.panelCreate")} />
+      <div ref={titleRef} className="flex flex-col gap-1.5">
+        <TaskTicketFields ticket={ticket} files={files} projectName={projectName} projectCatalog={projectCatalog} origin={project} onTitleEnter={() => composer.inputRef.current?.focus()}>
+          <TaskComposer draft={draft} placeholder={t("tasks.ticket.descriptionPlaceholder")} createLabel={t("tasks.panelCreate")} sendPayloadAvailable={Boolean(ticket.state.title.trim())} />
+        </TaskTicketFields>
+      </div>
     </form>
   );
 }

@@ -202,6 +202,25 @@ export function ProjectRail({ files, projectCatalog, projectDisplayNames = {}, p
     () => (workspace && !scope ? groupAll([...crownedRows, ...regularRows], workspace.view).filter((section) => section.rows.length || !query.trim()) : null),
     [workspace, scope, crownedRows, regularRows, query],
   );
+  const filesystemParents = useMemo(() => new Map(projectCatalog.flatMap(entry => entry.workspaceParent ? [[entry.project, entry.workspaceParent] as const] : [])), [projectCatalog]);
+  const filesystemRows = useMemo(() => {
+    if (workspace || !filesystemParents.size) return null;
+    const rows = [...crownedRows, ...regularRows];
+    const present = new Set(rows.map(row => row.project));
+    const children = new Map<string, ProjectSummary[]>();
+    for (const row of rows) {
+      const parent = filesystemParents.get(row.project);
+      if (!parent || !present.has(parent) || filesystemParents.has(parent)) continue;
+      const group = children.get(parent) ?? [];
+      group.push(row);
+      children.set(parent, group);
+    }
+    const nested = new Set([...children.values()].flat().map(row => row.project));
+    return rows.filter(row => !nested.has(row.project)).flatMap(row => [
+      { row, child: false },
+      ...(children.get(row.project) ?? []).map(child => ({ row: child, child: true })),
+    ]);
+  }, [workspace, filesystemParents, crownedRows, regularRows]);
   /* A refusal that came back after the row's menu closed stands under its row. */
   const [rowError, setRowError] = useState<{ project: string; text: string } | null>(null);
   const moveProject = (project: string, workspaceId: string | null) => {
@@ -260,11 +279,12 @@ export function ProjectRail({ files, projectCatalog, projectDisplayNames = {}, p
 
   const columns = { anyNeeds: totalAttention > 0, anyLive: totalLive > 0 };
   /* An archived row is drawn as the quiet rows above it; its menu restores it instead of crowning it. */
-  const railRow = (summary: ProjectSummary, pinnedMark = false) => (
+  const railRow = (summary: ProjectSummary, pinnedMark = false, child = false) => (
     <RailRow
       key={summary.project}
       summary={summary}
       pinnedMark={pinnedMark}
+      child={child}
       active={selected === summary.project}
       now={now}
       columns={columns}
@@ -419,12 +439,12 @@ export function ProjectRail({ files, projectCatalog, projectDisplayNames = {}, p
           <MarkColumns needs={totalAttention} live={totalLive} {...columns} />
           <span className={SLOT_AGE} />
         </button>
-        {crownedRows.length && !sections ? (
+        {crownedRows.length && !sections && !filesystemRows ? (
           <SectionLabel count={crownedRows.length} icon={<Crown className="h-3 w-3 fill-crown text-crown" aria-hidden data-testid="crown-marker" />}>{t("rail.pinned")}</SectionLabel>
         ) : null}
         <FlipRow>
-          {sections ? null : crownedRows.map((summary) => railRow(summary))}
-          {sections ? sections.flatMap((section, index) => [
+          {sections || filesystemRows ? null : crownedRows.map((summary) => railRow(summary))}
+          {filesystemRows ? filesystemRows.map(({ row, child }) => railRow(row, crownedProjects.has(row.project), child)) : sections ? sections.flatMap((section, index) => [
             <div
               key={`__workspace-label-${section.workspace?.id ?? "unassigned"}__`}
               data-flip-key={`__workspace-label-${section.workspace?.id ?? "unassigned"}__`}
@@ -532,8 +552,9 @@ export function ProjectRail({ files, projectCatalog, projectDisplayNames = {}, p
  * whole name in the tooltip. The conversation count is in the tooltip too.
  * A row is the same height selected or not, so choosing a project moves nothing.
  */
-function RailRow({ summary, pinnedMark = false, active, now, columns, menuOpen, error, rowRef, triggerRef, onSelect, onMenu }: {
+function RailRow({ summary, pinnedMark = false, child = false, active, now, columns, menuOpen, error, rowRef, triggerRef, onSelect, onMenu }: {
   summary: ProjectSummary;
+  child?: boolean;
   /** In the All view a pinned row stands under its workspace, so its name carries the crown the Pinned heading carried. */
   pinnedMark?: boolean;
   active: boolean;
@@ -568,7 +589,7 @@ function RailRow({ summary, pinnedMark = false, active, now, columns, menuOpen, 
       ref={rowRef}
       data-flip-key={summary.project}
       data-rail-row={summary.project}
-      className="group relative"
+      className={`group relative ${child ? "ml-3" : ""}`}
       onContextMenu={(event) => {
         event.preventDefault();
         onMenu({ from: "pointer", x: event.clientX });

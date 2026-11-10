@@ -443,6 +443,11 @@ export interface ConversationMigration {
 
 export interface ProjectCatalogEntry {
   project: string;
+  /** The filesystem workspace containing this project, when configured. */
+  workspaceParent?: string;
+  /** Ticket types named by the project's `.delegatus-workspace.json`; absent
+      means its workspace parent's, else the task form's defaults. */
+  ticketTypes?: string[];
   /** Human repository label; grouping and routing continue to use `project`. */
   displayName?: string;
   /** Canonical repository root derived from every conversation in the full scan. */

@@ -1,5 +1,6 @@
 import fs from "node:fs";
 import { projectCurationSnapshot } from "@/lib/projects/curation";
+import { workspaceProjects } from "@/lib/projects/workspaceManifest";
 import { isCanonicalProjectId } from "@/lib/projects/identity";
 import { namedProjectDirectory, resolveNamedProject, ProjectNameRefusal, type NamedProjectSources } from "@/lib/projects/nameResolution";
 import { canonicalProject } from "@/lib/projects/aliases";
@@ -167,6 +168,10 @@ function seatProjectSources(): NamedProjectSources {
   return { lastCompletedCatalog: () => {
     const projectCatalog = lastScannedProjectCatalog();
     const files = lastScannedFiles();
-    return projectCatalog && files ? { projectCatalog, files } : null;
+    if (!projectCatalog || !files) return null;
+    const parents = [...projectCatalog, ...projectCurationSnapshot().manualProjects.map(row => ({
+      project: row.project, projectRoot: row.root, smt: row.createdAt, conversations: 0,
+    }))];
+    return { projectCatalog: [...projectCatalog, ...parents.flatMap(workspaceProjects)], files };
   } };
 }

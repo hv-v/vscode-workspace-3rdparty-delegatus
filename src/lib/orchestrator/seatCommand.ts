@@ -26,6 +26,8 @@ import { deliverConversationMessage } from "@/lib/delivery";
 import { structuredHostsEnabled } from "@/lib/runtime/flags";
 import { canonicalProject } from "@/lib/projects/aliases";
 import { projectCurationSnapshot } from "@/lib/projects/curation";
+import { workspaceProjects } from "@/lib/projects/workspaceManifest";
+import { lastScannedProjectCatalog } from "@/lib/scanner/scanCache";
 import { projectSuccessionFor, recordProjectSuccessions } from "@/lib/projects/succession";
 import { projectForCwd } from "@/lib/scanner/describe";
 import { projectDirectoryFallbacks } from "@/lib/scanner/projectDirectories";
@@ -261,6 +263,11 @@ export function recordedProjectRoot(project: string): string | null {
   const created = projectCurationSnapshot().manualProjects
     .find((entry) => entry.project === project || canonicalProject(entry.project) === project);
   if (usableDirectory(created?.root)) return created.root;
+  const parents = [...(lastScannedProjectCatalog() ?? []), ...projectCurationSnapshot().manualProjects.map(row => ({
+    project: row.project, projectRoot: row.root, smt: row.createdAt, conversations: 0,
+  }))];
+  const workspaceProject = parents.flatMap(workspaceProjects).find(entry => canonicalProject(entry.project) === canonicalProject(project));
+  if (usableDirectory(workspaceProject?.projectRoot)) return workspaceProject.projectRoot;
   const known = projectDirectoryFallbacks([project])[project];
   return usableDirectory(known) ? known : null;
 }

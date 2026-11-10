@@ -13,7 +13,7 @@ import type { Pipeline, PipelineStage } from "@/lib/pipelines/types";
 import { isCurrentSeatConversation, type SeatRefs } from "@/lib/tasks/groupHide";
 import { suggestTaskIcon } from "@/lib/tasks/taskIconSuggest";
 import { TASK_PRIORITIES, type BoardTask, type TaskColor, type TaskPriority, type TaskStatus, type TaskHold } from "@/lib/tasks/types";
-import type { FileEntry } from "@/lib/types";
+import type { FileEntry, ProjectCatalogEntry } from "@/lib/types";
 import { MAX_VISIBLE_PATHS } from "@/lib/view/types";
 import { latestAttempt, pipelineStateLabel, stagePromptExtra } from "@/components/pipelines/pipelineModel";
 import { conversationSourceFile, ConversationDrafts } from "@/components/pipelines/conversationDraftClient";
@@ -207,6 +207,10 @@ export interface KanbanBoardProps {
   onReadersChange?: (paths: readonly string[]) => void;
   /** The project's checkout, carried into the seat the board draws. */
   projectCwd?: string;
+  /** The project's human label and every known project, for the new-task
+      ticket's project choice. */
+  projectName?: string;
+  projectCatalog?: readonly ProjectCatalogEntry[];
   /** The project's seat as its owner read it: every conversation the seat
       record names, or null while that is unknown. Required, because the board
       does not read the seat itself — the page that owns it does
@@ -3001,7 +3005,7 @@ export function KanbanBoard(props: KanbanBoardProps) {
       readerKeysByCard={readerKeysByCard}
       draftsByCard={draftsByCard}
       actingByCard={actingByCard}
-      newTask={status === "inbox" && composingTask && !props.overview ? <KanbanTaskComposer project={project} onCreated={taskCreated} onCancel={closeNewTask} /> : null}
+      newTask={status === "inbox" && composingTask && !props.overview ? <KanbanTaskComposer project={project} projectName={props.projectName} projectCatalog={props.projectCatalog} projectCwd={props.projectCwd} files={files} onCreated={taskCreated} onCancel={closeNewTask} /> : null}
       heldLaunches={heldLaunches}
       onColumnMenu={(anchor) => menu.setOpen({ anchor, value: { kind: "column", status } })}
       cardProps={{

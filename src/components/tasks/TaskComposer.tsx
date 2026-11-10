@@ -123,12 +123,15 @@ export function TaskComposer({
   placeholder,
   createLabel,
   leftSlot,
+  sendPayloadAvailable,
 }: {
   draft: UseTaskDraftReturn;
   placeholder: string;
   createLabel: string;
   /** Extra bottom-row left content (e.g. the target count on the sheet). */
   leftSlot?: ReactNode;
+  /** Send is live with an empty text box (a ticket's title is the payload). */
+  sendPayloadAvailable?: boolean;
 }) {
   const { t } = useLocale();
   return (
@@ -142,6 +145,7 @@ export function TaskComposer({
         sendLabelRecording={t("composer.stopAndSend")}
         sendIdleClassName="border-accent bg-accent hover:opacity-90"
         onAttachFiles={(files) => void draft.addFiles(files)}
+        sendPayloadAvailable={sendPayloadAvailable}
         leftSlot={
           <span className="flex min-w-0 items-center gap-1">
             <DueChip draft={draft} />

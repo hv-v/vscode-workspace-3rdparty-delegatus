@@ -2538,6 +2538,8 @@ function ProjectDashboardView({
             ) : kanbanLeaf ? (
               <KanbanBoard
                 stageDrafts={stageDrafts}
+                projectName={projectName}
+                projectCatalog={projectCatalogEntries}
                 conversationDrafts={conversationDrafts}
                 layout={pipelineLayout}
                 project={project}
@@ -2606,6 +2608,8 @@ function ProjectDashboardView({
         <TaskSheet
           project={project}
           projectName={projectName}
+          projectCatalog={projectCatalogEntries}
+          projectCwd={projectCwd}
           tasks={faceTasks}
           files={files}
           initialView={mobileTaskSheetView}

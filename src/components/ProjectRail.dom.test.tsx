@@ -157,6 +157,22 @@ function sections(container: HTMLElement): [string, string, boolean][] {
 
 const click = () => new dom.MouseEvent("click", { bubbles: true }) as unknown as Event;
 
+test("filesystem workspace lists configured projects beneath its selectable row", () => {
+  const selections: string[] = [];
+  const container = renderRail(project => selections.push(project), {
+    files: [],
+    projectCatalog: [
+      { project: "workspace", displayName: "Workspace", smt: 1, conversations: 1 },
+      { project: "child", displayName: "Child", workspaceParent: "workspace", smt: 2, conversations: 0 },
+    ],
+  });
+  const rows = [...container.querySelectorAll("[data-rail-row]")];
+  expect(rows.map(row => row.getAttribute("data-rail-row"))).toEqual(["workspace", "child"]);
+  expect(rows[1]!.classList.contains("ml-3")).toBe(true);
+  (container.querySelector('[data-rail-project="child"]') as HTMLElement).dispatchEvent(click());
+  expect(selections).toEqual(["child"]);
+});
+
 test("desktop rail shows the display name, never the leading-dash key, and selects by canonical key", () => {
   const selections: string[] = [];
   const container = renderRail((project) => selections.push(project));

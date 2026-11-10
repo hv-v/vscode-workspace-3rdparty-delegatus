@@ -1,93 +1,44 @@
 "use client";
 
 import { ChevronLeft } from "lucide-react";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useMemo, useState } from "react";
 
 import { X } from "@/components/icons";
 import { fmtAge } from "@/components/utils";
-import { useIsMobile } from "@/hooks/useIsMobile";
-import { useTaskDraft } from "@/hooks/useTaskDraft";
 import { projectDisplayName } from "@/lib/displayNames";
 import { useLocale } from "@/lib/i18n";
 import type { BoardTask } from "@/lib/tasks/types";
-import type { FileEntry } from "@/lib/types";
+import type { FileEntry, ProjectCatalogEntry } from "@/lib/types";
 
-import { createTask, sendTask } from "./taskApi";
 import { TaskComposer } from "./TaskComposer";
 import { TASK_TONES, taskTitle } from "./taskModel";
-import { TargetChecklist } from "./TargetChecklist";
-import { pushTaskToast, sendSummary } from "./taskToast";
+import { TaskTicketFields, useTaskTicket } from "./TaskTicketFields";
+import { useTaskCreateDraft } from "./useTaskCreateDraft";
 import { Z } from "@/components/layers";
 
 export type TaskSheetView = "list" | "new";
 
-/** Create view: the shared task composer (text, voice, images, deadline) plus
-    the target checkboxes. Commits an `unplaced` task — placement is a board
-    gesture the phone defers to `place on map`. */
+/** Create view: the ticket (Title, the shared composer as Description, then
+    Project, Priority and Assignee). Commits an `unplaced` task — placement is
+    a board gesture the phone defers to `place on map`. */
 function NewTaskView({
   project,
+  projectName,
+  projectCatalog,
+  projectCwd,
   files,
   onCreated,
 }: {
   project: string;
+  projectName?: string;
+  projectCatalog?: readonly ProjectCatalogEntry[];
+  projectCwd?: string;
   files: FileEntry[];
   onCreated: (task: BoardTask) => void;
 }) {
   const { t } = useLocale();
-  const isMobile = useIsMobile();
-  const [checked, setChecked] = useState<ReadonlySet<string>>(() => new Set());
-  /* The composer needs its `submit` at construction, before `save` exists; a
-     ref (updated in an effect) bridges the two without a forward reference. */
-  const saveRef = useRef<(text?: string) => void | Promise<void>>(() => {});
-  const draft = useTaskDraft(project, (overrideText) => saveRef.current(overrideText));
-  const { composer } = draft;
-
-  const save = async (overrideText?: string) => {
-    const payloadText = (overrideText ?? composer.textRef.current).trim();
-    if (composer.busy || composer.voiceSending) return;
-    if (!payloadText) {
-      composer.setStatus({ kind: "err", text: t("tasks.composerNeedsText") });
-      return;
-    }
-    composer.setBusy(true);
-    composer.setStatus(null);
-    try {
-      /* Images were uploaded to durable, task-ownable refs the moment they were
-         picked, so a create-with-images (even without targets) can never drop
-         them and the refs already survived any reload. */
-      const created = await createTask({
-        project,
-        text: payloadText,
-        placement: "unplaced",
-        dueAt: draft.dueAt,
-        dueTz: draft.dueTz,
-        attachments: draft.stagedAttachments(),
-        clientRequestId: draft.getRequestId(),
-      });
-      if ("error" in created) {
-        composer.setStatus({ kind: "err", text: created.error });
-        return;
-      }
-      const targets = [...checked];
-      if (targets.length) {
-        /* Send carries the durable attachment paths in the delivery text —
-           no separate image hop that could strand images on a failed target. */
-        const sent = await sendTask(created.task.id, targets);
-        if ("error" in sent) pushTaskToast("err", sent.error);
-        else {
-          const summary = sendSummary(sent, files);
-          pushTaskToast(summary.kind, summary.text);
-        }
-      }
-      draft.reset();
-      onCreated(created.task);
-    } finally {
-      composer.setBusy(false);
-    }
-  };
-  useEffect(() => {
-    saveRef.current = save;
-  });
+  const ticket = useTaskTicket(project);
+  const draft = useTaskCreateDraft(project, { placement: "unplaced" }, onCreated, { ticket, files, projectCatalog, originCwd: projectCwd });
 
   return (
     <form
@@ -97,27 +48,21 @@ function NewTaskView({
       }}
       className="flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto p-3"
     >
-      <div className="flex flex-col gap-1.5">
+      <TaskTicketFields
+        ticket={ticket}
+        files={files}
+        projectName={projectName}
+        projectCatalog={projectCatalog}
+        origin={project}
+        onTitleEnter={() => draft.composer.inputRef.current?.focus()}
+      >
         <TaskComposer
           draft={draft}
-          placeholder={t("tasks.newPlaceholder")}
+          placeholder={t("tasks.ticket.descriptionPlaceholder")}
           createLabel={t("tasks.sheetCreate")}
-          /* The phone's tools row has no room for the count beside the date
-              chip, so it moves to the checklist heading there. */
-          leftSlot={isMobile ? undefined : (
-            <span className="inline-flex min-w-0 items-center gap-1 rounded-full bg-sunken px-1.5 py-1 text-[9.5px] font-semibold text-secondary">
-              <span className="truncate whitespace-nowrap">{t("tasks.sheetTargets", { count: checked.size })}</span>
-            </span>
-          )}
+          sendPayloadAvailable={Boolean(ticket.state.title.trim())}
         />
-      </div>
-      <div className="flex flex-col gap-1 rounded-[10px] border border-border bg-card p-1.5">
-        <div className="flex items-center justify-between gap-2 px-1 text-[10.5px] font-bold text-muted">
-          <span>{t("tasks.pickerTitle")}</span>
-          {isMobile ? <span className="whitespace-nowrap">{t("tasks.sheetTargets", { count: checked.size })}</span> : null}
-        </div>
-        <TargetChecklist files={files} project={project} checked={checked} onChange={setChecked} maxHeight={9999} />
-      </div>
+      </TaskTicketFields>
     </form>
   );
 }
@@ -131,6 +76,8 @@ function NewTaskView({
 export function TaskSheet({
   project,
   projectName,
+  projectCatalog,
+  projectCwd,
   tasks,
   files,
   initialView,
@@ -139,6 +86,8 @@ export function TaskSheet({
 }: {
   project: string;
   projectName?: string;
+  projectCatalog?: readonly ProjectCatalogEntry[];
+  projectCwd?: string;
   tasks: BoardTask[];
   files: FileEntry[];
   initialView: TaskSheetView;
@@ -226,7 +175,7 @@ export function TaskSheet({
           {!rows.length ? <div className="px-2 py-4 text-center text-[11.5px] text-muted">{t("tasks.sheetEmpty")}</div> : null}
         </div>
       ) : (
-        <NewTaskView project={project} files={files} onCreated={(task) => onOpenTask(task, "new")} />
+        <NewTaskView project={project} projectName={projectName} projectCatalog={projectCatalog} projectCwd={projectCwd} files={files} onCreated={(task) => onOpenTask(task, "new")} />
       )}
     </div>
   );

@@ -21,7 +21,8 @@ export function workspaceFiles(scope: Scope, source: FilesResponse): FilesRespon
     flows: source.flows.filter(row => allowed(row.project)),
     pipelines: source.pipelines.filter(row => allowed(row.project)),
     workflows: source.workflows.filter(row => allowed(row.project)),
-    projectCatalog: source.projectCatalog?.filter(row => allowed(row.project)),
+    projectCatalog: source.projectCatalog?.filter(row => allowed(row.project)).map(row =>
+      row.workspaceParent && !allowed(row.workspaceParent) ? { ...row, workspaceParent: undefined } : row),
     projectCwds: keyed(source.projectCwds),
     projectDisplayNames: keyed(source.projectDisplayNames),
     projectAliases: Object.fromEntries(Object.entries(source.projectAliases ?? {}).filter(([from, to]) => allowed(from) && allowed(to))),

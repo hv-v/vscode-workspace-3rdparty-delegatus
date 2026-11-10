@@ -1,7 +1,7 @@
 "use client";
 
 import { getLocale, translate } from "@/lib/i18n";
-import type { AssignmentRef, BoardTask, TaskAttachment, TaskBoardVisibility, TaskStatus } from "@/lib/tasks/types";
+import type { AssignmentRef, BoardTask, TaskAttachment, TaskBoardVisibility, TaskPriority, TaskStatus } from "@/lib/tasks/types";
 
 /** Fired after any successful task mutation so pollers refresh immediately. */
 export const TASKS_CHANGED_EVENT = "llv:tasks-changed";
@@ -76,6 +76,8 @@ export interface CreateTaskInput {
   clientRequestId?: string;
   /** A lucide icon name (#2102); one lucide does not have creates the task without one. */
   icon?: string;
+  /** Omitted (or "normal") stores no priority. */
+  priority?: TaskPriority;
 }
 
 /** A per-commit-gesture id: stable across retries of one gesture (so two rapid

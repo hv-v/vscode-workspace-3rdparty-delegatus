@@ -41,6 +41,7 @@ import { overlayPromptDisplayTitles, projectDisplayName } from "@/lib/displayNam
 import { presentationName, projectPresentationSnapshot } from "@/lib/projects/presentation";
 import { projectAliasSnapshot } from "@/lib/projects/aliases";
 import { projectCurationSnapshot } from "@/lib/projects/curation";
+import { readWorkspaceManifest, workspaceProjects } from "@/lib/projects/workspaceManifest";
 import { isCanonicalProjectId, isRepositoryProjectId, projectIdentityFromRepositoryRoot, UNRESOLVED_PROJECT, UNRESOLVED_PROJECT_NAME } from "@/lib/projects/identity";
 import { projectRestoredFlows } from "@/lib/reviewHistory/visibility";
 import { reconcileEmbeddedReviewFlows } from "@/lib/pipelines/engine";
@@ -925,6 +926,24 @@ export async function buildFilesResponse(request: Request, dependencies: FilesRo
     projectAliases.displayNames,
   );
   effectiveProjectCatalog = consolidated.projectCatalog;
+  // Manifests are opt-in and only inspected for already-known workspace roots.
+  // Preserve the scanned row's activity and identity when it is also listed.
+  const catalogByProject = new Map(effectiveProjectCatalog.map(entry => [entry.project, entry]));
+  for (const parent of [...effectiveProjectCatalog]) {
+    const manifest = readWorkspaceManifest(parent);
+    if (manifest?.ticketTypes) parent.ticketTypes = manifest.ticketTypes;
+    for (const child of workspaceProjects(parent, manifest)) {
+      const project = resolveCatalogAlias(child.project, projectAliases.aliases);
+      const existing = catalogByProject.get(project);
+      if (existing) {
+        if (existing.project !== parent.project && !existing.workspaceParent) existing.workspaceParent = parent.project;
+      } else {
+        const row = { ...child, project };
+        effectiveProjectCatalog.push(row);
+        catalogByProject.set(project, row);
+      }
+    }
+  }
   const remapProject = (project: string): string => consolidated.projectRemap.get(project) ?? project;
   projected.files = projected.files.map((file) => ({ ...file, project: remapProject(file.project) }));
   projected.flows = projected.flows.map((flow) => ({ ...flow, project: remapProject(flow.project) }));
