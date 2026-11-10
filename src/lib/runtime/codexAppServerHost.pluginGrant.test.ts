@@ -32,6 +32,7 @@ class FakeAppServer extends EventEmitter {
   readonly requests: Array<Record<string, unknown>> = [];
   /** MCP servers the thread gains from plugins on top of its own table. */
   pluginServers: string[] = [];
+  disabledServers: string[] = [];
   statusError: string | null = null;
   /** The MCP table `config/read` reports: how the account registers servers. */
   configuredServers: Record<string, unknown> = { viewer: { command: "agent-log-viewer-mcp" }, playwright: { command: "npx" } };
@@ -75,7 +76,10 @@ class FakeAppServer extends EventEmitter {
     if (method === "mcpServerStatus/list") {
       if (this.statusError) return this.respondError(message.id, this.statusError);
       return this.respond(message.id, {
-        data: ["viewer", "playwright", ...this.pluginServers].map((name) => ({ name, tools: name === "viewer" ? { stage_report: {} } : {} })),
+        data: [
+          ...["viewer", "playwright", ...this.pluginServers].map((name) => ({ name, tools: name === "viewer" ? { stage_report: {} } : {} })),
+          ...this.disabledServers.map((name) => ({ name, runtimeStatus: "disabled", tools: {} })),
+        ],
       });
     }
   }
@@ -190,6 +194,33 @@ test("only a granted host receives the desktop session environment", async () =>
 test("a granted thread that surfaces another plugin's server never opens", async () => {
   const server = new FakeAppServer();
   server.pluginServers = ["computer-use", "browser"];
+  await expect(startHost({
+    cwd: "/repo",
+    plugins: ["computer-use"],
+    env: DESKTOP_ENV,
+    eventStore: new MemoryEventStore(),
+    spawnProcess: fakeSpawn(server),
+  })).rejects.toThrow("Codex plugin grant surfaced servers outside the allowlist: browser");
+});
+
+test("a server the thread config disabled does not widen the grant", async () => {
+  const server = new FakeAppServer();
+  server.pluginServers = ["computer-use"];
+  server.disabledServers = ["project-graph"];
+  const host = await startHost({
+    cwd: "/repo",
+    plugins: ["computer-use"],
+    env: DESKTOP_ENV,
+    eventStore: new MemoryEventStore(),
+    spawnProcess: fakeSpawn(server),
+  });
+  await host.release();
+});
+
+test("a disabled entry does not excuse a live server outside the grant", async () => {
+  const server = new FakeAppServer();
+  server.pluginServers = ["computer-use", "browser"];
+  server.disabledServers = ["project-graph"];
   await expect(startHost({
     cwd: "/repo",
     plugins: ["computer-use"],

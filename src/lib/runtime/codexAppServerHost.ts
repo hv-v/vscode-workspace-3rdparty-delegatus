@@ -1847,7 +1847,13 @@ export class CodexAppServerHost implements EngineHost, TierCapableHost {
     }
     const entries = record(listed)?.data ?? listed;
     if (!Array.isArray(entries)) throw new Error("Codex plugin grant could not be verified: mcpServerStatus/list returned no server list");
+    /* A server the thread's config switched off (`enabled = false`) is still
+       listed, with runtimeStatus "disabled", but Codex never starts it: it adds
+       nothing to the realized tool surface, so it cannot widen the grant. This
+       is how a project config's own MCP server (one that cannot run where the
+       engine does) is kept out without refusing every thread in that project. */
     const unexpected = entries
+      .filter((entry) => stringField(record(entry), "runtimeStatus") !== "disabled")
       .map((entry) => stringField(record(entry), "name"))
       .filter((name): name is string => name !== null && !configured.has(name) && !allowed.has(name));
     if (unexpected.length > 0) {
