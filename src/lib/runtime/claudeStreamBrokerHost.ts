@@ -3,6 +3,7 @@ import { hostExitProcess, observeHostExit, readHostExit, recordHostStop, withHos
 import { nativeProcessId, signalDomain, signalAgentDomain, signalBoundaryOff, spawnManagedEngine } from "./agentSignalSandbox";
 import { memoryField, memoryKillText } from "./agentMemoryState";
 import { CLAUDE_CHILD_EXITED, claudeHostEndText, HOST_END_REASON_MAX_CHARS, type HostEndCause } from "./hostEndCause";
+import { claudeAccountSettingSources } from "./claudeSettingSources";
 import type { AgentMemoryCell } from "./agentMemory";
 import { spawn } from "node:child_process";
 import type { ChildProcessWithoutNullStreams, SpawnOptionsWithoutStdio } from "node:child_process";
@@ -972,7 +973,7 @@ export class ClaudeStreamBrokerHost implements EngineHost {
       ...(engineMemoryOff(options) ? { autoMemoryEnabled: false } : {}),
       env: { ...agentPublicationIdentityEnv(options.env ?? process.env), ...(engineMemoryOff(options) ? { CLAUDE_CODE_DISABLE_AUTO_MEMORY: "1" } : {}) },
     }), "--strict-mcp-config");
-    if (options.providerAccount) args.push("--setting-sources", "");
+    if (options.providerAccount) args.push("--setting-sources", claudeAccountSettingSources());
     if (resume) args.push("--resume", sessionId);
     else args.push("--session-id", sessionId);
     if (options.model) args.push("--model", options.model);

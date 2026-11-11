@@ -41,8 +41,14 @@ export function readWorkspaceManifest(entry: ProjectCatalogEntry): WorkspaceMani
   } catch { return null; }
 }
 
-/** An explicit list keeps discovery bounded and makes third-party inclusion a choice. */
-export function workspaceProjects(parent: ProjectCatalogEntry, manifest = readWorkspaceManifest(parent)): ProjectCatalogEntry[] {
+/** An explicit list keeps discovery bounded and makes third-party inclusion a choice.
+    One argument only, so it stays safe to pass to `map`/`flatMap`. */
+export function workspaceProjects(parent: ProjectCatalogEntry): ProjectCatalogEntry[] {
+  return workspaceProjectsFromManifest(parent, readWorkspaceManifest(parent));
+}
+
+/** The child projects of an already-read manifest. */
+export function workspaceProjectsFromManifest(parent: ProjectCatalogEntry, manifest: WorkspaceManifest | null): ProjectCatalogEntry[] {
   if (!manifest) return [];
   const { root, projects: paths } = manifest;
   if (!Array.isArray(paths)) return [];

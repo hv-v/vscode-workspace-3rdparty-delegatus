@@ -30,6 +30,23 @@ function withoutUnsetFields(server: JsonObject): JsonObject {
   return Object.fromEntries(Object.entries(server).filter(([, value]) => value !== null && value !== undefined));
 }
 
+/** The fields that say how a server is reached. `config/read` resolves its
+    project layers from every `.codex/config.toml` above the cwd, but
+    `thread/start` in a nested repository (a submodule under a trusted
+    workspace) does not load the outer layer. A bare `{ enabled: false }` for a
+    server only that layer defines is then the whole table, and Codex refuses
+    the launch with "invalid transport in `mcp_servers.<name>`". Restating the
+    transport keeps every entry valid on its own; credentials (`env`, headers,
+    tokens) are not replayed. */
+const MCP_TRANSPORT_FIELDS = ["command", "args", "cwd", "url"] as const;
+
+function transportFields(server: unknown): JsonObject {
+  const entry = record(server) ?? {};
+  return Object.fromEntries(MCP_TRANSPORT_FIELDS
+    .filter((field) => entry[field] !== null && entry[field] !== undefined)
+    .map((field) => [field, entry[field]]));
+}
+
 /** Per-plugin thread table for a granted session: every plugin Codex knows
  *  about, with only the granted names enabled. Codex 0.145 accepts this table
  *  on `thread/start` but resolves plugins from the global config instead, so it
@@ -121,7 +138,7 @@ export function headlessCodexThreadConfig(
            Its predecessor owned the stdio child, so an enable flag alone
            leaves a resumed thread with no connector process to call (#1346). */
         ...(name === "viewer" || (name === "telegram" && enabled.has("telegram"))
-          ? withoutUnsetFields(server as JsonObject) : {}),
+          ? withoutUnsetFields(server as JsonObject) : transportFields(server)),
         /* The thread runs under the agent's own config and state root
            (#1905); the Viewer server keeps the real ones, so the MCP link
            still finds this machine's release. The launching installation owns

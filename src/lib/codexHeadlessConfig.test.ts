@@ -111,7 +111,7 @@ test("headless Codex threads allow only the registered Viewer MCP server", () =>
         enabled: true,
         default_tools_approval_mode: "approve",
       },
-      docs: { enabled: false },
+      docs: { command: "docs-mcp", enabled: false },
     },
     features: { plugins: false, apps: false, multi_agent: false, multi_agent_v2: false, collab: false, realtime_conversation: true },
     agents: { enabled: false },
@@ -336,4 +336,20 @@ test("on stdio, an HTTP registration is replayed as registered and never given a
   });
   expect(codexViewerOverHttp(null, "stdio")).toBe(false);
   expect(codexViewerOverHttp(null, "http")).toBe(true);
+});
+
+test("a disabled server keeps its transport so a thread in a nested repository still starts", () => {
+  /* config/read in a submodule reports a server from the outer workspace's
+     .codex/config.toml, but thread/start there does not load that layer; a
+     bare `{ enabled: false }` was refused as "invalid transport". */
+  const config = headlessCodexThreadConfig({
+    config: {
+      mcp_servers: {
+        "codebase-memory": { command: "sh", args: ["-c", "serve"], cwd: "/workspace", env: { TOKEN: "secret" }, startup_timeout_sec: null, enabled: true },
+        remote: { url: "https://example.invalid/mcp", bearer_token_env_var: "REMOTE_TOKEN", http_headers: { authorization: "secret" } },
+      },
+    },
+  }) as { mcp_servers: Record<string, unknown> };
+  expect(config.mcp_servers["codebase-memory"]).toEqual({ command: "sh", args: ["-c", "serve"], cwd: "/workspace", enabled: false });
+  expect(config.mcp_servers.remote).toEqual({ url: "https://example.invalid/mcp", enabled: false });
 });

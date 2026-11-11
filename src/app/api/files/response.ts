@@ -41,7 +41,7 @@ import { overlayPromptDisplayTitles, projectDisplayName } from "@/lib/displayNam
 import { presentationName, projectPresentationSnapshot } from "@/lib/projects/presentation";
 import { projectAliasSnapshot } from "@/lib/projects/aliases";
 import { projectCurationSnapshot } from "@/lib/projects/curation";
-import { readWorkspaceManifest, workspaceProjects } from "@/lib/projects/workspaceManifest";
+import { readWorkspaceManifest, workspaceProjectsFromManifest } from "@/lib/projects/workspaceManifest";
 import { isCanonicalProjectId, isRepositoryProjectId, projectIdentityFromRepositoryRoot, UNRESOLVED_PROJECT, UNRESOLVED_PROJECT_NAME } from "@/lib/projects/identity";
 import { projectRestoredFlows } from "@/lib/reviewHistory/visibility";
 import { reconcileEmbeddedReviewFlows } from "@/lib/pipelines/engine";
@@ -932,7 +932,7 @@ export async function buildFilesResponse(request: Request, dependencies: FilesRo
   for (const parent of [...effectiveProjectCatalog]) {
     const manifest = readWorkspaceManifest(parent);
     if (manifest?.ticketTypes) parent.ticketTypes = manifest.ticketTypes;
-    for (const child of workspaceProjects(parent, manifest)) {
+    for (const child of workspaceProjectsFromManifest(parent, manifest)) {
       const project = resolveCatalogAlias(child.project, projectAliases.aliases);
       const existing = catalogByProject.get(project);
       if (existing) {
