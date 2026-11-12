@@ -1,57 +1,65 @@
-# Delegatus — offline, loopback-only container for jo-workspace.
+# Delegatus for jo-workspace — a hardened container whose agents reach only
+# their providers' APIs, through an allow-list proxy.
 #
 # Differences from the upstream compose file (3rdparty/delegatus), each one a
 # fix, not a preference — upstream runs:
 #   privileged: true, pid: host, network_mode: host   → full host access
 #   ${HOME}:${HOME} read-write                         → every file you own
 #   group_add docker GID + a docker CLI shim            → root on the host
+#   nsenter shims for claude/codex                      → agents run on the host
 # Here instead:
 #   * no privileges, every capability dropped, no-new-privileges, own PID
 #     namespace, read-only root filesystem;
+#   * the Claude Code and Codex CLIs are installed in the image
+#     (Dockerfile.agents) and sign in from Delegatus's Accounts screen, with
+#     their credentials in the state volume — never the host's;
 #   * network: the same no-NAT bridge as docker/cbm — packets have no return
 #     path off the host, DNS is black-holed, and the UI is published on host
-#     loopback only. Nothing leaves the machine (install ping, update checks,
-#     agent provider APIs included);
-#   * state lives in a named volume; the host paths mounted are the agent
-#     transcript folders and the workspace, all read-only, and the login key,
-#     as a compose secret. Inside the workspace, every secret and corporate
-#     mirror folder is hidden behind an empty mount (compose.masks.yml, which
-#     delegatus.sh writes from the paths that exist).
+#     loopback only. The one way out is `proxy`, which tunnels to port 443 of
+#     the hosts in proxy/allow (the Anthropic and OpenAI APIs and logins) and
+#     refuses everything else — install ping and update checks included;
+#   * the workspace is mounted read-write so agents can work on it; inside it,
+#     every secret and corporate mirror folder is hidden behind an empty
+#     read-only mount (compose.masks.yml, which delegatus.sh writes from the
+#     paths that exist). The host's own transcript folders stay read-only.
 #
 # Prefer ./delegatus.sh — it writes .env, the key and the masks, and runs these
 # commands with both compose files.
 
 name: delegatus
 
+x-hardening: &hardening
+  security_opt:
+    - no-new-privileges:true
+  cap_drop:
+    - ALL
+  read_only: true
+
 services:
   delegatus:
+    <<: *hardening
     build:
-      context: ../../3rdparty/delegatus
-      dockerfile: ../../docker/delegatus/Dockerfile
-      additional_contexts:
-        dlgdocker: .
+      context: .
+      dockerfile: Dockerfile.agents
       args:
-        DELEGATUS_UID: "${DELEGATUS_UID:-1000}"
-        DELEGATUS_GID: "${DELEGATUS_GID:-1000}"
-    image: "${DELEGATUS_IMAGE:-delegatus:local}"
+        BASE_IMAGE: "${DELEGATUS_BASE_IMAGE:-delegatus:local}"
+    image: "${DELEGATUS_IMAGE:-delegatus:agents}"
     container_name: "${DELEGATUS_CONTAINER:-delegatus}"
     hostname: delegatus
     restart: unless-stopped
     init: false # tini is the image's entrypoint
     stop_grace_period: 30s
+    depends_on:
+      - proxy
 
-    security_opt:
-      - no-new-privileges:true
-    cap_drop:
-      - ALL
-    read_only: true
     tmpfs:
-      - /tmp:mode=1777,size=512m
+      - /tmp:mode=1777,size=1g
       - /app/.next/cache:uid=${DELEGATUS_UID:-1000},gid=${DELEGATUS_GID:-1000},mode=0700,size=256m
-    pids_limit: 512
-    mem_limit: "${DELEGATUS_MEM_LIMIT:-4g}"
+    pids_limit: 2048
+    mem_limit: "${DELEGATUS_MEM_LIMIT:-8g}"
 
     # Black-holed resolver: nothing listens on 127.0.0.1:53 in the container.
+    # The proxy resolves the allowed names; the container never needs to.
     dns:
       - 127.0.0.1
 
@@ -65,6 +73,14 @@ services:
       DO_NOT_TRACK: "1"
       NEXT_TELEMETRY_DISABLED: "1"
       DELEGATUS_PORT: "8898"
+      # Every client in the image (bun, Claude Code, Codex) honours these.
+      # The proxy is addressed by IP: the container has no working DNS.
+      HTTPS_PROXY: "http://${DELEGATUS_PROXY_IP:-172.31.97.10}:3128"
+      HTTP_PROXY: "http://${DELEGATUS_PROXY_IP:-172.31.97.10}:3128"
+      https_proxy: "http://${DELEGATUS_PROXY_IP:-172.31.97.10}:3128"
+      http_proxy: "http://${DELEGATUS_PROXY_IP:-172.31.97.10}:3128"
+      NO_PROXY: "127.0.0.1,localhost,::1"
+      no_proxy: "127.0.0.1,localhost,::1"
 
     ports:
       - "127.0.0.1:${DELEGATUS_HOST_PORT:-8898}:8898"
@@ -76,14 +92,47 @@ services:
     volumes:
       - "delegatus-home:/home/delegatus"
       # Read-only: Delegatus shows these as chats; it never writes them here.
+      # Agents it starts write to their own account homes in delegatus-home.
       - "${DELEGATUS_CLAUDE_TRANSCRIPTS:?run ./delegatus.sh init}:/home/delegatus/.claude/projects:ro"
       - "${DELEGATUS_CODEX_TRANSCRIPTS:?run ./delegatus.sh init}:/home/delegatus/.codex/sessions:ro"
-      # The workspace at its own path: transcript working directories and
-      # project roots then resolve inside the container exactly as on the host.
-      - "${DELEGATUS_WORKSPACE:?run ./delegatus.sh init}:${DELEGATUS_WORKSPACE:?}:ro"
+      # The workspace at its own path, read-write: agents edit it. Transcript
+      # working directories and project roots resolve exactly as on the host.
+      - "${DELEGATUS_WORKSPACE:?run ./delegatus.sh init}:${DELEGATUS_WORKSPACE:?}"
 
     networks:
       - isolated
+
+  # The only route off the host. Not published; reachable from `isolated`.
+  proxy:
+    <<: *hardening
+    build:
+      context: ./proxy
+    image: "${DELEGATUS_PROXY_IMAGE:-delegatus-proxy:local}"
+    container_name: "${DELEGATUS_CONTAINER:-delegatus}-proxy"
+    restart: unless-stopped
+    pids_limit: 128
+    mem_limit: 128m
+    networks:
+      isolated:
+        ipv4_address: "${DELEGATUS_PROXY_IP:-172.31.97.10}"
+      egress:
+        # The default route must leave through the NAT network, not the
+        # isolated one, whose gateway has no return path.
+        gw_priority: 100
+
+  # Build-only: the hardened base image, from the clone. Never started;
+  # `./delegatus.sh build --base` builds it.
+  delegatus-base:
+    profiles: [base]
+    build:
+      context: ../../3rdparty/delegatus
+      dockerfile: ../../docker/delegatus/Dockerfile
+      additional_contexts:
+        dlgdocker: .
+      args:
+        DELEGATUS_UID: "${DELEGATUS_UID:-1000}"
+        DELEGATUS_GID: "${DELEGATUS_GID:-1000}"
+    image: "${DELEGATUS_BASE_IMAGE:-delegatus:local}"
 
 secrets:
   delegatus_token:
@@ -98,6 +147,9 @@ networks:
     ipam:
       config:
         - subnet: "${DELEGATUS_SUBNET:-172.31.97.0/24}"
+  egress:
+    name: "${DELEGATUS_EGRESS_NETWORK:-delegatus-egress}"
+    driver: bridge
 
 volumes:
   delegatus-home:

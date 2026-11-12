@@ -1,9 +1,10 @@
 #!/usr/bin/env bash
 #
-# delegatus.sh — build, run and check the offline Delegatus container.
+# delegatus.sh — build, run and check the Delegatus container.
 #
-# The container serves Delegatus on host loopback, behind an access key, with
-# no route off the host. See README.md for the design and what that rules out.
+# The container serves Delegatus on host loopback, behind an access key. Its
+# only route off the host is an allow-list proxy to the Claude and Codex APIs.
+# See README.md for the design and what that rules out.
 #
 # Usage: ./delegatus.sh <command> [options]   ( ./delegatus.sh help )
 
@@ -23,6 +24,7 @@ workspace_dir="$(cd -- "${script_dir}/../.." && pwd)"
 readonly workspace_dir
 readonly source_dir="${workspace_dir}/3rdparty/delegatus"
 readonly container_name="${DELEGATUS_CONTAINER:-delegatus}"
+readonly proxy_port=3128
 
 # Workspace paths hidden inside the container behind an empty mount: login
 # secrets, the corporate Jira/Confluence/GitLab mirrors, and this setup's own
@@ -53,7 +55,7 @@ readonly ex_config=78
 
 log()  { printf '\033[1;34m==>\033[0m %s\n' "$*" >&2; }
 warn() { printf '\033[1;33mwarn:\033[0m %s\n' "$*" >&2; }
-die()  { printf '\033[1;31merror:\033[0m %s\n' "$*" >&2; exit "${2:-$ex_software}"; }
+die()  { printf '\033[1;31merror:\033[0m %s\n' "$1" >&2; exit "${2:-$ex_software}"; }
 
 usage() {
     cat <<'EOF'
@@ -61,25 +63,33 @@ Usage: ./delegatus.sh <command> [options]
 
 Setup
   init                 Write .env and the login key if missing (never overwrites)
-  build [--no-cache]   Build the image from 3rdparty/delegatus
+  build [--base] [--no-cache]
+                       Build the agents image (Claude Code + Codex on the base
+                       image) and the proxy. --base, or a missing base image,
+                       first rebuilds the base from 3rdparty/delegatus
 
 Lifecycle
   up                   init, build if needed, start in the background
   down [--volumes]     Stop it; --volumes also drops its state volume
-  restart              Recreate the container (picks up .env and a new key)
-  status               Container state, HTTP answer and isolation check
+  restart              Recreate the containers (picks up .env and a new key)
+  status               Container state, HTTP answer, engines, isolation check
   logs [-f]            Container logs
 
 Access
   url                  Print the sign-in link (it carries the key)
   rotate-key           Replace the key and restart; old sessions are refused
 
-  check-isolation      Prove the container cannot resolve names or reach out
+  check-isolation      Prove the container reaches nothing directly, and only
+                       the allow-listed hosts through the proxy
 
 Configuration
   configure [FILE]     Apply the defaults in FILE (default workspace.json):
                        operator language and time zone, and one project per
                        repository in the workspace. Safe to re-run.
+  seat [FILE]          Seat the orchestrator on the workspace-root project
+                       with the stock mandate and the runtime in FILE's
+                       `orchestrator` block. Sign in an engine account first
+                       (Accounts screen). Safe to re-run: a live seat is kept.
 EOF
 }
 
@@ -167,27 +177,42 @@ cmd_init() {
     log "wrote .env from env.example"
 }
 
+image_name() {
+    local key=$1 fallback=$2 value
+    value=$(env_value "$key" || true)
+    printf '%s' "${value:-$fallback}"
+}
+
+image_present() {
+    docker image inspect "$1" >/dev/null 2>&1
+}
+
 cmd_build() {
     local -a args=()
-    case "${1:-}" in
-        "") ;;
-        --no-cache) args+=(--no-cache) ;;
-        *) die "build: unknown option '$1'" "$ex_usage" ;;
-    esac
+    local base=0 option
+    for option in "$@"; do
+        case "$option" in
+            --no-cache) args+=(--no-cache) ;;
+            --base) base=1 ;;
+            *) die "build: unknown option '${option}'" "$ex_usage" ;;
+        esac
+    done
     require_docker
-    require_source
     cmd_init
-    log "building the image (first build takes several minutes)"
-    compose build ${args[@]+"${args[@]}"}
+    if (( base )) || ! image_present "$(image_name DELEGATUS_BASE_IMAGE delegatus:local)"; then
+        require_source
+        log "building the base image from the clone (first build takes several minutes)"
+        compose --profile base build ${args[@]+"${args[@]}"} delegatus-base
+    fi
+    log "building the agents image and the proxy"
+    compose build ${args[@]+"${args[@]}"} proxy delegatus
 }
 
 cmd_up() {
     require_docker
-    require_source
     cmd_init
-    local image
-    image=$(env_value DELEGATUS_IMAGE || true)
-    if ! docker image inspect "${image:-delegatus:local}" >/dev/null 2>&1; then
+    if ! image_present "$(image_name DELEGATUS_IMAGE delegatus:agents)" \
+        || ! image_present "$(image_name DELEGATUS_PROXY_IMAGE delegatus-proxy:local)"; then
         cmd_build
     fi
     compose up -d
@@ -227,6 +252,10 @@ cmd_status() {
         code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 5 "http://127.0.0.1:$(host_port)/" || true)
         printf 'http:       %s (401/403 without the key is expected)\n' "${code:-no answer}"
     fi
+    local claude_version codex_version
+    claude_version=$(docker exec "$container_name" claude --version 2>/dev/null || printf 'missing')
+    codex_version=$(docker exec "$container_name" codex --version 2>/dev/null || printf 'missing')
+    printf 'engines:    claude %s; %s\n' "$claude_version" "$codex_version"
     cmd_check_isolation || true
 }
 
@@ -253,12 +282,14 @@ cmd_rotate_key() {
     fi
 }
 
-# Run inside the container with its own bun: name resolution and a direct
-# connection to a public address must both fail.
+# Run inside the container with its own bun. Directly, name resolution and a
+# connection to a public address must both fail. Through the proxy, a CONNECT
+# to an allow-listed host must be answered 200 and one to any other host 403.
 cmd_check_isolation() {
     require_docker
-    local result
-    result=$(docker exec "$container_name" bun -e '
+    local proxy_ip result
+    proxy_ip=$(env_value DELEGATUS_PROXY_IP || true)
+    result=$(docker exec -e "CHECK_PROXY=${proxy_ip:-172.31.97.10}:${proxy_port}" "$container_name" bun -e '
         const dns = await import("node:dns/promises");
         const net = await import("node:net");
         let resolved = "no";
@@ -269,14 +300,37 @@ cmd_check_isolation() {
             socket.once("connect", () => { clearTimeout(timer); socket.destroy(); done("yes"); });
             socket.once("error", () => { clearTimeout(timer); done("no"); });
         });
-        console.log(`${resolved} ${reached}`);
+        const [proxyHost, proxyPort] = process.env.CHECK_PROXY.split(":");
+        const tunnel = (target) => new Promise((done) => {
+            const socket = net.connect({ host: proxyHost, port: Number(proxyPort) });
+            const timer = setTimeout(() => { socket.destroy(); done("timeout"); }, 8000);
+            socket.once("connect", () => socket.write(`CONNECT ${target}:443 HTTP/1.1\r\nHost: ${target}:443\r\n\r\n`));
+            socket.once("data", (chunk) => {
+                clearTimeout(timer); socket.destroy();
+                done(/^HTTP\/1\.[01] (\d{3})/.exec(chunk.toString("latin1"))?.[1] ?? "garbled");
+            });
+            socket.once("error", () => { clearTimeout(timer); done("unreachable"); });
+        });
+        console.log(`${resolved} ${reached} ${await tunnel("api.anthropic.com")} ${await tunnel("example.com")}`);
     ' 2>/dev/null) || { warn "isolation check could not run in '${container_name}'"; return 1; }
-    local resolved=${result%% *} reached=${result##* }
+    local resolved reached allowed denied
+    read -r resolved reached allowed denied <<< "$result"
     printf 'isolation:  dns resolves=%s, internet reachable=%s\n' "$resolved" "$reached"
+    printf 'proxy:      api.anthropic.com=%s (200 expected), example.com=%s (403 expected)\n' "$allowed" "$denied"
+    local failed=0
     if [[ "$resolved" != no || "$reached" != no ]]; then
-        warn "the container can reach outside the host — check the network in docker-compose.yml"
-        return 1
+        warn "the container can reach outside the host directly — check the network in docker-compose.yml"
+        failed=1
     fi
+    if [[ "$denied" != 403 ]]; then
+        warn "the proxy does not refuse an unlisted host — check proxy/tinyproxy.conf"
+        failed=1
+    fi
+    if [[ "$allowed" != 200 ]]; then
+        warn "the proxy does not pass an allow-listed host — agents cannot reach their APIs"
+        failed=1
+    fi
+    return "$failed"
 }
 
 # ── configure ──────────────────────────────────────────────────
@@ -315,8 +369,10 @@ api() {
     curl "${args[@]}" "${base_url}${path}" || printf '000'
 }
 
-cmd_configure() {
-    local config=${1:-$default_config}
+# Check the config file and the running container, then sign in: sets
+# base_url, jar and response_file for api().
+sign_in() {
+    local config=$1
     [[ -f "$config" ]] || die "no configuration file ${config}" "$ex_config"
     jq -e . "$config" >/dev/null 2>&1 || die "${config} is not valid JSON" "$ex_config"
     command -v curl >/dev/null 2>&1 || die "curl is required on the host" "$ex_unavailable"
@@ -333,8 +389,13 @@ cmd_configure() {
     code=$(printf 'url = "%s/?k=%s"\n' "$base_url" "$(tr -d '[:space:]' < "$key_file")" \
         | curl -s -o /dev/null -w '%{http_code}' -c "$jar" -K - || printf '000')
     [[ "$code" == 307 || "$code" == 200 ]] || die "sign-in refused (HTTP ${code}); is the key current?" "$ex_unavailable"
+}
 
-    local operator
+cmd_configure() {
+    local config=${1:-$default_config}
+    sign_in "$config"
+
+    local code operator
     operator=$(jq -c '.operator // empty | {locale, timeZone} | with_entries(select(.value != null)) | . + (if .locale then {source: "chosen"} else {} end)' "$config")
     if [[ -n "$operator" && "$operator" != "{}" ]]; then
         code=$(api PUT /api/operator/settings "$operator")
@@ -358,6 +419,93 @@ cmd_configure() {
     return "$failed"
 }
 
+# ── seat ───────────────────────────────────────────────────────
+
+# The workspace-wide orchestrator: one seat on the project whose root is the
+# workspace itself. Workers it starts keep that root as their cwd and work in
+# a submodule by path, because Delegatus refuses a seat's launch into another
+# project's directory (each submodule is a repository, so a project of its own).
+cmd_seat() {
+    local config=${1:-$default_config}
+    sign_in "$config"
+
+    local root_name engine model effort query code project display seat pending
+    root_name=$(jq -r '.projects.workspaceRoot // "jo-workspace"' "$config")
+    engine=$(jq -r '.orchestrator.engine // "claude"' "$config")
+    model=$(jq -r '.orchestrator.model // empty' "$config")
+    effort=$(jq -r '.orchestrator.effort // empty' "$config")
+    [[ "$engine" == claude || "$engine" == codex ]] \
+        || die "orchestrator.engine must be claude or codex, not '${engine}'" "$ex_config"
+
+    # The root's project key, resolved from its directory: its name alone is
+    # ambiguous while an older directory identity still carries it.
+    query=$(jq -rn --arg project "$root_name" --arg cwd "$workspace_dir" '"project=\($project | @uri)&cwd=\($cwd | @uri)"')
+    code=$(api GET "/api/orchestrator/seat?${query}")
+    [[ "$code" == 200 ]] || die "could not resolve the workspace project (HTTP ${code}): $(jq -r '.error // empty' "$response_file" 2>/dev/null)" "$ex_unavailable"
+    project=$(jq -r '.project // empty' "$response_file")
+    display=$(jq -r '.displayName // empty' "$response_file")
+    seat=$(jq -r '.seat.conversationId // empty' "$response_file")
+    pending=$(jq -r '.pending.clientRequestId // empty' "$response_file")
+    [[ -n "$project" ]] || die "Delegatus answered no project key for ${workspace_dir}" "$ex_software"
+    printf 'project    %s (%s)\n' "$project" "${display:-unnamed}"
+
+    if [[ "$display" != "$root_name" ]]; then
+        code=$(api PUT /api/projects/settings "$(jq -cn --arg project "$project" --arg name "$root_name" '{project: $project, name: $name}')")
+        if [[ "$code" == 200 ]]; then
+            printf 'project    renamed to %s\n' "$root_name"
+        else
+            warn "rename refused (HTTP ${code}); the seat is still placed by key"
+        fi
+    fi
+
+    if [[ -n "$seat" ]] && [[ "$(jq -r '.exists' "$response_file")" == true ]]; then
+        printf 'seat       already held by %s; left unchanged\n' "$seat"
+        return 0
+    fi
+    if [[ -n "$pending" ]]; then
+        printf 'seat       a designation is already pending (%s); see the board\n' "$pending"
+        return 0
+    fi
+
+    # A launch on a signed-out engine is refused and recorded as a failed seat,
+    # so it is checked here first. The built-in "legacy" account's transcript
+    # folder is the host's, mounted read-only: only an added (managed) account
+    # can run agents in this container.
+    code=$(api GET /api/accounts)
+    [[ "$code" == 200 ]] || die "could not read the engine accounts (HTTP ${code})" "$ex_unavailable"
+    if ! jq -e --arg engine "$engine" '.[$engine].accounts // [] | any(.authPresent and .kind != "legacy")' "$response_file" >/dev/null; then
+        die "no added ${engine} account is signed in. Open './delegatus.sh url', Accounts → ${engine} → add an account and sign it in (not \"Main\": its transcript folder is the host's, read-only here), then re-run" "$ex_config"
+    fi
+
+    # The stock mandate and its version, read from the running build, so the
+    # seat stays an unedited default that Delegatus upgrades on its own.
+    local mandate_file body request_id
+    mandate_file=$(mktemp); tmp_files+=("$mandate_file")
+    docker exec -w /app "$container_name" bun -e '
+        const prompt = await import("/app/src/lib/orchestrator/prompt.ts");
+        process.stdout.write(JSON.stringify({ mandate: prompt.ORCHESTRATOR_SYSTEM_PROMPT, promptVersion: prompt.ORCHESTRATOR_PROMPT_VERSION }));
+    ' > "$mandate_file" 2>/dev/null || die "could not read the stock mandate from the container" "$ex_software"
+    jq -e '.mandate | length > 0' "$mandate_file" >/dev/null 2>&1 || die "the stock mandate came back empty" "$ex_software"
+
+    request_id="seat-$(new_key)"
+    body=$(jq -c --arg project "$project" --arg cwd "$workspace_dir" --arg engine "$engine" \
+        --arg model "$model" --arg effort "$effort" --arg id "$request_id" \
+        '{project: $project, cwd: $cwd, mandate, promptVersion, engine: $engine, clientRequestId: $id}
+         + (if $model == "" then {} else {model: $model} end)
+         + (if $effort == "" then {} else {effort: $effort} end)' "$mandate_file")
+    code=$(api POST /api/orchestrator/seat "$body")
+    if [[ "$code" == 200 || "$code" == 202 ]]; then
+        printf 'seat       designated (%s %s): %s\n' "$engine" "${model:-default}" \
+            "$(jq -r '.conversationId // .seat.conversationId // .state // "starting"' "$response_file")"
+        return 0
+    fi
+    warn "seat refused (HTTP ${code}): $(jq -r '.error // .message // empty' "$response_file" 2>/dev/null)"
+    if jq -e '.error | tostring | test("not connected|signed.?out|not found on this machine"; "i")' "$response_file" >/dev/null 2>&1; then
+        warn "sign in a ${engine} account first: open './delegatus.sh url', then Accounts"
+    fi
+    return 1
+}
+
 main() {
     [[ $# -ge 1 ]] || { usage; exit "$ex_usage"; }
     local command=$1
@@ -374,6 +522,7 @@ main() {
         rotate-key) cmd_rotate_key ;;
         check-isolation) cmd_check_isolation ;;
         configure) cmd_configure "$@" ;;
+        seat) cmd_seat "$@" ;;
         help | -h | --help) usage ;;
         *) usage; die "unknown command '${command}'" "$ex_usage" ;;
     esac

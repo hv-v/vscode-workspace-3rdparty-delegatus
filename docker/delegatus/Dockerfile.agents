@@ -1,0 +1,39 @@
+# syntax=docker/dockerfile:1.7
+#
+# Delegatus with its engines: the hardened base image (Dockerfile) plus the
+# Claude Code and Codex CLIs, so orchestrators and workers can run inside the
+# container. Built on the base image rather than from source, so it needs no
+# clone; `./delegatus.sh build --base` rebuilds the base first.
+#
+# Versions are pinned. Codex must be one Delegatus has a protocol pin for
+# (src/lib/accounts/protocol/<version>/ in the clone); Claude Code matches the
+# host's VS Code extension. Bump them here, then `./delegatus.sh build`.
+#
+# Nothing here signs in. Each engine account is created from Delegatus's
+# Accounts screen and keeps its credentials in its own home in the state
+# volume, never the host's ~/.claude or ~/.codex.
+
+ARG BASE_IMAGE=delegatus:local
+FROM ${BASE_IMAGE}
+
+ARG CLAUDE_CODE_VERSION=2.1.318
+ARG CODEX_VERSION=0.166.0
+
+USER root
+# jq: the workspace's Claude hooks need it. ripgrep: both CLIs search with it.
+RUN set -eu; \
+    apt-get update; \
+    apt-get install -y --no-install-recommends jq ripgrep; \
+    rm -rf /var/lib/apt/lists/*; \
+    npm install -g "@anthropic-ai/claude-code@${CLAUDE_CODE_VERSION}" "@openai/codex@${CODEX_VERSION}"; \
+    npm cache clean --force; \
+    HOME=/tmp claude --version; \
+    HOME=/tmp codex --version; \
+    rm -rf /tmp/.claude* /tmp/.codex
+
+# The root filesystem is read-only at runtime, so a self-update could only
+# fail; it is off, along with Claude Code's telemetry and error reporting.
+ENV DISABLE_AUTOUPDATER=1 \
+    CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC=1
+
+USER delegatus

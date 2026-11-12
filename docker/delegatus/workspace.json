@@ -10,5 +10,10 @@
       "3rdparty/awesome-claude-code-subagents",
       "3rdparty/mindrally-claude-skills"
     ]
+  },
+  "orchestrator": {
+    "engine": "claude",
+    "model": "opus",
+    "effort": "high"
   }
 }

@@ -1,0 +1,6 @@
+^api\.anthropic\.com$
+^platform\.claude\.com$
+^console\.anthropic\.com$
+^api\.openai\.com$
+^chatgpt\.com$
+^auth\.openai\.com$
