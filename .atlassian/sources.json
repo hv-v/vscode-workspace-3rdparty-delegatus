@@ -46,6 +46,10 @@
       {
         "name": "my open issues",
         "query": "assignee = currentUser() AND resolution = Unresolved ORDER BY updated DESC"
+      },
+      {
+        "name": "The Shire - Sprint 50",
+        "query": "sprint = \"The Shire - Sprint 50\" ORDER BY Rank ASC"
       }
     ],
     "boards": [
